@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh The Marginal Token hourly
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=180
+Persistent=true
+Unit=marginaltoken.service
+
+[Install]
+WantedBy=timers.target

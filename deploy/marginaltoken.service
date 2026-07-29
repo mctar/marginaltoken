@@ -1,0 +1,11 @@
+[Unit]
+Description=Collect and publish The Marginal Token
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/marginaltoken
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/bin/sh -c '/usr/bin/python3 collector/collect.py; if [ -f collector/state/publish-pending ]; then exec deploy/publish.sh; fi'
+Nice=10

@@ -10,6 +10,16 @@ export type PriceModel = {
   checked?: string
   rateNote?: string
   indexEligible?: boolean
+  inputModalities?: string[]
+  outputModalities?: string[]
+  supportsReasoning?: boolean
+  supportsTools?: boolean
+  supportsStructuredOutput?: boolean
+  releaseStage?: 'stable' | 'preview' | 'experimental'
+  maxOutputTokens?: number
+  knowledgeCutoff?: string
+  expirationDate?: string
+  huggingFaceId?: string
 }
 
 export type PricesFeed = {

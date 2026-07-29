@@ -127,6 +127,27 @@ def display_name(raw_name: Any, key: str) -> str:
     return name
 
 
+def string_list(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return sorted(
+        {
+            item.strip().lower()
+            for item in value
+            if isinstance(item, str) and item.strip()
+        }
+    )
+
+
+def release_stage(key: str) -> str:
+    lowered = key.lower()
+    if "experimental" in lowered or "-exp-" in lowered or lowered.endswith(":exp"):
+        return "experimental"
+    if "preview" in lowered:
+        return "preview"
+    return "stable"
+
+
 def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
     models: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -162,18 +183,45 @@ def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
         context = raw.get("context_length")
         if not isinstance(context, int) or context < 0:
             context = 0
-        models.append(
-            {
-                "key": key,
-                "display": display_name(raw.get("name"), key),
-                "provider": provider,
-                "input_mtok": mtok_value(prompt_raw, f"{key} prompt price"),
-                "output_mtok": mtok_value(completion_raw, f"{key} completion price"),
-                "context": context,
-                "source": "openrouter",
-                "indexEligible": False,
-            }
-        )
+        architecture = raw.get("architecture")
+        if not isinstance(architecture, dict):
+            architecture = {}
+        supported_parameters = string_list(raw.get("supported_parameters"))
+        reasoning = raw.get("reasoning")
+        top_provider = raw.get("top_provider")
+        if not isinstance(top_provider, dict):
+            top_provider = {}
+
+        model = {
+            "key": key,
+            "display": display_name(raw.get("name"), key),
+            "provider": provider,
+            "input_mtok": mtok_value(prompt_raw, f"{key} prompt price"),
+            "output_mtok": mtok_value(completion_raw, f"{key} completion price"),
+            "context": context,
+            "source": "openrouter",
+            "indexEligible": False,
+            "inputModalities": string_list(architecture.get("input_modalities")),
+            "outputModalities": string_list(architecture.get("output_modalities")),
+            "supportsReasoning": bool(reasoning)
+            or "reasoning" in supported_parameters
+            or "include_reasoning" in supported_parameters,
+            "supportsTools": "tools" in supported_parameters,
+            "supportsStructuredOutput": "response_format" in supported_parameters,
+            "releaseStage": release_stage(key),
+        }
+        max_output_tokens = top_provider.get("max_completion_tokens")
+        if isinstance(max_output_tokens, int) and max_output_tokens > 0:
+            model["maxOutputTokens"] = max_output_tokens
+        for raw_field, output_field in (
+            ("knowledge_cutoff", "knowledgeCutoff"),
+            ("expiration_date", "expirationDate"),
+            ("hugging_face_id", "huggingFaceId"),
+        ):
+            value = raw.get(raw_field)
+            if isinstance(value, str) and value.strip():
+                model[output_field] = value.strip()
+        models.append(model)
     return sorted(models, key=lambda model: model["key"])
 
 

@@ -122,6 +122,37 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual([model["key"] for model in models], ["ok/model"])
         self.assertEqual(models[0]["input_mtok"], 1.0)
 
+    def test_normalization_keeps_objective_filter_metadata(self) -> None:
+        model = raw_model("lab/vision-preview", "0.000001", "0.000002")
+        model.update(
+            {
+                "architecture": {
+                    "input_modalities": ["text", "image", "image"],
+                    "output_modalities": ["text"],
+                },
+                "supported_parameters": [
+                    "tools",
+                    "reasoning",
+                    "response_format",
+                ],
+                "top_provider": {"max_completion_tokens": 65536},
+                "knowledge_cutoff": "2025-12",
+                "expiration_date": "2026-12-31",
+                "hugging_face_id": "lab/vision",
+            }
+        )
+        normalized = normalize_openrouter({"data": [model]})[0]
+        self.assertEqual(normalized["inputModalities"], ["image", "text"])
+        self.assertEqual(normalized["outputModalities"], ["text"])
+        self.assertTrue(normalized["supportsReasoning"])
+        self.assertTrue(normalized["supportsTools"])
+        self.assertTrue(normalized["supportsStructuredOutput"])
+        self.assertEqual(normalized["releaseStage"], "preview")
+        self.assertEqual(normalized["maxOutputTokens"], 65536)
+        self.assertEqual(normalized["knowledgeCutoff"], "2025-12")
+        self.assertEqual(normalized["expirationDate"], "2026-12-31")
+        self.assertEqual(normalized["huggingFaceId"], "lab/vision")
+
     def test_first_run_and_unchanged_run_are_stable(self) -> None:
         self.assertEqual(self.collect(), "changed")
         before = {path.name: path.read_bytes() for path in self.data.iterdir()}

@@ -19,7 +19,7 @@ OpenRouter provides the broad tape. `collector/firstparty.json` supplies checked
 
 The four deterministic files carry the same `generatedAt` revision timestamp. An optional machine note is published only when it matches that revision.
 
-- `data/prices.json`: current normalized models, provenance, context, and per-million-token rates.
+- `data/prices.json`: current normalized models, provenance, context, per-million-token rates, input modalities, API capabilities, release stage, and optional lifecycle metadata.
 - `data/history.json`: the inception snapshot plus one point per model for each detected price change.
 - `data/changes.json`: up to 500 typed `price`, `listed`, `delisted`, and `basket` events, newest first.
 - `data/meta.json`: the current index, persisted base, current basket, and chart-ready index history.
@@ -88,7 +88,7 @@ npm run preview
 `npm run preview` serves the completed production build at an HTTP address,
 normally `http://127.0.0.1:4173/`.
 
-The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Tape sorts all six columns in the browser and can be reduced to first-party rows. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
+The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
 
 ## Publishing to GitHub Pages
 

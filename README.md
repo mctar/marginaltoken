@@ -113,6 +113,36 @@ journalctl --user -u marginaltoken.service -n 50
 
 Enable lingering for the service account if hugin does not already have it. GitHub Pages must serve from the `gh-pages` branch. Add `marginaltoken.com` in the repository Pages settings, configure the domain's apex DNS records for GitHub Pages, verify the domain, and select Enforce HTTPS when the certificate is ready.
 
+### Alternate hugin hostname
+
+The GitHub Pages `CNAME` remains `marginaltoken.com`. To expose the same build at
+`marginaltoken.btrbot.com` without changing the canonical Pages domain, serve
+`site/dist` locally on hugin:
+
+```bash
+cp deploy/marginaltoken-web.service ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now marginaltoken-web.service
+```
+
+Add this rule before the final `http_status:404` entry in hugin's Cloudflare
+tunnel configuration:
+
+```yaml
+- hostname: marginaltoken.btrbot.com
+  service: http://127.0.0.1:4180
+```
+
+Then route the hostname to the existing tunnel and restart it:
+
+```bash
+sudo cloudflared tunnel route dns --overwrite-dns TUNNEL_ID marginaltoken.btrbot.com
+sudo systemctl restart cloudflared
+```
+
+The hourly publisher rebuilds `site/dist`, so the alternate hostname follows
+the same validated feed revisions as GitHub Pages.
+
 ## Updating first-party prices
 
 Edit `collector/firstparty.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Update `source_url`, `checked`, and `rate_note` with every review. Standard uncached, non-batch, global rates are used. For tiered products, record the lowest standard context tier and explain it in `rate_note`.

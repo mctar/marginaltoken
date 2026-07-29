@@ -1,0 +1,16 @@
+[Unit]
+Description=Serve The Marginal Token through the hugin Cloudflare tunnel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/thordur/marginaltoken
+ExecStart=/usr/bin/python3 -m http.server 4180 --bind 127.0.0.1 --directory /home/thordur/marginaltoken/site/dist
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

@@ -49,7 +49,7 @@ export default function App() {
       {route === '/tape/' && <TapePage prices={data.prices} />}
       {route === '/methodology/' && <MethodologyPage meta={data.meta} />}
       {route === '/' && <FrontPage data={data} />}
-      <Footer />
+      <Footer generatedAt={data.meta.generatedAt} modelCount={data.meta.modelCount} />
     </div>
   )
 }

@@ -113,6 +113,10 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(event["pct"], -50.0)
         points = json.loads((self.data / "history.json").read_text())["points"]
         self.assertEqual(sum(point["key"] == "router/value" for point in points), 2)
+        editorial = json.loads((self.state / "editorial-input.json").read_text())
+        self.assertEqual(editorial["generatedAt"], "2026-07-30T10:00:00Z")
+        self.assertEqual(len(editorial["events"]), 1)
+        self.assertEqual(editorial["events"][0]["key"], "router/value")
 
     def test_index_history_tracks_curated_price(self) -> None:
         self.collect()

@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react'
 
 const siteDir = path.dirname(fileURLToPath(import.meta.url))
 const dataDir = path.resolve(siteDir, '../data')
-const feedFiles = new Set(['prices.json', 'history.json', 'changes.json', 'meta.json'])
+const feedFiles = new Set(['prices.json', 'history.json', 'changes.json', 'meta.json', 'brief.json'])
 
 function localFeed(): Plugin {
   return {

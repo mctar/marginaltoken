@@ -1,4 +1,4 @@
-import type { ChangesFeed, FeedData, HistoryFeed, MetaFeed, PricesFeed } from './types'
+import type { BriefFeed, ChangesFeed, FeedData, HistoryFeed, MetaFeed, PricesFeed } from './types'
 
 async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(path, { cache: 'no-store' })
@@ -6,15 +6,33 @@ async function fetchJson<T>(path: string): Promise<T> {
   return response.json() as Promise<T>
 }
 
+async function fetchOptionalJson<T>(path: string): Promise<T | null> {
+  try {
+    const response = await fetch(path, { cache: 'no-store' })
+    if (!response.ok) return null
+    return await response.json() as T
+  } catch {
+    return null
+  }
+}
+
 export async function loadFeed(): Promise<FeedData> {
-  const [prices, history, changes, meta] = await Promise.all([
+  const [prices, history, changes, meta, candidateBrief] = await Promise.all([
     fetchJson<PricesFeed>('/data/prices.json'),
     fetchJson<HistoryFeed>('/data/history.json'),
     fetchJson<ChangesFeed>('/data/changes.json'),
     fetchJson<MetaFeed>('/data/meta.json'),
+    fetchOptionalJson<BriefFeed>('/data/brief.json'),
   ])
   if (!Array.isArray(prices.models) || !Array.isArray(meta.indexHistory)) {
     throw new Error('The published feed is incomplete')
   }
-  return { prices, history, changes, meta }
+  const brief = candidateBrief
+    && typeof candidateBrief.generatedAt === 'string'
+    && typeof candidateBrief.headline === 'string'
+    && typeof candidateBrief.note === 'string'
+    && typeof candidateBrief.sourceEventCount === 'number'
+    ? candidateBrief
+    : null
+  return { prices, history, changes, meta, brief }
 }

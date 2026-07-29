@@ -50,6 +50,13 @@ export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
         </section>
         <section>
           <span className="method-number">06</span>
+          <h2>The machine note</h2>
+          <p>
+            When verified events enter the tape, a local Gemma 4 26B model may phrase them as a short note. It receives only the current revision's structured facts. Deterministic checks reject unsupported figures, inferred causes, invalid output, and copy outside the house rules. A failed note never blocks the underlying feed.
+          </p>
+        </section>
+        <section>
+          <span className="method-number">07</span>
           <h2>Honesty caveats</h2>
           <p>
             These are list prices, not negotiated prices. Standard rates are used, not batch, cached, flex, priority, regional, or long-context premiums. Tokenizers differ, so equal token counts do not always represent equal text. Price says nothing by itself about model quality. Nothing here is investment advice.

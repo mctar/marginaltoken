@@ -83,9 +83,19 @@ export type MetaFeed = {
   indexHistory: IndexPoint[]
 }
 
+export type BriefFeed = {
+  generatedAt: string
+  asOf: string
+  model: string
+  headline: string
+  note: string
+  sourceEventCount: number
+}
+
 export type FeedData = {
   prices: PricesFeed
   history: HistoryFeed
   changes: ChangesFeed
   meta: MetaFeed
+  brief: BriefFeed | null
 }

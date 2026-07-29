@@ -1,5 +1,6 @@
 import DeflatorChart from '../components/DeflatorChart'
 import LatestMoves from '../components/LatestMoves'
+import MachineNote from '../components/MachineNote'
 import { longDate } from '../lib/format'
 import type { FeedData } from '../lib/types'
 
@@ -51,6 +52,8 @@ export default function FrontPage({ data }: { data: FeedData }) {
           <span>{meta.basket.length} models in the current basket</span>
         </div>
       </section>
+
+      <MachineNote brief={data.brief} revision={meta.generatedAt} />
 
       <div className="mt-16 grid gap-12 border-t border-ink pt-7 md:grid-cols-[1.5fr_1fr]">
         <LatestMoves events={changes.changes} baseDate={meta.indexBaseDate} />

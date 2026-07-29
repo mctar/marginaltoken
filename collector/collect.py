@@ -506,6 +506,15 @@ def collect_once(
         atomic_write_json(data_dir / filename, payload)
 
     state_dir.mkdir(parents=True, exist_ok=True)
+    atomic_write_json(
+        state_dir / "editorial-input.json",
+        {
+            "generatedAt": generated_at,
+            "asOf": date,
+            "indexValue": current_index,
+            "events": events,
+        },
+    )
     atomic_write_json(state_dir / "last-good-openrouter.json", raw_payload)
     atomic_write_text(state_dir / "publish-pending", generated_at + "\n")
     write_heartbeat(state_dir, now, "changed", f"{len(events)} events")

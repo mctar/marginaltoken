@@ -17,12 +17,13 @@ OpenRouter provides the broad tape. `collector/firstparty.json` supplies checked
 
 ## Feed contract
 
-Every file carries the same `generatedAt` revision timestamp.
+The four deterministic files carry the same `generatedAt` revision timestamp. An optional machine note is published only when it matches that revision.
 
 - `data/prices.json`: current normalized models, provenance, context, and per-million-token rates.
 - `data/history.json`: the inception snapshot plus one point per model for each detected price change.
 - `data/changes.json`: up to 500 typed `price`, `listed`, `delisted`, and `basket` events, newest first.
 - `data/meta.json`: the current index, persisted base, current basket, and chart-ready index history.
+- `data/brief.json`: an optional, revision-matched headline and two-sentence note generated locally from verified events.
 
 The Deflator is an equal-weighted output-price index. The basket contains the cheapest entry marked `index_eligible` for each first-party provider. The current mean is divided by the inception mean and multiplied by 100. A newly eligible cheaper flagship affects the index and produces a basket event.
 
@@ -44,6 +45,15 @@ The collector refuses to replace the feed when:
 - duplicate identifiers or an empty index basket are found.
 
 Failures return exit status zero and leave `data/` untouched. Operational status is written to the ignored `collector/state/heartbeat.json` file. A successful feed change creates `collector/state/publish-pending`. That marker remains until publication succeeds, which makes a failed build or push retryable on the next timer run.
+
+When a feed revision contains events, `collector/editorial.py` sends at most five typed facts to the local Ollama endpoint and requests strict JSON from `gemma4:26b`. It rejects unsupported figures, inferred causes, invalid structure, forbidden punctuation, and copy outside the site rules. Failure leaves the prior note untouched; the frontend hides it because its revision no longer matches. Editorial status is recorded in `collector/state/editorial-heartbeat.json`.
+
+Useful editorial overrides:
+
+```bash
+MARGINALTOKEN_EDITORIAL_MODEL=gemma4:26b python3 collector/editorial.py
+MARGINALTOKEN_OLLAMA_URL=http://127.0.0.1:11434/api/generate python3 collector/editorial.py
+```
 
 Useful test overrides:
 
@@ -78,7 +88,7 @@ npm run preview
 `npm run preview` serves the completed production build at an HTTP address,
 normally `http://127.0.0.1:4173/`.
 
-The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Tape sorts all six columns in the browser and can be reduced to first-party rows.
+The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Tape sorts all six columns in the browser and can be reduced to first-party rows. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
 
 ## Publishing to GitHub Pages
 

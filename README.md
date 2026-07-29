@@ -13,7 +13,7 @@ site/        Static three-route publication
 deploy/      GitHub Pages publisher and systemd units
 ```
 
-OpenRouter provides the broad tape. `collector/firstparty.json` supplies checked list prices for one eligible flagship from Anthropic, OpenAI, Google, Mistral, DeepSeek, and xAI. Curated rows replace matching OpenRouter rows.
+OpenRouter provides the broad tape. `collector/firstparty.json` supplies checked list prices from Anthropic, OpenAI, Google, Mistral, DeepSeek, and xAI. Each provider has one index-eligible flagship; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Curated rows replace matching OpenRouter rows.
 
 ## Feed contract
 

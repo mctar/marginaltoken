@@ -24,7 +24,7 @@ export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
           <span className="method-number">02</span>
           <h2>Where prices come from</h2>
           <p>
-            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. Six first-party rows are checked by hand against public pricing pages from Anthropic, OpenAI, Google, Mistral, DeepSeek, and xAI. A curated row replaces the matching OpenRouter row.
+            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. A curated first-party register is checked by hand against public pricing pages from Anthropic, OpenAI, Google, Mistral, DeepSeek, and xAI. It includes one index-eligible flagship per provider plus additional Anthropic, OpenAI, and Google tiers. A curated row replaces the matching OpenRouter row.
           </p>
         </section>
         <section>
@@ -70,7 +70,7 @@ export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
         <div>
           <a href="https://openrouter.ai/api/v1/models">OpenRouter models API</a>
           <a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic pricing</a>
-          <a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">OpenAI pricing</a>
+          <a href="https://developers.openai.com/api/docs/models">OpenAI pricing</a>
           <a href="https://ai.google.dev/gemini-api/docs/pricing">Google pricing</a>
           <a href="https://docs.mistral.ai/models/model-cards/mistral-medium-3-5-26-04">Mistral pricing</a>
           <a href="https://api-docs.deepseek.com/quick_start/pricing/">DeepSeek pricing</a>

@@ -8,7 +8,13 @@ from decimal import Decimal
 from pathlib import Path
 from unittest.mock import patch
 
-from collector.collect import CollectorError, collect_once, main, normalize_openrouter
+from collector.collect import (
+    CollectorError,
+    collect_once,
+    load_firstparty,
+    main,
+    normalize_openrouter,
+)
 
 
 def raw_model(key: str, prompt: str, completion: str, name: str | None = None) -> dict:
@@ -18,6 +24,35 @@ def raw_model(key: str, prompt: str, completion: str, name: str | None = None) -
         "context_length": 128000,
         "pricing": {"prompt": prompt, "completion": completion},
     }
+
+
+class FirstPartyCatalogTests(unittest.TestCase):
+    def setUp(self) -> None:
+        catalog_path = Path(__file__).resolve().parents[1] / "firstparty.json"
+        self.models = load_firstparty(catalog_path)
+
+    def test_priority_providers_have_three_checked_rows(self) -> None:
+        for provider in ("anthropic", "openai", "google"):
+            rows = [model for model in self.models if model["provider"] == provider]
+            self.assertGreaterEqual(len(rows), 3, provider)
+            self.assertEqual(sum(model["indexEligible"] for model in rows), 1, provider)
+
+    def test_new_first_party_tiers_have_expected_rates(self) -> None:
+        by_key = {model["key"]: model for model in self.models}
+        expected = {
+            "anthropic/claude-opus-5": (5.0, 25.0, 1000000),
+            "anthropic/claude-haiku-4.5": (1.0, 5.0, 200000),
+            "openai/gpt-5.6-terra": (2.5, 15.0, 1050000),
+            "openai/gpt-5.6-luna": (1.0, 6.0, 1050000),
+            "google/gemini-3.5-flash": (1.5, 9.0, 1048576),
+            "google/gemini-3.5-flash-lite": (0.3, 2.5, 1048576),
+        }
+        for key, (input_price, output_price, context) in expected.items():
+            with self.subTest(key=key):
+                self.assertEqual(by_key[key]["input_mtok"], input_price)
+                self.assertEqual(by_key[key]["output_mtok"], output_price)
+                self.assertEqual(by_key[key]["context"], context)
+                self.assertFalse(by_key[key]["indexEligible"])
 
 
 class CollectorTests(unittest.TestCase):

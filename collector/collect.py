@@ -433,6 +433,7 @@ def collect_once(
     now: datetime | None = None,
     min_models: int = DEFAULT_MIN_MODELS,
     retention_ratio: Decimal = DEFAULT_RETENTION_RATIO,
+    rebase_index: bool = False,
 ) -> str:
     now = now or utc_now()
     generated_at = iso_utc(now)
@@ -461,7 +462,7 @@ def collect_once(
     events, changed_price_keys = diff_models(models, previous_models, date) if not is_initial else ([], set())
     models_changed = models != previous_models
 
-    if not is_initial and not models_changed:
+    if not is_initial and not models_changed and not rebase_index:
         state_dir.mkdir(parents=True, exist_ok=True)
         atomic_write_json(state_dir / "last-good-openrouter.json", raw_payload)
         write_heartbeat(state_dir, now, "unchanged")
@@ -496,7 +497,11 @@ def collect_once(
     previous_meta = read_feed(data_dir / "meta.json", {})
     basket = basket_for(models)
     current_mean = basket_mean(models, basket)
-    if is_initial or not previous_meta:
+    if rebase_index:
+        base_mean = current_mean
+        base_date = str(previous_meta.get("indexBaseDate") or date)
+        index_history = [{"date": base_date, "value": 100.0}]
+    elif is_initial or not previous_meta:
         base_mean = current_mean
         base_date = date
         index_history: list[dict[str, Any]] = []
@@ -510,7 +515,7 @@ def collect_once(
     current_index = index_value(current_mean, base_mean)
     previous_index = previous_meta.get("indexValue")
     previous_basket = previous_meta.get("basket", [])
-    if previous_meta and previous_basket != basket:
+    if previous_meta and previous_basket != basket and not rebase_index:
         events.append(
             {
                 "type": "basket",
@@ -522,7 +527,7 @@ def collect_once(
                 "to": basket,
             }
         )
-    if is_initial or previous_index != current_index or previous_basket != basket:
+    if not rebase_index and (is_initial or previous_index != current_index or previous_basket != basket):
         index_history = replace_daily_index_point(index_history, date, current_index)
 
     previous_changes = read_feed(data_dir / "changes.json", {"changes": []})
@@ -586,6 +591,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Decimal,
         default=Decimal(os.environ.get("MARGINALTOKEN_RETENTION_RATIO", str(DEFAULT_RETENTION_RATIO))),
     )
+    parser.add_argument(
+        "--rebase-index",
+        action="store_true",
+        help="reset the Deflator basis after an explicit methodology correction",
+    )
     return parser.parse_args(argv)
 
 
@@ -602,6 +612,7 @@ def main(argv: list[str] | None = None) -> int:
             now=now,
             min_models=args.min_models,
             retention_ratio=args.retention_ratio,
+            rebase_index=args.rebase_index,
         )
         print(f"collector: {result}")
     except Exception as error:  # Last-good is safer than an hourly destructive failure.

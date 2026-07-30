@@ -46,6 +46,8 @@ The collector refuses to replace the feed when:
 
 Failures return exit status zero and leave `data/` untouched. Operational status is written to the ignored `collector/state/heartbeat.json` file. A successful feed change creates `collector/state/publish-pending`. That marker remains until publication succeeds, which makes a failed build or push retryable on the next timer run.
 
+`--rebase-index` is an operator-only correction path for the inception basket. It preserves the original base date, resets the basis to the corrected basket mean, and suppresses a false basket-move event. It must not be used for genuine market price changes.
+
 When a feed revision contains events, `collector/editorial.py` sends at most five typed facts to the local Ollama endpoint and requests strict JSON from `gemma4:26b`. It rejects unsupported figures, inferred causes, invalid structure, forbidden punctuation, and copy outside the site rules. Failure leaves the prior note untouched; the frontend hides it because its revision no longer matches. Editorial status is recorded in `collector/state/editorial-heartbeat.json`.
 
 Useful editorial overrides:

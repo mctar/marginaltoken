@@ -52,7 +52,9 @@ class FirstPartyCatalogTests(unittest.TestCase):
                 self.assertEqual(by_key[key]["input_mtok"], input_price)
                 self.assertEqual(by_key[key]["output_mtok"], output_price)
                 self.assertEqual(by_key[key]["context"], context)
-                self.assertFalse(by_key[key]["indexEligible"])
+        self.assertTrue(by_key["anthropic/claude-opus-5"]["indexEligible"])
+        self.assertFalse(by_key["anthropic/claude-sonnet-5"]["indexEligible"])
+        self.assertFalse(by_key["anthropic/claude-haiku-4.5"]["indexEligible"])
 
 
 class CollectorTests(unittest.TestCase):
@@ -97,7 +99,7 @@ class CollectorTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def collect(self, day: int = 29) -> str:
+    def collect(self, day: int = 29, *, rebase_index: bool = False) -> str:
         return collect_once(
             data_dir=self.data,
             state_dir=self.state,
@@ -106,6 +108,28 @@ class CollectorTests(unittest.TestCase):
             now=datetime(2026, 7, day, 10, tzinfo=timezone.utc),
             min_models=1,
             retention_ratio=Decimal("0.8"),
+            rebase_index=rebase_index,
+        )
+
+    def write_firstparty_pair(self, selected: str) -> None:
+        self.firstparty.write_text(
+            json.dumps(
+                [
+                    {
+                        "provider": "lab",
+                        "model": model,
+                        "display": f"Lab {model.title()}",
+                        "input_mtok": 2.0 if model == "flagship" else 5.0,
+                        "output_mtok": 10.0 if model == "flagship" else 25.0,
+                        "context": 128000,
+                        "index_eligible": model == selected,
+                        "source_url": "https://example.com/pricing",
+                        "checked": "2026-07-29",
+                    }
+                    for model in ("flagship", "opus")
+                ]
+            ),
+            encoding="utf-8",
         )
 
     def test_normalization_skips_nonstandard_rows(self) -> None:
@@ -191,6 +215,22 @@ class CollectorTests(unittest.TestCase):
         meta = json.loads((self.data / "meta.json").read_text())
         self.assertEqual(meta["indexValue"], 50.0)
         self.assertEqual(meta["indexHistory"][-1], {"date": "2026-07-30", "value": 50.0})
+
+    def test_explicit_rebase_corrects_inception_basket_without_false_move(self) -> None:
+        self.write_firstparty_pair("flagship")
+        self.collect()
+        self.write_firstparty_pair("opus")
+        self.assertEqual(self.collect(day=30, rebase_index=True), "changed")
+
+        meta = json.loads((self.data / "meta.json").read_text())
+        self.assertEqual(meta["basket"], ["lab/opus"])
+        self.assertEqual(meta["indexValue"], 100.0)
+        self.assertEqual(meta["indexBaseMean"], 25.0)
+        self.assertEqual(meta["indexBaseDate"], "2026-07-29")
+        self.assertEqual(meta["indexHistory"], [{"date": "2026-07-29", "value": 100.0}])
+
+        changes = json.loads((self.data / "changes.json").read_text())["changes"]
+        self.assertFalse(any(event["type"] == "basket" for event in changes))
 
     def test_new_listing_seeds_its_history(self) -> None:
         self.collect()

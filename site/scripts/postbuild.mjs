@@ -26,6 +26,11 @@ const escapeAttribute = (value) => String(value)
   .replaceAll('<', '&lt;')
   .replaceAll('>', '&gt;')
 
+const replaceMeta = (html, selector, from, to) => {
+  if (!html.includes(from)) throw new Error(`Missing ${selector} metadata placeholder`)
+  return html.replace(from, to)
+}
+
 for (const model of prices.models) {
   const segments = model.key.split('/')
   if (segments.some((segment) => !segment || segment === '.' || segment === '..')) continue
@@ -34,22 +39,50 @@ for (const model of prices.models) {
   const canonicalUrl = `https://marginaltoken.com${routePath}`
   const title = `${model.display} pricing & model card — The Marginal Token`
   const description = `Current standard API pricing for ${model.display}: $${model.input_mtok} input and $${model.output_mtok} output per million tokens.`
-  const metadata = [
-    `<link rel="canonical" href="${escapeAttribute(canonicalUrl)}" />`,
-    '<meta property="og:type" content="website" />',
-    '<meta property="og:site_name" content="The Marginal Token" />',
-    `<meta property="og:title" content="${escapeAttribute(title)}" />`,
-    `<meta property="og:description" content="${escapeAttribute(description)}" />`,
-    `<meta property="og:url" content="${escapeAttribute(canonicalUrl)}" />`,
-    '<meta name="twitter:card" content="summary" />',
-  ].join('\n    ')
-  const modelHtml = shell
+  let modelHtml = shell
     .replace('<title>The Marginal Token</title>', `<title>${escapeAttribute(title)}</title>`)
-    .replace(
-      'content="The Marginal Token tracks standard token prices across AI models and providers."',
-      `content="${escapeAttribute(description)}"`,
-    )
-    .replace('</head>', `    ${metadata}\n  </head>`)
+  modelHtml = replaceMeta(
+    modelHtml,
+    'description',
+    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    `content="${escapeAttribute(description)}"`,
+  )
+  modelHtml = replaceMeta(
+    modelHtml,
+    'canonical URL',
+    '<link rel="canonical" href="https://marginaltoken.com/" />',
+    `<link rel="canonical" href="${escapeAttribute(canonicalUrl)}" />`,
+  )
+  modelHtml = replaceMeta(
+    modelHtml,
+    'Open Graph title',
+    '<meta property="og:title" content="The Marginal Token" />',
+    `<meta property="og:title" content="${escapeAttribute(title)}" />`,
+  )
+  modelHtml = replaceMeta(
+    modelHtml,
+    'Open Graph description',
+    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    `content="${escapeAttribute(description)}"`,
+  )
+  modelHtml = replaceMeta(
+    modelHtml,
+    'Open Graph URL',
+    '<meta property="og:url" content="https://marginaltoken.com/" />',
+    `<meta property="og:url" content="${escapeAttribute(canonicalUrl)}" />`,
+  )
+  modelHtml = replaceMeta(
+    modelHtml,
+    'Twitter title',
+    '<meta name="twitter:title" content="The Marginal Token" />',
+    `<meta name="twitter:title" content="${escapeAttribute(title)}" />`,
+  )
+  modelHtml = replaceMeta(
+    modelHtml,
+    'Twitter description',
+    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    `content="${escapeAttribute(description)}"`,
+  )
   const modelDir = path.join(distDir, 'model', ...segments)
   await mkdir(modelDir, { recursive: true })
   await writeFile(path.join(modelDir, 'index.html'), modelHtml)

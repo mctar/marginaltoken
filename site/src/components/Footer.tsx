@@ -28,7 +28,7 @@ export default function Footer({ generatedAt, modelCount }: FooterProps) {
           A poka-yoke build by{' '}
           <a className="editorial-link" href="https://gervilabs.com/">
             Gervi Labs
-          </a>
+          </a>{', created by Thordur Arnason.'}
         </p>
       </div>
     </footer>

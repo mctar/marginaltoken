@@ -13,7 +13,7 @@ site/        Static three-route publication
 deploy/      GitHub Pages publisher and systemd units
 ```
 
-OpenRouter provides the broad tape. `collector/firstparty.json` supplies checked list prices from Anthropic, OpenAI, Google, Mistral, DeepSeek, and xAI. Each provider has one index-eligible flagship; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Curated rows replace matching OpenRouter rows.
+OpenRouter provides the broad tape. `collector/firstparty.json` supplies checked list prices from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Curated rows replace matching OpenRouter rows.
 
 ## Feed contract
 
@@ -25,7 +25,7 @@ The four deterministic files carry the same `generatedAt` revision timestamp. An
 - `data/meta.json`: the current index, persisted base, current basket, and chart-ready index history.
 - `data/brief.json`: an optional, revision-matched headline and two-sentence note generated locally from verified events.
 
-The Deflator is an equal-weighted output-price index. The basket contains the cheapest entry marked `index_eligible` for each first-party provider. The current mean is divided by the inception mean and multiplied by 100. A newly eligible cheaper flagship affects the index and produces a basket event.
+The Deflator is an equal-weighted output-price index. The basket contains one current, production, general-purpose frontier representative per independent provider, using its public first-party standard global API rate. The current mean is divided by the inception mean and multiplied by 100. Genuine successor substitutions affect the index and produce a basket event; provider additions and methodology corrections are rebased rather than reported as price moves.
 
 ## Collector
 

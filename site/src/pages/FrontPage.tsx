@@ -15,6 +15,12 @@ function isModel(model: PriceModel | undefined): model is PriceModel {
   return Boolean(model)
 }
 
+function countWord(value: number, capitalized = false): string {
+  const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+  const word = words[value] ?? value.toLocaleString('en-US')
+  return capitalized ? word.charAt(0).toUpperCase() + word.slice(1) : word
+}
+
 function moveSummary(event: PriceChange): string {
   const side = event.field === 'input_mtok' ? 'Input' : 'Output'
   const verb = event.to < event.from ? 'fell' : 'rose'
@@ -40,7 +46,7 @@ export default function FrontPage({ data }: { data: FeedData }) {
             The price of intelligence, marked to market.
           </h1>
           <p className="standfirst">
-            As of {longDate(meta.asOf)}, the six-provider basket carries an equal-weight mean output price of {price(basketMean)} per million tokens.
+            As of {longDate(meta.asOf)}, the {countWord(meta.basket.length)}-provider basket carries an equal-weight mean output price of {price(basketMean)} per million tokens.
           </p>
         </div>
         <aside
@@ -76,7 +82,7 @@ export default function FrontPage({ data }: { data: FeedData }) {
             </h2>
           </div>
           <p>
-            Six providers. Equal weight. Standard output rates for the cheapest eligible flagship at each provider.
+            {countWord(meta.basket.length, true)} providers. Equal weight. Standard output rates for one current frontier representative per provider.
           </p>
         </div>
         {hasIndexMovement ? (
@@ -88,7 +94,7 @@ export default function FrontPage({ data }: { data: FeedData }) {
               <strong>{meta.indexValue.toFixed(2)}</strong>
               <h3>Inception is the observation.</h3>
               <p>
-                The line will begin when a verified basket price changes. Until then, these are the six models setting the benchmark.
+                The line will begin when a verified basket price changes. Until then, these are the {countWord(meta.basket.length)} models setting the benchmark.
               </p>
             </div>
             <ol className="basket-snapshot" aria-label="Current Deflator basket">

@@ -5,6 +5,7 @@ const providerNames: Record<string, string> = {
   anthropic: 'Anthropic',
   google: 'Google',
   deepseek: 'DeepSeek',
+  moonshotai: 'Moonshot AI',
 }
 
 export function providerName(provider: string): string {

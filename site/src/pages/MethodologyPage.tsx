@@ -24,21 +24,21 @@ export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
           <span className="method-number">02</span>
           <h2>Where prices come from</h2>
           <p>
-            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. A curated first-party register is checked by hand against public pricing pages from Anthropic, OpenAI, Google, Mistral, DeepSeek, and xAI. It includes one index-eligible flagship per provider plus additional Anthropic, OpenAI, and Google tiers. A curated row replaces the matching OpenRouter row.
+            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. A curated first-party register is checked by hand against public pricing pages from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI. It includes one index representative per provider plus additional Anthropic, OpenAI, and Google tiers. A curated row replaces the matching OpenRouter row.
           </p>
         </section>
         <section>
           <span className="method-number">03</span>
           <h2>The index</h2>
           <p>
-            The Deflator uses output prices only. The basket holds the cheapest eligible flagship in the curated file for each provider. Each provider has equal weight. The mean current output price is divided by the basket mean on {longDate(meta.indexBaseDate)}, then multiplied by 100.
+            The Deflator uses output prices only. The basket holds one current, production, general-purpose frontier representative per independent model provider. A model must have public first-party API access and a posted standard global rate. Each provider has equal weight. The mean current output price is divided by the basket mean on {longDate(meta.indexBaseDate)}, then multiplied by 100.
           </p>
         </section>
         <section>
           <span className="method-number">04</span>
           <h2>Rebalancing</h2>
           <p>
-            Basket eligibility is explicit in the curated file. When a provider gains a cheaper eligible flagship, that model enters the basket. The substitution is part of the index result because it changes the posted cost of buying a current flagship token. Every basket change is recorded in the public change feed.
+            Basket eligibility is explicit in the curated file, which permits exactly one representative per provider. A successor enters when its provider positions it as the current production frontier model and publishes direct API pricing. Genuine successor substitutions are part of the index result. Provider additions and corrections are treated as methodology changes and rebased at inception so they do not appear as price moves. Every ordinary basket change is recorded in the public change feed.
           </p>
         </section>
         <section>
@@ -73,6 +73,7 @@ export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
           <a href="https://developers.openai.com/api/docs/models">OpenAI pricing</a>
           <a href="https://ai.google.dev/gemini-api/docs/pricing">Google pricing</a>
           <a href="https://docs.mistral.ai/models/model-cards/mistral-medium-3-5-26-04">Mistral pricing</a>
+          <a href="https://www.kimi.com/resources/kimi-k3-pricing">Kimi pricing</a>
           <a href="https://api-docs.deepseek.com/quick_start/pricing/">DeepSeek pricing</a>
           <a href="https://docs.x.ai/developers/models">xAI pricing</a>
         </div>

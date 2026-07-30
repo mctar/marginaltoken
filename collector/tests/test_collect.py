@@ -35,6 +35,15 @@ class FirstPartyCatalogTests(unittest.TestCase):
         for provider in ("anthropic", "openai", "google"):
             rows = [model for model in self.models if model["provider"] == provider]
             self.assertGreaterEqual(len(rows), 3, provider)
+
+    def test_every_first_party_provider_has_one_index_representative(self) -> None:
+        providers = {model["provider"] for model in self.models}
+        self.assertEqual(
+            providers,
+            {"anthropic", "openai", "google", "mistralai", "moonshotai", "deepseek", "x-ai"},
+        )
+        for provider in providers:
+            rows = [model for model in self.models if model["provider"] == provider]
             self.assertEqual(sum(model["indexEligible"] for model in rows), 1, provider)
 
     def test_new_first_party_tiers_have_expected_rates(self) -> None:
@@ -43,6 +52,7 @@ class FirstPartyCatalogTests(unittest.TestCase):
             "anthropic/claude-fable-5": (10.0, 50.0, 1000000),
             "anthropic/claude-opus-5": (5.0, 25.0, 1000000),
             "anthropic/claude-haiku-4.5": (1.0, 5.0, 200000),
+            "moonshotai/kimi-k3": (3.0, 15.0, 1048576),
             "openai/gpt-5.6-terra": (2.5, 15.0, 1050000),
             "openai/gpt-5.6-luna": (1.0, 6.0, 1050000),
             "google/gemini-3.5-flash": (1.5, 9.0, 1048576),
@@ -53,8 +63,9 @@ class FirstPartyCatalogTests(unittest.TestCase):
                 self.assertEqual(by_key[key]["input_mtok"], input_price)
                 self.assertEqual(by_key[key]["output_mtok"], output_price)
                 self.assertEqual(by_key[key]["context"], context)
-        self.assertTrue(by_key["anthropic/claude-fable-5"]["indexEligible"])
-        self.assertFalse(by_key["anthropic/claude-opus-5"]["indexEligible"])
+        self.assertFalse(by_key["anthropic/claude-fable-5"]["indexEligible"])
+        self.assertTrue(by_key["anthropic/claude-opus-5"]["indexEligible"])
+        self.assertTrue(by_key["moonshotai/kimi-k3"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-sonnet-5"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-haiku-4.5"]["indexEligible"])
 
@@ -178,6 +189,16 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(normalized["knowledgeCutoff"], "2025-12")
         self.assertEqual(normalized["expirationDate"], "2026-12-31")
         self.assertEqual(normalized["huggingFaceId"], "lab/vision")
+
+    def test_firstparty_rejects_multiple_index_representatives(self) -> None:
+        self.write_firstparty_pair("flagship")
+        rows = json.loads(self.firstparty.read_text())
+        for row in rows:
+            row["index_eligible"] = True
+        self.firstparty.write_text(json.dumps(rows), encoding="utf-8")
+
+        with self.assertRaisesRegex(CollectorError, "exactly one index representative"):
+            load_firstparty(self.firstparty)
 
     def test_first_run_and_unchanged_run_are_stable(self) -> None:
         self.assertEqual(self.collect(), "changed")

@@ -272,6 +272,21 @@ def load_firstparty(path: Path) -> list[dict[str, Any]]:
                 "indexEligible": bool(raw.get("index_eligible", False)),
             }
         )
+    eligible_counts: dict[str, int] = {}
+    for entry in entries:
+        eligible_counts.setdefault(entry["provider"], 0)
+        if entry["indexEligible"]:
+            eligible_counts[entry["provider"]] += 1
+    invalid_providers = [
+        provider for provider, count in eligible_counts.items() if count != 1
+    ]
+    if invalid_providers:
+        details = ", ".join(
+            f"{provider} ({eligible_counts[provider]})" for provider in invalid_providers
+        )
+        raise CollectorError(
+            f"each first-party provider must have exactly one index representative: {details}"
+        )
     return entries
 
 
@@ -384,11 +399,15 @@ def basket_for(models: list[dict[str, Any]]) -> list[str]:
             by_provider.setdefault(model["provider"], []).append(model)
     if not by_provider:
         raise CollectorError("the index basket has no eligible first-party models")
-    winners = [
-        min(candidates, key=lambda model: (Decimal(str(model["output_mtok"])), model["key"]))
-        for candidates in by_provider.values()
+    duplicate_providers = [
+        provider for provider, candidates in by_provider.items() if len(candidates) != 1
     ]
-    return sorted(model["key"] for model in winners)
+    if duplicate_providers:
+        raise CollectorError(
+            "the index basket requires exactly one representative per provider: "
+            + ", ".join(sorted(duplicate_providers))
+        )
+    return sorted(candidates[0]["key"] for candidates in by_provider.values())
 
 
 def basket_mean(models: list[dict[str, Any]], basket: list[str]) -> Decimal:

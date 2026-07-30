@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { contextSize, price, providerName } from '../lib/format'
+import { capabilityTags, modelPath } from '../lib/models'
 import type { PriceModel, PricesFeed } from '../lib/types'
 
 type SortKey = 'display' | 'provider' | 'input_mtok' | 'output_mtok' | 'context' | 'source'
@@ -113,19 +114,6 @@ function supportsCapability(model: PriceModel, capability: Capability): boolean 
   if (capability === 'reasoning') return model.supportsReasoning ?? false
   if (capability === 'tools') return model.supportsTools ?? false
   return model.supportsStructuredOutput ?? false
-}
-
-function capabilityTags(model: PriceModel): string[] {
-  const tags: string[] = []
-  if (model.inputModalities?.includes('image')) tags.push('Vision')
-  if (model.inputModalities?.includes('audio')) tags.push('Audio')
-  if (model.inputModalities?.includes('video')) tags.push('Video')
-  if (model.supportsReasoning) tags.push('Reasoning')
-  if (model.supportsTools) tags.push('Tools')
-  if (model.supportsStructuredOutput) tags.push('Structured')
-  if (model.releaseStage === 'preview') tags.push('Preview')
-  if (model.releaseStage === 'experimental') tags.push('Experimental')
-  return tags
 }
 
 function numericMaximum(value: string): number | null {
@@ -569,8 +557,9 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
               return (
                 <tr key={model.key}>
                   <th scope="row">
-                    <span>{model.display}</span>
+                    <a className="model-name-link" href={modelPath(model.key)}>{model.display}</a>
                     <small>{model.key}</small>
+                    <a className="model-card-link" href={modelPath(model.key)}>Model card →</a>
                     {tags.length > 0 && (
                       <span className="model-tags" aria-label={`Capabilities: ${tags.join(', ')}`}>
                         {tags.map((tag) => <span key={tag}>{tag}</span>)}

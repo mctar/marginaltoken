@@ -840,6 +840,36 @@ a {
   white-space: nowrap;
 }
 
+.model-name-link {
+  color: var(--ink);
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+.model-name-link:hover {
+  color: var(--blue);
+  text-decoration-color: currentColor;
+}
+
+.model-card-link {
+  display: block;
+  width: fit-content;
+  margin-top: 0.28rem;
+  color: var(--blue);
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.model-card-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
 .model-tags {
   display: flex;
   flex-wrap: wrap;
@@ -897,6 +927,242 @@ a {
 .source-link {
   font-size: 0.68rem;
   font-weight: 600;
+}
+
+.model-page {
+  min-height: 55vh;
+}
+
+.model-breadcrumb {
+  display: inline-block;
+  color: var(--blue);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-transform: uppercase;
+}
+
+.model-card {
+  margin-top: 1.25rem;
+  border-bottom: 2px solid var(--ink);
+  border-top: 4px solid var(--ink);
+}
+
+.model-card-header {
+  display: grid;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--ink);
+  padding: clamp(1.5rem, 4vw, 2.8rem) 0;
+}
+
+.model-card-header h1 {
+  max-width: 14ch;
+  margin: 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+}
+
+.model-key {
+  margin: 0.8rem 0 0;
+  color: var(--ink-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.model-share {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.model-share button {
+  min-height: 2.75rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  padding: 0.7rem 1rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.model-share button:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.model-share span {
+  color: var(--ink-muted);
+  font-size: 0.64rem;
+  font-weight: 600;
+}
+
+.model-price-grid {
+  display: grid;
+  border-bottom: 1px solid var(--ink);
+  background: var(--paper-deep);
+}
+
+.model-price-grid > div {
+  padding: 1.4rem;
+}
+
+.model-price-grid > div + div {
+  border-top: 1px solid var(--rule);
+}
+
+.model-price-grid span,
+.model-provenance span {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.model-price-grid strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(2.3rem, 5vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.model-price-grid small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--ink-muted);
+  font-size: 0.62rem;
+}
+
+.model-card-body {
+  display: grid;
+  border-bottom: 1px solid var(--ink);
+}
+
+.model-card-body > div {
+  padding: 1.7rem 0;
+}
+
+.model-card-body h2 {
+  margin: 0 0 1rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.model-facts dl {
+  display: grid;
+  margin: 0;
+}
+
+.model-facts dl > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.42fr) minmax(0, 1fr);
+  gap: 1rem;
+  border-top: 1px solid var(--rule);
+  padding: 0.65rem 0;
+}
+
+.model-facts dt {
+  color: var(--ink-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.model-facts dd {
+  margin: 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.model-capabilities p {
+  max-width: 30rem;
+  color: var(--ink-muted);
+  font-family: 'Source Serif 4', Georgia, serif;
+  line-height: 1.5;
+}
+
+.model-capabilities ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.model-capabilities li {
+  border: 1px solid var(--ink-muted);
+  padding: 0.48rem 0.62rem;
+  color: var(--ink-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.model-provenance {
+  display: grid;
+  background: rgba(252, 237, 224, 0.62);
+}
+
+.model-provenance > div {
+  padding: 1rem 1.2rem;
+}
+
+.model-provenance > div + div {
+  border-top: 1px solid var(--rule);
+}
+
+.model-provenance strong,
+.model-provenance a,
+.model-provenance small {
+  display: block;
+  margin-top: 0.28rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.model-provenance a {
+  color: var(--blue);
+  text-underline-offset: 0.18em;
+}
+
+.model-provenance small {
+  color: var(--ink-muted);
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 500;
+}
+
+.model-card-note {
+  max-width: 48rem;
+  margin: 1rem 0 0;
+  color: var(--ink-muted);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.model-missing-link {
+  margin-top: 1.5rem;
 }
 
 .methodology-heading {
@@ -1013,6 +1279,50 @@ a {
 
   .source-register > div {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .model-card-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .model-share {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .model-price-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .model-price-grid > div + div {
+    border-top: 0;
+    border-left: 1px solid var(--rule);
+  }
+
+  .model-card-body {
+    grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.75fr);
+  }
+
+  .model-card-body > div {
+    padding: 2rem;
+  }
+
+  .model-card-body > div:first-child {
+    padding-left: 0;
+  }
+
+  .model-card-body > div + div {
+    border-left: 1px solid var(--rule);
+  }
+
+  .model-provenance {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .model-provenance > div + div {
+    border-top: 0;
+    border-left: 1px solid var(--rule);
   }
 }
 

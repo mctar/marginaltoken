@@ -40,6 +40,7 @@ class FirstPartyCatalogTests(unittest.TestCase):
     def test_new_first_party_tiers_have_expected_rates(self) -> None:
         by_key = {model["key"]: model for model in self.models}
         expected = {
+            "anthropic/claude-fable-5": (10.0, 50.0, 1000000),
             "anthropic/claude-opus-5": (5.0, 25.0, 1000000),
             "anthropic/claude-haiku-4.5": (1.0, 5.0, 200000),
             "openai/gpt-5.6-terra": (2.5, 15.0, 1050000),
@@ -52,7 +53,8 @@ class FirstPartyCatalogTests(unittest.TestCase):
                 self.assertEqual(by_key[key]["input_mtok"], input_price)
                 self.assertEqual(by_key[key]["output_mtok"], output_price)
                 self.assertEqual(by_key[key]["context"], context)
-        self.assertTrue(by_key["anthropic/claude-opus-5"]["indexEligible"])
+        self.assertTrue(by_key["anthropic/claude-fable-5"]["indexEligible"])
+        self.assertFalse(by_key["anthropic/claude-opus-5"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-sonnet-5"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-haiku-4.5"]["indexEligible"])
 

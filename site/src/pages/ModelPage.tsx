@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { modelComparisonPath } from '../lib/compare'
+import { cheaperMatches } from '../lib/alternatives'
+import { comparisonPath, modelComparisonPath } from '../lib/compare'
 import { contextSize, longDate, price, providerName } from '../lib/format'
 import { capabilityTags, modalityList, modelPath } from '../lib/models'
 import type { PriceModel } from '../lib/types'
@@ -29,11 +30,12 @@ function modelSource(model: PriceModel): { href: string; label: string } {
   return { href: `https://openrouter.ai/${model.key}`, label: 'OpenRouter listing' }
 }
 
-export default function ModelPage({ model, asOf }: { model: PriceModel; asOf: string }) {
+export default function ModelPage({ model, models, asOf }: { model: PriceModel; models: PriceModel[]; asOf: string }) {
   const [shareStatus, setShareStatus] = useState('')
   const tags = capabilityTags(model)
   const source = modelSource(model)
   const path = modelPath(model.key)
+  const alternatives = cheaperMatches(model, models)
 
   const share = async () => {
     const url = `${window.location.origin}${path}`
@@ -172,6 +174,49 @@ export default function ModelPage({ model, asOf }: { model: PriceModel; asOf: st
           )}
         </footer>
       </article>
+
+      <section className="model-alternatives" aria-labelledby="cheaper-matches-title">
+        <header className="model-alternatives-heading">
+          <div>
+            <p className="section-kicker">On the tape</p>
+            <h2 id="cheaper-matches-title">Cheaper matches</h2>
+          </div>
+          <p>
+            Stable models that preserve every recorded modality and API capability, meet or exceed this context window, and cost less on both sides.
+          </p>
+        </header>
+
+        {alternatives.length > 0 ? (
+          <div className="alternative-grid">
+            {alternatives.map((alternative) => (
+              <article className="alternative-card" key={alternative.model.key}>
+                <span>{providerName(alternative.model.provider)}</span>
+                <h3><a href={modelPath(alternative.model.key)}>{alternative.model.display}</a></h3>
+                <small>{contextSize(alternative.model.context)} context</small>
+                <dl>
+                  <div>
+                    <dt>Input</dt>
+                    <dd>{price(alternative.model.input_mtok)} <small>−{alternative.inputSavingsPct.toFixed(0)}%</small></dd>
+                  </div>
+                  <div>
+                    <dt>Output</dt>
+                    <dd>{price(alternative.model.output_mtok)} <small>−{alternative.outputSavingsPct.toFixed(0)}%</small></dd>
+                  </div>
+                </dl>
+                <a className="alternative-compare" href={comparisonPath([model.key, alternative.model.key])}>
+                  Compare both →
+                </a>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="alternative-empty">
+            <strong>No strict cheaper match.</strong>
+            <p>No current stable listing lowers both rates while preserving every recorded specification.</p>
+          </div>
+        )}
+        <p className="alternative-disclaimer">API specifications and posted price only. No quality equivalence is implied.</p>
+      </section>
 
       <p className="model-card-note">
         Standard published API rates, excluding batch, cache, flex, priority, regional, and long-context adjustments unless noted. Price is not a measure of model quality.

@@ -67,7 +67,7 @@ export default function App() {
       {route === '/tape/' && <TapePage prices={data.prices} />}
       {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} />}
       {route === '/methodology/' && <MethodologyPage meta={data.meta} />}
-      {route === '/model/' && (model ? <ModelPage model={model} asOf={data.meta.asOf} /> : <MissingModelPage />)}
+      {route === '/model/' && (model ? <ModelPage model={model} models={data.prices.models} asOf={data.meta.asOf} /> : <MissingModelPage />)}
       {route === '/' && <FrontPage data={data} />}
       <Footer generatedAt={data.meta.generatedAt} modelCount={data.meta.modelCount} />
     </div>

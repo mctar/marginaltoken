@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { modelComparisonPath } from '../lib/compare'
 import { contextSize, price, providerName } from '../lib/format'
 import { capabilityTags, modelPath } from '../lib/models'
 import type { PriceModel, PricesFeed } from '../lib/types'
@@ -559,7 +560,10 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
                   <th scope="row">
                     <a className="model-name-link" href={modelPath(model.key)}>{model.display}</a>
                     <small>{model.key}</small>
-                    <a className="model-card-link" href={modelPath(model.key)}>Model card →</a>
+                    <span className="model-row-actions">
+                      <a className="model-card-link" href={modelPath(model.key)}>Model card →</a>
+                      <a className="model-card-link" href={modelComparisonPath(model.key)}>Compare →</a>
+                    </span>
                     {tags.length > 0 && (
                       <span className="model-tags" aria-label={`Capabilities: ${tags.join(', ')}`}>
                         {tags.map((tag) => <span key={tag}>{tag}</span>)}

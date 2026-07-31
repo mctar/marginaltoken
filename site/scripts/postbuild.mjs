@@ -19,6 +19,23 @@ for (const route of ['tape', 'methodology', 'model']) {
   await copyFile(path.join(distDir, 'index.html'), path.join(routeDir, 'index.html'))
 }
 
+const compareTitle = 'AI model cost comparison — The Marginal Token'
+const compareDescription = 'Compare current AI model API prices against your workload, from cost per request to estimated monthly spend.'
+const compareUrl = 'https://marginaltoken.com/compare/'
+let compareHtml = shell
+  .replace('<title>The Marginal Token</title>', `<title>${compareTitle}</title>`)
+  .replaceAll(
+    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    `content="${compareDescription}"`,
+  )
+  .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${compareUrl}" />`)
+  .replace('<meta property="og:title" content="The Marginal Token" />', `<meta property="og:title" content="${compareTitle}" />`)
+  .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${compareUrl}" />`)
+  .replace('<meta name="twitter:title" content="The Marginal Token" />', `<meta name="twitter:title" content="${compareTitle}" />`)
+const compareDir = path.join(distDir, 'compare')
+await mkdir(compareDir, { recursive: true })
+await writeFile(path.join(compareDir, 'index.html'), compareHtml)
+
 const prices = JSON.parse(await readFile(path.join(rootDir, 'data', 'prices.json'), 'utf8'))
 const escapeAttribute = (value) => String(value)
   .replaceAll('&', '&amp;')

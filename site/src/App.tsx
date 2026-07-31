@@ -4,6 +4,7 @@ import Header from './components/Header'
 import { loadFeed } from './lib/data'
 import type { FeedData } from './lib/types'
 import FrontPage from './pages/FrontPage'
+import ComparePage from './pages/ComparePage'
 import MethodologyPage from './pages/MethodologyPage'
 import ModelPage, { MissingModelPage } from './pages/ModelPage'
 import TapePage from './pages/TapePage'
@@ -13,11 +14,12 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ready'; data: FeedData }
 
-type Route = '/' | '/tape/' | '/methodology/' | '/model/'
+type Route = '/' | '/tape/' | '/compare/' | '/methodology/' | '/model/'
 
 function routeFor(pathname: string): Route {
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
   if (normalized === '/tape/') return '/tape/'
+  if (normalized === '/compare/') return '/compare/'
   if (normalized === '/methodology/') return '/methodology/'
   if (normalized.startsWith('/model/')) return '/model/'
   return '/'
@@ -63,6 +65,7 @@ export default function App() {
       <a className="skip-link" href="#main">Skip to content</a>
       <Header asOf={data.meta.asOf} route={route} />
       {route === '/tape/' && <TapePage prices={data.prices} />}
+      {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} />}
       {route === '/methodology/' && <MethodologyPage meta={data.meta} />}
       {route === '/model/' && (model ? <ModelPage model={model} asOf={data.meta.asOf} /> : <MissingModelPage />)}
       {route === '/' && <FrontPage data={data} />}

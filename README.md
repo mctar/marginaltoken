@@ -90,7 +90,7 @@ npm run preview
 `npm run preview` serves the completed production build at an HTTP address,
 normally `http://127.0.0.1:4173/`.
 
-The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
+The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. The Compare view costs two to four selected models against a shared request volume and keeps its selections and workload assumptions in the URL. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
 
 ## Publishing to GitHub Pages
 

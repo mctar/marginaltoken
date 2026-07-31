@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { modelComparisonPath } from '../lib/compare'
 import { contextSize, longDate, price, providerName } from '../lib/format'
 import { capabilityTags, modalityList, modelPath } from '../lib/models'
 import type { PriceModel } from '../lib/types'
@@ -68,7 +69,10 @@ export default function ModelPage({ model, asOf }: { model: PriceModel; asOf: st
             <p className="model-key">{model.key}</p>
           </div>
           <div className="model-share">
-            <button type="button" onClick={share}>Share model</button>
+            <div className="model-share-actions">
+              <a href={modelComparisonPath(model.key)}>Compare cost</a>
+              <button type="button" onClick={share}>Share model</button>
+            </div>
             <span aria-live="polite">{shareStatus}</span>
           </div>
         </header>

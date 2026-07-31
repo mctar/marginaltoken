@@ -1,4 +1,4 @@
-import type { BriefFeed, ChangesFeed, FeedData, HistoryFeed, MetaFeed, PricesFeed } from './types'
+import type { BriefFeed, ChangesFeed, FeedData, HistoryFeed, MetaFeed, PricesFeed, ProvenanceFeed } from './types'
 
 async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(path, { cache: 'no-store' })
@@ -17,12 +17,13 @@ async function fetchOptionalJson<T>(path: string): Promise<T | null> {
 }
 
 export async function loadFeed(): Promise<FeedData> {
-  const [prices, history, changes, meta, candidateBrief] = await Promise.all([
+  const [prices, history, changes, meta, candidateBrief, candidateProvenance] = await Promise.all([
     fetchJson<PricesFeed>('/data/prices.json'),
     fetchJson<HistoryFeed>('/data/history.json'),
     fetchJson<ChangesFeed>('/data/changes.json'),
     fetchJson<MetaFeed>('/data/meta.json'),
     fetchOptionalJson<BriefFeed>('/data/brief.json'),
+    fetchOptionalJson<ProvenanceFeed>('/data/provenance.json'),
   ])
   if (!Array.isArray(prices.models) || !Array.isArray(meta.indexHistory)) {
     throw new Error('The published feed is incomplete')
@@ -34,5 +35,11 @@ export async function loadFeed(): Promise<FeedData> {
     && typeof candidateBrief.sourceEventCount === 'number'
     ? candidateBrief
     : null
-  return { prices, history, changes, meta, brief }
+  const provenance = candidateProvenance
+    && ['healthy', 'attention', 'degraded'].includes(candidateProvenance.status)
+    && Array.isArray(candidateProvenance.providers)
+    && Array.isArray(candidateProvenance.conflicts)
+    ? candidateProvenance
+    : null
+  return { prices, history, changes, meta, brief, provenance }
 }

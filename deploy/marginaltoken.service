@@ -8,6 +8,6 @@ Type=oneshot
 WorkingDirectory=%h/marginaltoken
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 Environment=MARGINALTOKEN_EDITORIAL_MODEL=gemma4:26b
-ExecStart=/bin/sh -c '/usr/bin/python3 collector/collect.py; if [ -f collector/state/publish-pending ]; then /usr/bin/python3 collector/editorial.py; exec deploy/publish.sh; fi'
+ExecStart=/bin/sh -c '/usr/bin/python3 collector/collect.py && if [ -f collector/state/publish-pending ]; then /usr/bin/python3 collector/editorial.py; exec deploy/publish.sh; fi'
 Nice=10
 TimeoutStartSec=5min

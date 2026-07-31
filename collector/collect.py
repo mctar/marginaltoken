@@ -20,6 +20,13 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any
 
+try:
+    from collector.official import DEFAULT_MAX_STALE_HOURS, refresh_firstparty
+    from collector.repairs import repair_openai_july_30
+except ModuleNotFoundError:  # Direct execution: python3 collector/collect.py
+    from official import DEFAULT_MAX_STALE_HOURS, refresh_firstparty
+    from repairs import repair_openai_july_30
+
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = ROOT / "data"
@@ -225,8 +232,7 @@ def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
     return sorted(models, key=lambda model: model["key"])
 
 
-def load_firstparty(path: Path) -> list[dict[str, Any]]:
-    payload = load_json(path)
+def normalize_firstparty(payload: Any) -> list[dict[str, Any]]:
     if not isinstance(payload, list) or not payload:
         raise CollectorError("firstparty.json must be a non-empty array")
     entries: list[dict[str, Any]] = []
@@ -290,6 +296,10 @@ def load_firstparty(path: Path) -> list[dict[str, Any]]:
     return entries
 
 
+def load_firstparty(path: Path) -> list[dict[str, Any]]:
+    return normalize_firstparty(load_json(path))
+
+
 def merge_models(
     openrouter: list[dict[str, Any]], firstparty: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -302,6 +312,33 @@ def merge_models(
             combined["context"] = base["context"]
         merged[curated["key"]] = combined
     return sorted(merged.values(), key=lambda model: model["key"])
+
+
+def firstparty_conflicts(
+    openrouter: list[dict[str, Any]], firstparty: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Describe matching-key price disagreements without changing precedence."""
+
+    broad = {model["key"]: model for model in openrouter}
+    conflicts: list[dict[str, Any]] = []
+    for official in firstparty:
+        routed = broad.get(official["key"])
+        if not routed:
+            continue
+        for field in ("input_mtok", "output_mtok"):
+            official_value = price_decimal(official, field)
+            routed_value = price_decimal(routed, field)
+            if abs(official_value - routed_value) <= CHANGE_THRESHOLD:
+                continue
+            conflicts.append(
+                {
+                    "key": official["key"],
+                    "field": field,
+                    "firstparty": float(official_value),
+                    "openrouter": float(routed_value),
+                }
+            )
+    return conflicts
 
 
 def read_feed(path: Path, default: Any) -> Any:
@@ -453,14 +490,76 @@ def collect_once(
     min_models: int = DEFAULT_MIN_MODELS,
     retention_ratio: Decimal = DEFAULT_RETENTION_RATIO,
     rebase_index: bool = False,
+    refresh_official: bool | None = None,
+    max_firstparty_stale_hours: int = DEFAULT_MAX_STALE_HOURS,
 ) -> str:
     now = now or utc_now()
     generated_at = iso_utc(now)
     date = now.astimezone(timezone.utc).strftime("%Y-%m-%d")
 
+    baseline_catalog = load_json(firstparty_path)
+    normalize_firstparty(baseline_catalog)
+    if refresh_official is None:
+        refresh_official = source_file is None
+    if refresh_official:
+        refreshed_catalog, firstparty_report = refresh_firstparty(
+            baseline_catalog,
+            state_dir=state_dir,
+            now=now,
+            max_stale_hours=max_firstparty_stale_hours,
+        )
+        curated = normalize_firstparty(refreshed_catalog)
+    else:
+        curated = normalize_firstparty(baseline_catalog)
+        providers = sorted({model["provider"] for model in curated})
+        firstparty_report = {
+            "checkedAt": generated_at,
+            "status": "skipped",
+            "degradedProviderCount": 0,
+            "providers": [
+                {
+                    "provider": provider,
+                    "status": "skipped",
+                    "sourceUrl": "",
+                    "verifiedAt": None,
+                    "modelCount": sum(model["provider"] == provider for model in curated),
+                }
+                for provider in providers
+            ],
+        }
+
     raw_payload = fetch_openrouter(url, source_file)
     openrouter = normalize_openrouter(raw_payload)
-    curated = load_firstparty(firstparty_path)
+    conflicts = firstparty_conflicts(openrouter, curated)
+    public_providers = [
+        {
+            "provider": report["provider"],
+            "status": report["status"],
+            "sourceUrl": report["sourceUrl"],
+            "lastVerified": (
+                str(report.get("verifiedAt"))[:10] if report.get("verifiedAt") else None
+            ),
+            "modelCount": report["modelCount"],
+        }
+        for report in firstparty_report["providers"]
+    ]
+    source_status = (
+        "degraded"
+        if firstparty_report["status"] == "degraded"
+        else "attention" if conflicts else "healthy"
+    )
+    provenance_core = {
+        "asOf": date,
+        "status": source_status,
+        "degradedProviderCount": firstparty_report["degradedProviderCount"],
+        "conflictCount": len(conflicts),
+        "providers": public_providers,
+        "conflicts": conflicts,
+    }
+    atomic_write_json(
+        state_dir / "firstparty-heartbeat.json",
+        {**firstparty_report, "conflictCount": len(conflicts), "conflicts": conflicts},
+    )
     models = merge_models(openrouter, curated)
     if len(models) < min_models:
         raise CollectorError(f"only {len(models)} normalized models, minimum is {min_models}")
@@ -475,20 +574,40 @@ def collect_once(
             f"below the {retention_ratio:.0%} retention threshold"
         )
 
+    previous_history = read_feed(data_dir / "history.json", {"points": []})
+    history_points = list(previous_history.get("points", []))
+    previous_changes = read_feed(data_dir / "changes.json", {"changes": []})
+    old_events = list(previous_changes.get("changes", []))
+    repair_applied = repair_openai_july_30(previous_models, history_points, old_events)
+
+    previous_provenance = read_feed(data_dir / "provenance.json", {})
+    previous_provenance_core = {
+        key: value
+        for key, value in previous_provenance.items()
+        if key not in {"generatedAt", "asOf"}
+    } if isinstance(previous_provenance, dict) else {}
+    provenance_changed = {
+        key: value for key, value in provenance_core.items() if key != "asOf"
+    } != previous_provenance_core
+
     previous_by_key = {model["key"]: model for model in previous_models}
     apply_price_tolerance(models, previous_by_key)
     is_initial = not previous_models
     events, changed_price_keys = diff_models(models, previous_models, date) if not is_initial else ([], set())
     models_changed = models != previous_models
 
-    if not is_initial and not models_changed and not rebase_index:
+    if (
+        not is_initial
+        and not models_changed
+        and not rebase_index
+        and not repair_applied
+        and not provenance_changed
+    ):
         state_dir.mkdir(parents=True, exist_ok=True)
         atomic_write_json(state_dir / "last-good-openrouter.json", raw_payload)
         write_heartbeat(state_dir, now, "unchanged")
         return "unchanged"
 
-    previous_history = read_feed(data_dir / "history.json", {"points": []})
-    history_points = list(previous_history.get("points", []))
     current_by_key = {model["key"]: model for model in models}
     if is_initial:
         history_points = [
@@ -549,13 +668,12 @@ def collect_once(
     if not rebase_index and (is_initial or previous_index != current_index or previous_basket != basket):
         index_history = replace_daily_index_point(index_history, date, current_index)
 
-    previous_changes = read_feed(data_dir / "changes.json", {"changes": []})
-    old_events = list(previous_changes.get("changes", []))
     all_events = (events + old_events)[:CHANGE_LIMIT]
 
     prices_payload = {"generatedAt": generated_at, "asOf": date, "models": models}
     history_payload = {"generatedAt": generated_at, "points": history_points}
     changes_payload = {"generatedAt": generated_at, "changes": all_events}
+    provenance_payload = {"generatedAt": generated_at, **provenance_core}
     meta_payload = {
         "generatedAt": generated_at,
         "asOf": date,
@@ -574,6 +692,7 @@ def collect_once(
         ("history.json", history_payload),
         ("changes.json", changes_payload),
         ("meta.json", meta_payload),
+        ("provenance.json", provenance_payload),
     ):
         atomic_write_json(data_dir / filename, payload)
 
@@ -615,6 +734,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="reset the Deflator basis after an explicit methodology correction",
     )
+    parser.add_argument(
+        "--skip-firstparty-refresh",
+        action="store_true",
+        help="use the checked-in first-party fallback without network verification",
+    )
+    parser.add_argument(
+        "--max-firstparty-stale-hours",
+        type=int,
+        default=int(
+            os.environ.get(
+                "MARGINALTOKEN_FIRSTPARTY_MAX_STALE_HOURS",
+                str(DEFAULT_MAX_STALE_HOURS),
+            )
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -632,6 +766,8 @@ def main(argv: list[str] | None = None) -> int:
             min_models=args.min_models,
             retention_ratio=args.retention_ratio,
             rebase_index=args.rebase_index,
+            refresh_official=(not args.skip_firstparty_refresh and args.source_file is None),
+            max_firstparty_stale_hours=args.max_firstparty_stale_hours,
         )
         print(f"collector: {result}")
     except Exception as error:  # Last-good is safer than an hourly destructive failure.
@@ -640,6 +776,7 @@ def main(argv: list[str] | None = None) -> int:
             write_heartbeat(args.state_dir, now, "error", str(error))
         except Exception as heartbeat_error:
             print(f"collector: could not write heartbeat: {heartbeat_error}", file=sys.stderr)
+        return 1
     return 0
 
 

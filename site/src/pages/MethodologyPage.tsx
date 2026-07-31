@@ -1,7 +1,8 @@
 import { longDate } from '../lib/format'
-import type { MetaFeed } from '../lib/types'
+import { providerName } from '../lib/format'
+import type { MetaFeed, ProvenanceFeed } from '../lib/types'
 
-export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
+export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; provenance: ProvenanceFeed | null }) {
   return (
     <main id="main" className="mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
       <header className="page-heading methodology-heading">
@@ -24,7 +25,7 @@ export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
           <span className="method-number">02</span>
           <h2>Where prices come from</h2>
           <p>
-            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. A curated first-party register is checked by hand against public pricing pages from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI. It includes one index representative per provider plus additional Anthropic, OpenAI, and Google tiers. A curated row replaces the matching OpenRouter row.
+            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. The collector also scans official pricing pages from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI every hour. Each provider is parsed and cached independently. A verified first-party row replaces the matching OpenRouter row; failed scans retain that provider's last-good snapshot and surface a source warning.
           </p>
         </section>
         <section>
@@ -45,7 +46,7 @@ export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
           <span className="method-number">05</span>
           <h2>Detection and publication</h2>
           <p>
-            The collector checks hourly. A price move must exceed $0.0001 per million tokens after rounding to four decimals. A valid change produces one feed revision. Failed, empty, or materially incomplete responses leave the prior revision untouched. The site republishes only when the tape changes.
+            The collector checks OpenRouter and every supported official source hourly. A price move must exceed $0.0001 per million tokens after rounding to four decimals. A valid change produces one feed revision. Failed, empty, or materially incomplete responses leave last-good data in place. Provider freshness and matching-key disagreements are published in the source-health feed. The site republishes only when prices or source status change.
           </p>
         </section>
         <section>
@@ -64,13 +65,32 @@ export default function MethodologyPage({ meta }: { meta: MetaFeed }) {
         </section>
       </article>
 
+      {provenance && (
+        <section id="source-health" className="source-health" aria-labelledby="source-health-title">
+          <p className="section-kicker">Operational provenance</p>
+          <div className="source-health-heading">
+            <h2 id="source-health-title" className="section-title">Source health</h2>
+            <p>{provenance.conflictCount} cross-source {provenance.conflictCount === 1 ? 'difference' : 'differences'} recorded.</p>
+          </div>
+          <div className="source-health-grid">
+            {provenance.providers.map((source) => (
+              <a href={source.sourceUrl} key={source.provider}>
+                <span>{providerName(source.provider)}</span>
+                <strong>{source.status.replace('_', ' ')}</strong>
+                <small>{source.lastVerified ? `Verified ${source.lastVerified}` : 'No automated verification yet'}</small>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="source-register" aria-labelledby="source-title">
         <p className="section-kicker">Primary sources</p>
         <h2 id="source-title" className="section-title">Source register</h2>
         <div>
           <a href="https://openrouter.ai/api/v1/models">OpenRouter models API</a>
           <a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic pricing</a>
-          <a href="https://developers.openai.com/api/docs/models">OpenAI pricing</a>
+          <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a>
           <a href="https://ai.google.dev/gemini-api/docs/pricing">Google pricing</a>
           <a href="https://docs.mistral.ai/models/model-cards/mistral-medium-3-5-26-04">Mistral pricing</a>
           <a href="https://www.kimi.com/resources/kimi-k3-pricing">Kimi pricing</a>

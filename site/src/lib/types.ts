@@ -102,10 +102,37 @@ export type BriefFeed = {
   sourceEventCount: number
 }
 
+export type ProviderSourceStatus = {
+  provider: string
+  status: 'fresh' | 'last_good' | 'stale' | 'manual' | 'skipped'
+  sourceUrl: string
+  lastVerified: string | null
+  modelCount: number
+  detail?: string
+}
+
+export type SourceConflict = {
+  key: string
+  field: 'input_mtok' | 'output_mtok'
+  firstparty: number
+  openrouter: number
+}
+
+export type ProvenanceFeed = {
+  generatedAt: string
+  asOf: string
+  status: 'healthy' | 'attention' | 'degraded'
+  degradedProviderCount: number
+  conflictCount: number
+  providers: ProviderSourceStatus[]
+  conflicts: SourceConflict[]
+}
+
 export type FeedData = {
   prices: PricesFeed
   history: HistoryFeed
   changes: ChangesFeed
   meta: MetaFeed
   brief: BriefFeed | null
+  provenance: ProvenanceFeed | null
 }

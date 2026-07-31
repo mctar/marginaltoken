@@ -11,6 +11,7 @@ from unittest.mock import patch
 from collector.collect import (
     CollectorError,
     collect_once,
+    firstparty_conflicts,
     load_firstparty,
     main,
     normalize_openrouter,
@@ -53,8 +54,8 @@ class FirstPartyCatalogTests(unittest.TestCase):
             "anthropic/claude-opus-5": (5.0, 25.0, 1000000),
             "anthropic/claude-haiku-4.5": (1.0, 5.0, 200000),
             "moonshotai/kimi-k3": (3.0, 15.0, 1048576),
-            "openai/gpt-5.6-terra": (2.5, 15.0, 1050000),
-            "openai/gpt-5.6-luna": (1.0, 6.0, 1050000),
+            "openai/gpt-5.6-terra": (2.0, 12.0, 1050000),
+            "openai/gpt-5.6-luna": (0.2, 1.2, 1050000),
             "google/gemini-3.5-flash": (1.5, 9.0, 1048576),
             "google/gemini-3.5-flash-lite": (0.3, 2.5, 1048576),
         }
@@ -190,6 +191,29 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(normalized["expirationDate"], "2026-12-31")
         self.assertEqual(normalized["huggingFaceId"], "lab/vision")
 
+    def test_firstparty_conflicts_are_field_level_and_official_remains_authoritative(self) -> None:
+        routed = normalize_openrouter(
+            {"data": [raw_model("lab/flagship", "0.000001", "0.000004")]}
+        )
+        official = [
+            {
+                "key": "lab/flagship",
+                "input_mtok": 1.0,
+                "output_mtok": 10.0,
+            }
+        ]
+        self.assertEqual(
+            firstparty_conflicts(routed, official),
+            [
+                {
+                    "key": "lab/flagship",
+                    "field": "output_mtok",
+                    "firstparty": 10.0,
+                    "openrouter": 4.0,
+                }
+            ],
+        )
+
     def test_firstparty_rejects_multiple_index_representatives(self) -> None:
         self.write_firstparty_pair("flagship")
         rows = json.loads(self.firstparty.read_text())
@@ -210,6 +234,9 @@ class CollectorTests(unittest.TestCase):
         meta = json.loads((self.data / "meta.json").read_text())
         self.assertEqual(meta["indexValue"], 100.0)
         self.assertEqual(meta["basket"], ["lab/flagship"])
+        provenance = json.loads((self.data / "provenance.json").read_text())
+        self.assertEqual(provenance["status"], "healthy")
+        self.assertEqual(provenance["conflictCount"], 0)
 
     def test_price_change_appends_event_and_history(self) -> None:
         self.collect()
@@ -270,7 +297,7 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(len(new_points), 1)
         self.assertEqual(new_points[0]["output_mtok"], 6.0)
 
-    def test_invalid_source_exits_zero_without_touching_data(self) -> None:
+    def test_invalid_source_exits_nonzero_without_touching_data(self) -> None:
         self.collect()
         before = {path.name: path.read_bytes() for path in self.data.iterdir()}
         self.source.write_text("not json", encoding="utf-8")
@@ -288,11 +315,11 @@ class CollectorTests(unittest.TestCase):
                 "1",
             ]
         )
-        self.assertEqual(result, 0)
+        self.assertEqual(result, 1)
         after = {path.name: path.read_bytes() for path in self.data.iterdir()}
         self.assertEqual(before, after)
 
-    def test_network_failure_exits_zero_without_touching_data(self) -> None:
+    def test_network_failure_exits_nonzero_without_touching_data(self) -> None:
         self.collect()
         before = {path.name: path.read_bytes() for path in self.data.iterdir()}
         with patch("collector.collect.urllib.request.urlopen", side_effect=OSError("offline")):
@@ -308,7 +335,7 @@ class CollectorTests(unittest.TestCase):
                     "1",
                 ]
             )
-        self.assertEqual(result, 0)
+        self.assertEqual(result, 1)
         after = {path.name: path.read_bytes() for path in self.data.iterdir()}
         self.assertEqual(before, after)
 

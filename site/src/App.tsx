@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Footer from './components/Footer'
 import Header from './components/Header'
+import SourceWatch from './components/SourceWatch'
 import { loadFeed } from './lib/data'
 import type { FeedData } from './lib/types'
 import FrontPage from './pages/FrontPage'
@@ -64,9 +65,10 @@ export default function App() {
     <div className="min-h-screen">
       <a className="skip-link" href="#main">Skip to content</a>
       <Header asOf={data.meta.asOf} route={route} />
+      <SourceWatch provenance={data.provenance} />
       {route === '/tape/' && <TapePage prices={data.prices} />}
       {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} />}
-      {route === '/methodology/' && <MethodologyPage meta={data.meta} />}
+      {route === '/methodology/' && <MethodologyPage meta={data.meta} provenance={data.provenance} />}
       {route === '/model/' && (model ? <ModelPage model={model} models={data.prices.models} asOf={data.meta.asOf} /> : <MissingModelPage />)}
       {route === '/' && <FrontPage data={data} />}
       <Footer generatedAt={data.meta.generatedAt} modelCount={data.meta.modelCount} />

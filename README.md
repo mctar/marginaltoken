@@ -8,21 +8,22 @@ The live site is intended for `https://marginaltoken.com`. Phase 1 has no backen
 
 ```text
 collector/   Fetch, normalize, validate, diff, and index prices
-data/        Four committed public feed files
+data/        Five committed public feed files
 site/        Static three-route publication
 deploy/      GitHub Pages publisher and systemd units
 ```
 
-OpenRouter provides the broad tape. `collector/firstparty.json` supplies checked list prices from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Curated rows replace matching OpenRouter rows.
+OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows.
 
 ## Feed contract
 
-The four deterministic files carry the same `generatedAt` revision timestamp. An optional machine note is published only when it matches that revision.
+The five deterministic files carry the same `generatedAt` revision timestamp. An optional machine note is published only when it matches that revision.
 
 - `data/prices.json`: current normalized models, provenance, context, per-million-token rates, input modalities, API capabilities, release stage, and optional lifecycle metadata.
 - `data/history.json`: the inception snapshot plus one point per model for each detected price change.
 - `data/changes.json`: up to 500 typed `price`, `listed`, `delisted`, and `basket` events, newest first.
 - `data/meta.json`: the current index, persisted base, current basket, and chart-ready index history.
+- `data/provenance.json`: provider freshness plus matching-key differences between verified first-party and OpenRouter prices.
 - `data/brief.json`: an optional, revision-matched headline and two-sentence note generated locally from verified events.
 
 The Deflator is an equal-weighted output-price index. The basket contains one current, production, general-purpose frontier representative per independent provider, using its public first-party standard global API rate. The current mean is divided by the inception mean and multiplied by 100. Genuine successor substitutions affect the index and produce a basket event; provider additions and methodology corrections are rebased rather than reported as price moves.
@@ -44,7 +45,9 @@ The collector refuses to replace the feed when:
 - the model count falls below 80% of the previous revision;
 - duplicate identifiers or an empty index basket are found.
 
-Failures return exit status zero and leave `data/` untouched. Operational status is written to the ignored `collector/state/heartbeat.json` file. A successful feed change creates `collector/state/publish-pending`. That marker remains until publication succeeds, which makes a failed build or push retryable on the next timer run.
+Failures return a non-zero exit status and leave `data/` untouched. This makes the systemd unit visibly fail and prevents it from publishing after a bad collection. Operational status is written to the ignored `collector/state/heartbeat.json` file. A successful feed change creates `collector/state/publish-pending`. That marker remains until publication succeeds, which makes a failed build or push retryable on the next timer run.
+
+Official sources have independent last-good snapshots in `collector/state/firstparty-last-good.json`. One unavailable or changed provider page therefore cannot erase another provider's verified data. A source is marked stale after 48 hours without successful verification, and the public source-health feed distinguishes fresh, last-good, stale, and manual fallback data. Matching OpenRouter prices are compared field by field and disagreements are published while the verified first-party rate remains authoritative.
 
 `--rebase-index` is an operator-only correction path for the inception basket. It preserves the original base date, resets the basis to the corrected basket mean, and suppresses a false basket-move event. It must not be used for genuine market price changes.
 
@@ -62,6 +65,8 @@ Useful test overrides:
 ```bash
 python3 collector/collect.py --source-file fixture.json --min-models 1
 MARGINALTOKEN_MODELS_URL=https://example.test/models python3 collector/collect.py
+python3 collector/collect.py --skip-firstparty-refresh
+MARGINALTOKEN_FIRSTPARTY_MAX_STALE_HOURS=24 python3 collector/collect.py
 ```
 
 ## Development
@@ -79,7 +84,7 @@ Open the `Local` HTTP address printed by Vite, normally
 Vite's TypeScript modules and root-relative feed files under the `file://`
 protocol.
 
-The Vite development server reads the four root feed files directly. The production build copies them into `site/dist/data`, includes `CNAME` and `.nojekyll`, and creates static entry documents for `/tape/` and `/methodology/`.
+The Vite development server reads the five root feed files directly. The production build copies them into `site/dist/data`, includes `CNAME` and `.nojekyll`, and creates static entry documents for `/tape/` and `/methodology/`.
 
 ```bash
 npm test
@@ -147,7 +152,7 @@ the same validated feed revisions as GitHub Pages.
 
 ## Updating first-party prices
 
-Edit `collector/firstparty.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Update `source_url`, `checked`, and `rate_note` with every review. Standard uncached, non-batch, global rates are used. For tiered products, record the lowest standard context tier and explain it in `rate_note`.
+Add the model metadata and a reviewed fallback rate to `collector/firstparty.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Add or extend that provider's strict parser in `collector/official.py` and a compact source fixture in `collector/tests/test_official.py`. Standard uncached, non-batch, global rates are used. For tiered products, record the lowest standard context tier and explain it in `rate_note`.
 
 ## Phase 2 placeholder
 

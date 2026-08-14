@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-31T09:18:48Z",
-  "asOf": "2026-07-31",
+  "generatedAt": "2026-08-14T04:01:29Z",
+  "asOf": "2026-08-14",
   "models": [
     {
       "key": "ai21/jamba-large-1.7",
@@ -252,7 +252,7 @@
       "provider": "anthracite-org",
       "input_mtok": 3.0,
       "output_mtok": 5.0,
-      "context": 16384,
+      "context": 32768,
       "source": "openrouter",
       "indexEligible": false,
       "inputModalities": [
@@ -265,7 +265,7 @@
       "supportsTools": false,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 2048,
+      "maxOutputTokens": 4096,
       "knowledgeCutoff": "2024-06-30",
       "huggingFaceId": "anthracite-org/magnum-v4-72b"
     },
@@ -315,7 +315,7 @@
       "releaseStage": "stable",
       "maxOutputTokens": 128000,
       "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard Claude API rate"
     },
     {
@@ -341,7 +341,7 @@
       "releaseStage": "stable",
       "maxOutputTokens": 64000,
       "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard Claude API rate"
     },
     {
@@ -387,7 +387,7 @@
       ],
       "supportsReasoning": true,
       "supportsTools": true,
-      "supportsStructuredOutput": true,
+      "supportsStructuredOutput": false,
       "releaseStage": "stable",
       "maxOutputTokens": 32000,
       "knowledgeCutoff": "2025-01-31"
@@ -553,7 +553,7 @@
       "releaseStage": "stable",
       "maxOutputTokens": 128000,
       "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard Claude API rate"
     },
     {
@@ -673,7 +673,7 @@
       "releaseStage": "stable",
       "maxOutputTokens": 128000,
       "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Introductory standard global rate through 2026-08-31"
     },
     {
@@ -789,6 +789,52 @@
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
       "maxOutputTokens": 32768
+    },
+    {
+      "key": "bytedance-seed/seed-2-1-turbo",
+      "display": "Seed 2.1 Turbo",
+      "provider": "bytedance-seed",
+      "input_mtok": 0.5,
+      "output_mtok": 2.5,
+      "context": 262144,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "image",
+        "text",
+        "video"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "maxOutputTokens": 262144
+    },
+    {
+      "key": "bytedance-seed/seed-2.0-code",
+      "display": "Seed-2.0-Code",
+      "provider": "bytedance-seed",
+      "input_mtok": 0.5,
+      "output_mtok": 3.0,
+      "context": 262144,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "image",
+        "text",
+        "video"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "maxOutputTokens": 131072
     },
     {
       "key": "bytedance-seed/seed-2.0-lite",
@@ -1067,7 +1113,7 @@
       "provider": "deepseek",
       "input_mtok": 0.7,
       "output_mtok": 2.5,
-      "context": 163840,
+      "context": 64000,
       "source": "openrouter",
       "indexEligible": false,
       "inputModalities": [
@@ -1135,7 +1181,7 @@
       "display": "DeepSeek V3.1 Terminus",
       "provider": "deepseek",
       "input_mtok": 0.27,
-      "output_mtok": 1.0,
+      "output_mtok": 0.95,
       "context": 163840,
       "source": "openrouter",
       "indexEligible": false,
@@ -1200,7 +1246,7 @@
     },
     {
       "key": "deepseek/deepseek-v4-flash",
-      "display": "DeepSeek V4 Flash",
+      "display": "DeepSeek V4 Flash 0423",
       "provider": "deepseek",
       "input_mtok": 0.14,
       "output_mtok": 0.28,
@@ -1239,7 +1285,8 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 384000
+      "maxOutputTokens": 393216,
+      "huggingFaceId": "deepseek-ai/DeepSeek-V4-Flash-0731"
     },
     {
       "key": "deepseek/deepseek-v4-pro",
@@ -1260,11 +1307,33 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 384000,
+      "maxOutputTokens": 393216,
       "huggingFaceId": "deepseek-ai/DeepSeek-V4-Pro",
       "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
-      "checked": "2026-07-29",
+      "checked": "2026-08-14",
       "rateNote": "Cache-miss input rate"
+    },
+    {
+      "key": "deepseek/deepseek-v4-pro-0813",
+      "display": "DeepSeek V4 Pro 0813",
+      "provider": "deepseek",
+      "input_mtok": 0.435,
+      "output_mtok": 0.87,
+      "context": 1048576,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "maxOutputTokens": 384000,
+      "huggingFaceId": "deepseek-ai/DeepSeek-V4-Pro-0813"
     },
     {
       "key": "google/gemini-2.5-flash",
@@ -1442,7 +1511,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "preview",
-      "maxOutputTokens": 65535
+      "maxOutputTokens": 65536
     },
     {
       "key": "google/gemini-3-pro-image",
@@ -1582,7 +1651,7 @@
       "supportsTools": false,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 65536,
+      "maxOutputTokens": 66000,
       "knowledgeCutoff": "2025-01-01"
     },
     {
@@ -1686,7 +1755,7 @@
       "maxOutputTokens": 65536,
       "knowledgeCutoff": "2025-01-01",
       "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard paid tier; output includes thinking tokens"
     },
     {
@@ -1714,15 +1783,15 @@
       "releaseStage": "stable",
       "maxOutputTokens": 65536,
       "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard paid tier; output includes thinking tokens"
     },
     {
       "key": "google/gemini-3.6-flash",
       "display": "Gemini 3.6 Flash",
       "provider": "google",
-      "input_mtok": 1.5,
-      "output_mtok": 7.5,
+      "input_mtok": 0.75,
+      "output_mtok": 3.75,
       "context": 1048576,
       "source": "firstparty",
       "indexEligible": true,
@@ -1742,8 +1811,33 @@
       "releaseStage": "stable",
       "maxOutputTokens": 65536,
       "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard paid tier"
+    },
+    {
+      "key": "google/gemini-3.7-flash",
+      "display": "Gemini 3.7 Flash",
+      "provider": "google",
+      "input_mtok": 0.375,
+      "output_mtok": 1.875,
+      "context": 1048576,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "audio",
+        "file",
+        "image",
+        "text",
+        "video"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "maxOutputTokens": 65536
     },
     {
       "key": "google/gemma-2-27b-it",
@@ -1866,8 +1960,8 @@
       "key": "google/gemma-4-26b-a4b-it",
       "display": "Gemma 4 26B A4B",
       "provider": "google",
-      "input_mtok": 0.07,
-      "output_mtok": 0.34,
+      "input_mtok": 0.12,
+      "output_mtok": 0.4,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -1883,7 +1977,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 16384,
+      "maxOutputTokens": 262144,
       "huggingFaceId": "google/gemma-4-26B-A4B-it"
     },
     {
@@ -2041,6 +2135,28 @@
       "maxOutputTokens": 32768
     },
     {
+      "key": "inclusionai/ling-3.0-flash",
+      "display": "Ling-3.0-flash",
+      "provider": "inclusionai",
+      "input_mtok": 0.021,
+      "output_mtok": 0.063,
+      "context": 262144,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": false,
+      "releaseStage": "stable",
+      "maxOutputTokens": 32768,
+      "huggingFaceId": "inclusionAI/Ling-3.0-flash"
+    },
+    {
       "key": "inclusionai/ring-2.6-1t",
       "display": "Ring-2.6-1T",
       "provider": "inclusionai",
@@ -2143,7 +2259,7 @@
       "supportsTools": false,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 2000,
+      "maxOutputTokens": 6000,
       "knowledgeCutoff": "2023-06-30"
     },
     {
@@ -2264,8 +2380,8 @@
       "key": "meta-llama/llama-3.3-70b-instruct",
       "display": "Llama 3.3 70B Instruct",
       "provider": "meta-llama",
-      "input_mtok": 0.13,
-      "output_mtok": 0.4,
+      "input_mtok": 0.1,
+      "output_mtok": 0.32,
       "context": 131072,
       "source": "openrouter",
       "indexEligible": false,
@@ -2279,7 +2395,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 128000,
+      "maxOutputTokens": 16384,
       "knowledgeCutoff": "2023-12-31",
       "huggingFaceId": "meta-llama/Llama-3.3-70B-Instruct"
     },
@@ -2288,7 +2404,7 @@
       "display": "Llama 4 Maverick",
       "provider": "meta-llama",
       "input_mtok": 0.2,
-      "output_mtok": 0.8,
+      "output_mtok": 0.696,
       "context": 1048576,
       "source": "openrouter",
       "indexEligible": false,
@@ -2303,7 +2419,6 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 16384,
       "knowledgeCutoff": "2024-08-31",
       "huggingFaceId": "meta-llama/Llama-4-Maverick-17B-128E-Instruct"
     },
@@ -2356,8 +2471,54 @@
       "huggingFaceId": "meta-llama/Llama-Guard-4-12B"
     },
     {
+      "key": "meta/muse-glimmer-30b",
+      "display": "Muse Glimmer 30B",
+      "provider": "meta",
+      "input_mtok": 0.35,
+      "output_mtok": 1.5,
+      "context": 131072,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "image",
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "huggingFaceId": "meta-models/Muse-Glimmer-30B"
+    },
+    {
       "key": "meta/muse-spark-1.1",
       "display": "Muse Spark 1.1",
+      "provider": "meta",
+      "input_mtok": 1.25,
+      "output_mtok": 4.25,
+      "context": 1048576,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "audio",
+        "file",
+        "image",
+        "text",
+        "video"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable"
+    },
+    {
+      "key": "meta/muse-spark-1.2",
+      "display": "Muse Spark 1.2",
       "provider": "meta",
       "input_mtok": 1.25,
       "output_mtok": 4.25,
@@ -2540,7 +2701,7 @@
       "key": "minimax/minimax-m2.5",
       "display": "MiniMax M2.5",
       "provider": "minimax",
-      "input_mtok": 0.15,
+      "input_mtok": 0.22,
       "output_mtok": 0.9,
       "context": 204800,
       "source": "openrouter",
@@ -2562,8 +2723,8 @@
       "key": "minimax/minimax-m2.7",
       "display": "MiniMax M2.7",
       "provider": "minimax",
-      "input_mtok": 0.25,
-      "output_mtok": 1.0,
+      "input_mtok": 0.3,
+      "output_mtok": 1.2,
       "context": 204800,
       "source": "openrouter",
       "indexEligible": false,
@@ -2625,28 +2786,6 @@
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
       "knowledgeCutoff": "2025-03-31"
-    },
-    {
-      "key": "mistralai/devstral-2512",
-      "display": "Devstral 2 2512",
-      "provider": "mistralai",
-      "input_mtok": 0.4,
-      "output_mtok": 2.0,
-      "context": 262144,
-      "source": "openrouter",
-      "indexEligible": false,
-      "inputModalities": [
-        "file",
-        "text"
-      ],
-      "outputModalities": [
-        "text"
-      ],
-      "supportsReasoning": false,
-      "supportsTools": true,
-      "supportsStructuredOutput": true,
-      "releaseStage": "stable",
-      "huggingFaceId": "mistralai/Devstral-2-123B-Instruct-2512"
     },
     {
       "key": "mistralai/ministral-14b-2512",
@@ -2857,7 +2996,7 @@
       "context": 256000,
       "source": "firstparty",
       "sourceUrl": "https://docs.mistral.ai/models/model-cards/mistral-medium-3-5-26-04",
-      "checked": "2026-07-31",
+      "checked": "2026-08-11",
       "rateNote": "Standard API rate",
       "indexEligible": true
     },
@@ -2979,8 +3118,8 @@
       "key": "mistralai/mistral-small-3.2-24b-instruct",
       "display": "Mistral Small 3.2 24B",
       "provider": "mistralai",
-      "input_mtok": 0.1,
-      "output_mtok": 0.3,
+      "input_mtok": 0.0938,
+      "output_mtok": 0.25,
       "context": 256000,
       "source": "openrouter",
       "indexEligible": false,
@@ -2995,6 +3134,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
+      "maxOutputTokens": 16384,
       "knowledgeCutoff": "2023-10-31",
       "huggingFaceId": "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
     },
@@ -3162,8 +3302,8 @@
       "key": "moonshotai/kimi-k2.7-code",
       "display": "Kimi K2.7 Code",
       "provider": "moonshotai",
-      "input_mtok": 0.73,
-      "output_mtok": 3.5,
+      "input_mtok": 0.67,
+      "output_mtok": 3.4,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -3192,7 +3332,8 @@
       "indexEligible": true,
       "inputModalities": [
         "image",
-        "text"
+        "text",
+        "video"
       ],
       "outputModalities": [
         "text"
@@ -3203,7 +3344,7 @@
       "releaseStage": "stable",
       "huggingFaceId": "moonshotai/Kimi-K3",
       "sourceUrl": "https://www.kimi.com/resources/kimi-k3-pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard cache-miss input rate"
     },
     {
@@ -3403,7 +3544,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 262144,
+      "maxOutputTokens": 228000,
       "huggingFaceId": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16"
     },
     {
@@ -3448,6 +3589,28 @@
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
       "huggingFaceId": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16"
+    },
+    {
+      "key": "nvidia/nemotron-3.5-lightning",
+      "display": "Nemotron 3.5 Lightning",
+      "provider": "nvidia",
+      "input_mtok": 0.1,
+      "output_mtok": 0.25,
+      "context": 1000000,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "maxOutputTokens": 262144,
+      "huggingFaceId": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16"
     },
     {
       "key": "openai/gpt-3.5-turbo",
@@ -3988,29 +4151,6 @@
       "maxOutputTokens": 128000
     },
     {
-      "key": "openai/gpt-5.1-chat",
-      "display": "GPT-5.1 Chat",
-      "provider": "openai",
-      "input_mtok": 1.25,
-      "output_mtok": 10.0,
-      "context": 128000,
-      "source": "openrouter",
-      "indexEligible": false,
-      "inputModalities": [
-        "file",
-        "image",
-        "text"
-      ],
-      "outputModalities": [
-        "text"
-      ],
-      "supportsReasoning": false,
-      "supportsTools": true,
-      "supportsStructuredOutput": true,
-      "releaseStage": "stable",
-      "maxOutputTokens": 32000
-    },
-    {
       "key": "openai/gpt-5.1-codex",
       "display": "GPT-5.1-Codex",
       "provider": "openai",
@@ -4120,8 +4260,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 16384,
-      "expirationDate": "2026-08-10"
+      "maxOutputTokens": 32000
     },
     {
       "key": "openai/gpt-5.2-codex",
@@ -4167,30 +4306,6 @@
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
       "maxOutputTokens": 128000
-    },
-    {
-      "key": "openai/gpt-5.3-chat",
-      "display": "GPT-5.3 Chat",
-      "provider": "openai",
-      "input_mtok": 1.75,
-      "output_mtok": 14.0,
-      "context": 128000,
-      "source": "openrouter",
-      "indexEligible": false,
-      "inputModalities": [
-        "file",
-        "image",
-        "text"
-      ],
-      "outputModalities": [
-        "text"
-      ],
-      "supportsReasoning": false,
-      "supportsTools": true,
-      "supportsStructuredOutput": true,
-      "releaseStage": "stable",
-      "maxOutputTokens": 16384,
-      "expirationDate": "2026-08-10"
     },
     {
       "key": "openai/gpt-5.3-codex",
@@ -4405,7 +4520,7 @@
       "maxOutputTokens": 128000,
       "knowledgeCutoff": "2026-02-16",
       "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard rate for prompts up to 272,000 input tokens"
     },
     {
@@ -4456,7 +4571,7 @@
       "maxOutputTokens": 128000,
       "knowledgeCutoff": "2026-02-16",
       "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard rate for prompts up to 272,000 input tokens"
     },
     {
@@ -4507,7 +4622,7 @@
       "maxOutputTokens": 128000,
       "knowledgeCutoff": "2026-02-16",
       "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard rate for prompts up to 272,000 input tokens"
     },
     {
@@ -4607,7 +4722,7 @@
       "key": "openai/gpt-oss-120b",
       "display": "gpt-oss-120b",
       "provider": "openai",
-      "input_mtok": 0.037,
+      "input_mtok": 0.03,
       "output_mtok": 0.17,
       "context": 131072,
       "source": "openrouter",
@@ -5173,8 +5288,8 @@
       "key": "qwen/qwen2.5-vl-72b-instruct",
       "display": "Qwen2.5 VL 72B Instruct",
       "provider": "qwen",
-      "input_mtok": 0.8,
-      "output_mtok": 1.0,
+      "input_mtok": 0.25,
+      "output_mtok": 0.75,
       "context": 128000,
       "source": "openrouter",
       "indexEligible": false,
@@ -5189,7 +5304,6 @@
       "supportsTools": false,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 128000,
       "knowledgeCutoff": "2024-06-30",
       "huggingFaceId": "Qwen/Qwen2.5-VL-72B-Instruct"
     },
@@ -5197,8 +5311,8 @@
       "key": "qwen/qwen3-14b",
       "display": "Qwen3 14B",
       "provider": "qwen",
-      "input_mtok": 0.2275,
-      "output_mtok": 0.91,
+      "input_mtok": 0.12,
+      "output_mtok": 0.24,
       "context": 131072,
       "source": "openrouter",
       "indexEligible": false,
@@ -5212,7 +5326,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 8192,
+      "maxOutputTokens": 16384,
       "knowledgeCutoff": "2025-03-31",
       "huggingFaceId": "Qwen/Qwen3-14B"
     },
@@ -5427,7 +5541,7 @@
       "display": "Qwen3 Coder 30B A3B Instruct",
       "provider": "qwen",
       "input_mtok": 0.07,
-      "output_mtok": 0.27,
+      "output_mtok": 0.28,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -5441,7 +5555,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 32768,
+      "maxOutputTokens": 262144,
       "knowledgeCutoff": "2025-06-30",
       "huggingFaceId": "Qwen/Qwen3-Coder-30B-A3B-Instruct"
     },
@@ -5604,8 +5718,8 @@
       "key": "qwen/qwen3-vl-235b-a22b-instruct",
       "display": "Qwen3 VL 235B A22B Instruct",
       "provider": "qwen",
-      "input_mtok": 0.21,
-      "output_mtok": 1.9,
+      "input_mtok": 0.26,
+      "output_mtok": 1.04,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -5769,8 +5883,8 @@
       "key": "qwen/qwen3.5-122b-a10b",
       "display": "Qwen3.5-122B-A10B",
       "provider": "qwen",
-      "input_mtok": 0.26,
-      "output_mtok": 2.08,
+      "input_mtok": 0.29,
+      "output_mtok": 2.4,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -5786,7 +5900,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 65536,
+      "maxOutputTokens": 81920,
       "huggingFaceId": "Qwen/Qwen3.5-122B-A10B"
     },
     {
@@ -5817,8 +5931,8 @@
       "key": "qwen/qwen3.5-35b-a3b",
       "display": "Qwen3.5-35B-A3B",
       "provider": "qwen",
-      "input_mtok": 0.14,
-      "output_mtok": 1.0,
+      "input_mtok": 0.25,
+      "output_mtok": 1.25,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -5841,8 +5955,8 @@
       "key": "qwen/qwen3.5-397b-a17b",
       "display": "Qwen3.5 397B A17B",
       "provider": "qwen",
-      "input_mtok": 0.39,
-      "output_mtok": 2.34,
+      "input_mtok": 0.5,
+      "output_mtok": 3.6,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -5858,7 +5972,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 65536,
+      "maxOutputTokens": 262144,
       "huggingFaceId": "Qwen/Qwen3.5-397B-A17B"
     },
     {
@@ -5958,8 +6072,8 @@
       "key": "qwen/qwen3.6-27b",
       "display": "Qwen3.6 27B",
       "provider": "qwen",
-      "input_mtok": 0.3,
-      "output_mtok": 2.0,
+      "input_mtok": 0.6,
+      "output_mtok": 3.6,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -5975,14 +6089,14 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 65536,
+      "maxOutputTokens": 262144,
       "huggingFaceId": "Qwen/Qwen3.6-27B"
     },
     {
       "key": "qwen/qwen3.6-35b-a3b",
       "display": "Qwen3.6 35B A3B",
       "provider": "qwen",
-      "input_mtok": 0.14,
+      "input_mtok": 0.15,
       "output_mtok": 1.0,
       "context": 262144,
       "source": "openrouter",
@@ -6136,6 +6250,51 @@
       "maxOutputTokens": 131072
     },
     {
+      "key": "qwen/qwen3.8-2.4t-a95b",
+      "display": "Qwen3.8 2.4T A95B",
+      "provider": "qwen",
+      "input_mtok": 2.0,
+      "output_mtok": 6.0,
+      "context": 1010000,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "maxOutputTokens": 262144,
+      "huggingFaceId": "Qwen/Qwen3.8-2.4T-A95B"
+    },
+    {
+      "key": "qwen/qwen3.8-max",
+      "display": "Qwen3.8 Max",
+      "provider": "qwen",
+      "input_mtok": 2.0,
+      "output_mtok": 6.0,
+      "context": 1000000,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "image",
+        "text",
+        "video"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "maxOutputTokens": 131072
+    },
+    {
       "key": "rekaai/reka-edge",
       "display": "Reka Edge",
       "provider": "rekaai",
@@ -6245,6 +6404,29 @@
       "supportsStructuredOutput": false,
       "releaseStage": "stable",
       "maxOutputTokens": 128000
+    },
+    {
+      "key": "sakana/sakana-namazu",
+      "display": "Sakana Namazu",
+      "provider": "sakana",
+      "input_mtok": 0.95,
+      "output_mtok": 4.0,
+      "context": 262144,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "file",
+        "image",
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": false,
+      "releaseStage": "stable",
+      "maxOutputTokens": 65536
     },
     {
       "key": "sao10k/l3-lunaris-8b",
@@ -6515,7 +6697,7 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 32768,
+      "maxOutputTokens": 1024000,
       "knowledgeCutoff": "2024-04-30",
       "huggingFaceId": "TheDrummer/UnslopNemo-12B-v4.1"
     },
@@ -6523,7 +6705,7 @@
       "key": "thinkingmachines/inkling",
       "display": "Inkling",
       "provider": "thinkingmachines",
-      "input_mtok": 1.0,
+      "input_mtok": 0.95,
       "output_mtok": 4.05,
       "context": 1048576,
       "source": "openrouter",
@@ -6540,7 +6722,32 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
+      "maxOutputTokens": 262144,
       "huggingFaceId": "thinkingmachines/Inkling"
+    },
+    {
+      "key": "thinkingmachines/inkling-small",
+      "display": "Inkling Small",
+      "provider": "thinkingmachines",
+      "input_mtok": 0.45,
+      "output_mtok": 1.2,
+      "context": 524288,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "audio",
+        "image",
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": false,
+      "releaseStage": "stable",
+      "maxOutputTokens": 262144,
+      "huggingFaceId": "thinkingmachines/Inkling-Small"
     },
     {
       "key": "undi95/remm-slerp-l2-13b",
@@ -6561,7 +6768,7 @@
       "supportsTools": false,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 2048,
+      "maxOutputTokens": 6144,
       "knowledgeCutoff": "2023-06-30",
       "huggingFaceId": "Undi95/ReMM-SLERP-L2-13B"
     },
@@ -6571,7 +6778,7 @@
       "provider": "upstage",
       "input_mtok": 0.15,
       "output_mtok": 0.6,
-      "context": 128000,
+      "context": 131072,
       "source": "openrouter",
       "indexEligible": false,
       "inputModalities": [
@@ -6583,7 +6790,29 @@
       "supportsReasoning": true,
       "supportsTools": true,
       "supportsStructuredOutput": true,
-      "releaseStage": "stable"
+      "releaseStage": "stable",
+      "maxOutputTokens": 131072
+    },
+    {
+      "key": "upstage/solar-pro4",
+      "display": "Solar Pro 4",
+      "provider": "upstage",
+      "input_mtok": 0.03,
+      "output_mtok": 0.12,
+      "context": 524288,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable",
+      "maxOutputTokens": 131072
     },
     {
       "key": "writer/palmyra-x5",
@@ -6696,8 +6925,30 @@
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
       "sourceUrl": "https://docs.x.ai/developers/models",
-      "checked": "2026-07-31",
+      "checked": "2026-08-14",
       "rateNote": "Standard API rate"
+    },
+    {
+      "key": "x-ai/grok-4.6",
+      "display": "Grok 4.6",
+      "provider": "x-ai",
+      "input_mtok": 2.0,
+      "output_mtok": 6.0,
+      "context": 500000,
+      "source": "openrouter",
+      "indexEligible": false,
+      "inputModalities": [
+        "file",
+        "image",
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "supportsReasoning": true,
+      "supportsTools": true,
+      "supportsStructuredOutput": true,
+      "releaseStage": "stable"
     },
     {
       "key": "x-ai/grok-build-0.1",
@@ -6978,8 +7229,8 @@
       "key": "z-ai/glm-5.1",
       "display": "GLM 5.1",
       "provider": "z-ai",
-      "input_mtok": 0.966,
-      "output_mtok": 3.036,
+      "input_mtok": 1.4,
+      "output_mtok": 4.4,
       "context": 204800,
       "source": "openrouter",
       "indexEligible": false,
@@ -6993,15 +7244,15 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 128000,
+      "maxOutputTokens": 131072,
       "huggingFaceId": "zai-org/GLM-5.1"
     },
     {
       "key": "z-ai/glm-5.2",
       "display": "GLM 5.2",
       "provider": "z-ai",
-      "input_mtok": 1.232,
-      "output_mtok": 3.872,
+      "input_mtok": 0.63,
+      "output_mtok": 1.98,
       "context": 1048576,
       "source": "openrouter",
       "indexEligible": false,
@@ -7015,7 +7266,6 @@
       "supportsTools": true,
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
-      "maxOutputTokens": 128000,
       "huggingFaceId": "zai-org/GLM-5.2"
     },
     {

@@ -1,6 +1,7 @@
 import DeflatorChart from '../components/DeflatorChart'
 import LatestMoves from '../components/LatestMoves'
 import MachineNote from '../components/MachineNote'
+import Shortlist from '../components/Shortlist'
 import { longDate, price, providerName } from '../lib/format'
 import { modelPath } from '../lib/models'
 import type { FeedData, PriceChange, PriceModel } from '../lib/types'
@@ -72,6 +73,8 @@ export default function FrontPage({ data }: { data: FeedData }) {
           <small>Model card →</small>
         </a>
       )}
+
+      <Shortlist models={data.prices.models} asOf={meta.asOf} />
 
       <section className="mt-12 border-t border-ink pt-5" aria-labelledby="chart-title">
         <div className="chart-heading">

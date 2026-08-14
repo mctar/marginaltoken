@@ -95,7 +95,7 @@ npm run preview
 `npm run preview` serves the completed production build at an HTTP address,
 normally `http://127.0.0.1:4173/`.
 
-The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. The Compare view costs two to four selected models against a shared request volume and keeps its selections and workload assumptions in the URL. Model cards surface strictly cheaper stable matches that preserve all recorded modalities, capabilities, and context, with direct two-model comparison links. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
+The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Shortlist is a 15-slot editorial view of the general-purpose enterprise API shelf, rendered as paired input/output markers on a common logarithmic price scale. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. The Compare view costs two to four selected models against a shared request volume and keeps its selections and workload assumptions in the URL. Model cards surface strictly cheaper stable matches that preserve all recorded modalities, capabilities, and context, with direct two-model comparison links. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
 
 ## Publishing to GitHub Pages
 
@@ -153,6 +153,10 @@ the same validated feed revisions as GitHub Pages.
 ## Updating first-party prices
 
 Add the model metadata and a reviewed fallback rate to `collector/firstparty.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Add or extend that provider's strict parser in `collector/official.py` and a compact source fixture in `collector/tests/test_official.py`. Standard uncached, non-batch, global rates are used. For tiered products, record the lowest standard context tier and explain it in `rate_note`.
+
+## Updating The Shortlist
+
+`site/src/lib/shortlist.ts` defines 15 permanent editorial slots rather than discovering models from names. When a lab releases a production successor, verify its standard API rate, add its key to the front of the appropriate slot's `candidates` list, and keep the prior key as a fallback. Do not add dated snapshots, image/audio variants, coding-only models, fast modes, or extra provider tiers. Preview models are used only when they are the current enterprise-facing top tier and are labelled in the visualization. A first-party model row remains authoritative; OpenRouter-only entries are visibly marked as routed quotes.
 
 ## Phase 2 placeholder
 

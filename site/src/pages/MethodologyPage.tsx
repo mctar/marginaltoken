@@ -30,34 +30,41 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
         </section>
         <section>
           <span className="method-number">03</span>
+          <h2>The Shortlist</h2>
+          <p>
+            The Shortlist is an editorial view over the Tape, capped at 15 permanent market slots: four Anthropic tiers, three OpenAI tiers, three Google tiers, and one current general-purpose model each from xAI, Mistral, DeepSeek, Moonshot AI, and Qwen. A reviewed successor replaces its predecessor in the same slot; the underlying historical record remains intact. First-party and routed quotes are labelled separately. Open-weight models are omitted when no single comparable standard API rate exists.
+          </p>
+        </section>
+        <section>
+          <span className="method-number">04</span>
           <h2>The index</h2>
           <p>
             The Deflator uses output prices only. The basket holds one current, production, general-purpose frontier representative per independent model provider. A model must have public first-party API access and a posted standard global rate. Each provider has equal weight. The mean current output price is divided by the basket mean on {longDate(meta.indexBaseDate)}, then multiplied by 100.
           </p>
         </section>
         <section>
-          <span className="method-number">04</span>
+          <span className="method-number">05</span>
           <h2>Rebalancing</h2>
           <p>
             Basket eligibility is explicit in the curated file, which permits exactly one representative per provider. A successor enters when its provider positions it as the current production frontier model and publishes direct API pricing. Genuine successor substitutions are part of the index result. Provider additions and corrections are treated as methodology changes and rebased at inception so they do not appear as price moves. Every ordinary basket change is recorded in the public change feed.
           </p>
         </section>
         <section>
-          <span className="method-number">05</span>
+          <span className="method-number">06</span>
           <h2>Detection and publication</h2>
           <p>
             The collector checks OpenRouter and every supported official source hourly. A price move must exceed $0.0001 per million tokens after rounding to four decimals. A valid change produces one feed revision. Failed, empty, or materially incomplete responses leave last-good data in place. Provider freshness and matching-key disagreements are published in the source-health feed. The site republishes only when prices or source status change.
           </p>
         </section>
         <section>
-          <span className="method-number">06</span>
+          <span className="method-number">07</span>
           <h2>The machine note</h2>
           <p>
             When verified events enter the tape, a local Gemma 4 26B model may phrase them as a short note. It receives only the current revision's structured facts. Deterministic checks reject unsupported figures, inferred causes, invalid output, and copy outside the house rules. A failed note never blocks the underlying feed.
           </p>
         </section>
         <section>
-          <span className="method-number">07</span>
+          <span className="method-number">08</span>
           <h2>Honesty caveats</h2>
           <p>
             These are list prices, not negotiated prices. Standard rates are used, not batch, cached, flex, priority, regional, or long-context premiums. Tokenizers differ, so equal token counts do not always represent equal text. Price says nothing by itself about model quality. Nothing here is investment advice.

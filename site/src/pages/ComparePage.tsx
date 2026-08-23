@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import ShareImageButton from '../components/ShareImageButton'
 import { calculateCost, comparisonPath, defaultWorkload, nonNegativeNumber, type Workload } from '../lib/compare'
 import { contextSize, price, providerName } from '../lib/format'
 import { capabilityTags, modelPath } from '../lib/models'
+import { createComparisonShareImage } from '../lib/share-image'
+import { shareImageFilename } from '../lib/share'
 import type { MetaFeed, PriceModel, PricesFeed } from '../lib/types'
 
 const preferredProviders = ['anthropic', 'openai', 'google']
@@ -138,7 +141,7 @@ export default function ComparePage({ prices, meta }: { prices: PricesFeed; meta
     setModelQuery('')
   }
 
-  const share = async () => {
+  const shareLink = async () => {
     const url = window.location.href
     const names = selectedModels.map((model) => model.display).join(', ')
     const text = names ? `Compare the API cost of ${names}.` : 'Compare AI model API costs.'
@@ -265,8 +268,22 @@ export default function ComparePage({ prices, meta }: { prices: PricesFeed; meta
             )}
           </div>
           <div className="compare-share">
-            <button type="button" onClick={share}>Share comparison</button>
-            <span aria-live="polite">{shareStatus}</span>
+            <div className="compare-share-actions">
+              <ShareImageButton
+                createImage={() => createComparisonShareImage({
+                  results: results.map(({ model, cost }) => ({ model, monthlyTotal: cost.monthlyTotal })),
+                  workload,
+                  asOf: meta.asOf,
+                  path: '/compare/',
+                })}
+                filename={shareImageFilename('model-cost-comparison')}
+                shareTitle="AI model cost comparison — The Marginal Token"
+                shareText="A costed comparison using current standard AI model API prices."
+                disabled={results.length < 2}
+              />
+              <button className="share-link-button" type="button" onClick={shareLink}>Share link</button>
+            </div>
+            <span className="share-link-status" aria-live="polite">{shareStatus}</span>
           </div>
         </div>
 

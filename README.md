@@ -95,7 +95,7 @@ npm run preview
 `npm run preview` serves the completed production build at an HTTP address,
 normally `http://127.0.0.1:4173/`.
 
-The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Shortlist is a 15-slot editorial view of the general-purpose enterprise API shelf, rendered as paired input/output markers on a common logarithmic price scale. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. The Compare view costs two to four selected models against a shared request volume and keeps its selections and workload assumptions in the URL. Model cards surface strictly cheaper stable matches that preserve all recorded modalities, capabilities, and context, with direct two-model comparison links. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
+The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Shortlist is a 15-slot editorial view of the general-purpose enterprise API shelf, rendered as paired input/output markers on a common logarithmic price scale. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. The Compare view costs two to four selected models against a shared request volume and keeps its selections and workload assumptions in the URL. Model cards surface strictly cheaper stable matches that preserve all recorded modalities, capabilities, and context, with direct two-model comparison links. The Shortlist, Deflator, comparison results, and model cards each generate a 1200 × 630 PNG from their structured data. Every image includes the canonical site origin, the price-file date, and an explicit source line, then uses native file sharing, clipboard copy, or download according to browser support. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
 
 ## Publishing to GitHub Pages
 
@@ -160,4 +160,4 @@ Add the model metadata and a reviewed fallback rate to `collector/firstparty.jso
 
 ## Phase 2 placeholder
 
-`collector/endpoints.py` records the intended boundary for per-host OpenRouter prices. The Spreads view, cache and batch tracking, a full Cut Log, calculators, RSS, and generated social images are not part of Phase 1.
+`collector/endpoints.py` records the intended boundary for per-host OpenRouter prices. The Spreads view, cache and batch tracking, a full Cut Log, calculators, and RSS are not part of Phase 1.

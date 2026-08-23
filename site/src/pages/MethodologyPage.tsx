@@ -58,13 +58,20 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
         </section>
         <section>
           <span className="method-number">07</span>
+          <h2>Share images</h2>
+          <p>
+            Every principal visualization can be exported as a 1200 × 630 pixel PNG. The image is drawn in the browser from the same structured data as the page rather than captured from the screen. Each export permanently includes marginaltoken.com, the price-file date, and a concise source description. Native file sharing is used where available; otherwise the image is copied or downloaded locally.
+          </p>
+        </section>
+        <section>
+          <span className="method-number">08</span>
           <h2>The machine note</h2>
           <p>
             When verified events enter the tape, a local Gemma 4 26B model may phrase them as a short note. It receives only the current revision's structured facts. Deterministic checks reject unsupported figures, inferred causes, invalid output, and copy outside the house rules. A failed note never blocks the underlying feed.
           </p>
         </section>
         <section>
-          <span className="method-number">08</span>
+          <span className="method-number">09</span>
           <h2>Honesty caveats</h2>
           <p>
             These are list prices, not negotiated prices. Standard rates are used, not batch, cached, flex, priority, regional, or long-context premiums. Tokenizers differ, so equal token counts do not always represent equal text. Price says nothing by itself about model quality. Nothing here is investment advice.

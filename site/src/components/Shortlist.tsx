@@ -1,6 +1,9 @@
 import type { CSSProperties } from 'react'
+import ShareImageButton from './ShareImageButton'
 import { longDate, price } from '../lib/format'
 import { modelPath } from '../lib/models'
+import { createShortlistShareImage } from '../lib/share-image'
+import { shareImageFilename } from '../lib/share'
 import {
   SHORTLIST_SLOT_COUNT,
   logPricePosition,
@@ -74,9 +77,17 @@ export default function Shortlist({ models, asOf }: { models: PriceModel[]; asOf
           <p className="section-kicker">Enterprise API shelf</p>
           <h2 id="shortlist-title" className="section-title">The Shortlist</h2>
         </div>
-        <p>
-          The current general-purpose models an enterprise buyer is most likely to compare. One permanent slot per lab tier; successors replace predecessors.
-        </p>
+        <div className="shortlist-heading-aside">
+          <p>
+            The current general-purpose models an enterprise buyer is most likely to compare. One permanent slot per lab tier; successors replace predecessors.
+          </p>
+          <ShareImageButton
+            createImage={() => createShortlistShareImage({ models, asOf })}
+            filename={shareImageFilename('the-shortlist')}
+            shareTitle="The Shortlist — The Marginal Token"
+            shareText="The current enterprise AI model shelf, with input and output API prices."
+          />
+        </div>
       </div>
 
       <div className="shortlist-keyline">

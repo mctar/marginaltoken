@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import ShareImageButton from '../components/ShareImageButton'
 import { cheaperMatches } from '../lib/alternatives'
 import { comparisonPath, modelComparisonPath } from '../lib/compare'
 import { contextSize, longDate, price, providerName } from '../lib/format'
 import { capabilityTags, modalityList, modelPath } from '../lib/models'
+import { createModelShareImage } from '../lib/share-image'
+import { shareImageFilename } from '../lib/share'
 import type { PriceModel } from '../lib/types'
 
 async function copyText(value: string): Promise<void> {
@@ -37,7 +40,7 @@ export default function ModelPage({ model, models, asOf }: { model: PriceModel; 
   const path = modelPath(model.key)
   const alternatives = cheaperMatches(model, models)
 
-  const share = async () => {
+  const shareLink = async () => {
     const url = `${window.location.origin}${path}`
     const text = `${model.display}: ${price(model.input_mtok)} input and ${price(model.output_mtok)} output per million tokens.`
 
@@ -73,9 +76,15 @@ export default function ModelPage({ model, models, asOf }: { model: PriceModel; 
           <div className="model-share">
             <div className="model-share-actions">
               <a href={modelComparisonPath(model.key)}>Compare cost</a>
-              <button type="button" onClick={share}>Share model</button>
+              <ShareImageButton
+                createImage={() => createModelShareImage({ model, asOf, path })}
+                filename={shareImageFilename(model.display)}
+                shareTitle={`${model.display} — The Marginal Token`}
+                shareText={`${model.display}: current standard input and output API prices.`}
+              />
+              <button className="share-link-button" type="button" onClick={shareLink}>Share link</button>
             </div>
-            <span aria-live="polite">{shareStatus}</span>
+            <span className="share-link-status" aria-live="polite">{shareStatus}</span>
           </div>
         </header>
 

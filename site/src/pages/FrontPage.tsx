@@ -1,9 +1,12 @@
 import DeflatorChart from '../components/DeflatorChart'
 import LatestMoves from '../components/LatestMoves'
 import MachineNote from '../components/MachineNote'
+import ShareImageButton from '../components/ShareImageButton'
 import Shortlist from '../components/Shortlist'
 import { longDate, price, providerName } from '../lib/format'
 import { modelPath } from '../lib/models'
+import { createDeflatorShareImage } from '../lib/share-image'
+import { shareImageFilename } from '../lib/share'
 import type { FeedData, PriceChange, PriceModel } from '../lib/types'
 
 function direction(value: number): string {
@@ -84,9 +87,21 @@ export default function FrontPage({ data }: { data: FeedData }) {
               The Deflator
             </h2>
           </div>
-          <p>
-            {countWord(meta.basket.length, true)} providers. Equal weight. Standard output rates for one current frontier representative per provider.
-          </p>
+          <div className="chart-heading-aside">
+            <p>
+              {countWord(meta.basket.length, true)} providers. Equal weight. Standard output rates for one current frontier representative per provider.
+            </p>
+            <ShareImageButton
+              createImage={() => createDeflatorShareImage({
+                points: meta.indexHistory,
+                asOf: meta.asOf,
+                basketCount: meta.basket.length,
+              })}
+              filename={shareImageFilename('the-deflator')}
+              shareTitle="The Deflator — The Marginal Token"
+              shareText="The equal-weight index of current frontier AI output API prices."
+            />
+          </div>
         </div>
         {hasIndexMovement ? (
           <DeflatorChart points={meta.indexHistory} />

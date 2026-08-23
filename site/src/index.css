@@ -285,13 +285,66 @@ a {
   gap: 1rem;
 }
 
-.chart-heading > p {
+.chart-heading-aside > p {
   max-width: 36rem;
   margin: 0;
   color: var(--ink-muted);
   font-family: 'Source Serif 4', Georgia, serif;
   font-size: 1.05rem;
   line-height: 1.45;
+}
+
+.chart-heading-aside,
+.shortlist-heading-aside {
+  display: grid;
+  justify-items: start;
+  gap: 0.9rem;
+}
+
+.share-image-control {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.75rem;
+  max-width: 100%;
+}
+
+.share-image-control > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.65rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.share-image-control > button > span {
+  font-size: 0.95rem;
+  line-height: 0.75;
+}
+
+.share-image-control > button:hover:not(:disabled) {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.share-image-control > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.share-image-control > small {
+  color: var(--ink-muted);
+  font-size: 0.61rem;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .chart-wrap {
@@ -1308,6 +1361,13 @@ a {
   gap: 0.7rem;
 }
 
+.compare-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .compare-share button,
 .model-share-actions a,
 .model-share-actions button {
@@ -1330,10 +1390,23 @@ a {
   background: var(--blue);
 }
 
-.compare-share span {
+.compare-share > .share-link-status {
   color: var(--ink-muted);
   font-size: 0.62rem;
   font-weight: 600;
+}
+
+.compare-share button.share-link-button,
+.model-share-actions button.share-link-button {
+  background: transparent;
+  color: var(--ink);
+}
+
+.compare-share button.share-link-button:hover,
+.model-share-actions button.share-link-button:hover {
+  border-color: var(--blue);
+  background: transparent;
+  color: var(--blue);
 }
 
 .comparison-cards {
@@ -1580,7 +1653,7 @@ a {
   color: var(--blue);
 }
 
-.model-share span {
+.model-share > .share-link-status {
   color: var(--ink-muted);
   font-size: 0.64rem;
   font-weight: 600;
@@ -2251,7 +2324,7 @@ a {
   align-items: end;
 }
 
-.shortlist-heading > p {
+.shortlist-heading-aside > p {
   max-width: 35rem;
   margin: 0;
   color: var(--ink-muted);

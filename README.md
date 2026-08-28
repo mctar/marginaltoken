@@ -13,11 +13,11 @@ site/        Static three-route publication
 deploy/      GitHub Pages publisher and systemd units
 ```
 
-OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows.
+OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows. A second OpenRouter scan preserves every venue-level offer for the standard-rate models without changing the single-quote Tape.
 
 ## Feed contract
 
-The five deterministic files carry the same `generatedAt` revision timestamp. An optional machine note is published only when it matches that revision.
+The five core deterministic files carry the same `generatedAt` revision timestamp. An optional machine note is published only when it matches that revision. The venue-offer feed has its own revision because endpoint availability is collected independently.
 
 - `data/prices.json`: current normalized models, provenance, context, per-million-token rates, input modalities, API capabilities, release stage, and optional lifecycle metadata.
 - `data/history.json`: the inception snapshot plus one point per model for each detected price change.
@@ -25,6 +25,7 @@ The five deterministic files carry the same `generatedAt` revision timestamp. An
 - `data/meta.json`: the current index, persisted base, current basket, and chart-ready index history.
 - `data/provenance.json`: provider freshness plus matching-key differences between verified first-party and OpenRouter prices.
 - `data/brief.json`: an optional, revision-matched headline and two-sentence note generated locally from verified events.
+- `data/offers.json`: per-model OpenRouter venue offers with standard input/output rates, cache rates, context, quantization, maximum output, and supported API parameters.
 
 The Deflator is an equal-weighted output-price index. The basket contains one current, production, general-purpose frontier representative per independent provider, using its public first-party standard global API rate. The current mean is divided by the inception mean and multiplied by 100. Genuine successor substitutions affect the index and produce a basket event; provider additions and methodology corrections are rebased rather than reported as price moves.
 
@@ -37,6 +38,8 @@ python3 collector/collect.py
 ```
 
 OpenRouter prices are converted from dollars per token to dollars per million tokens with `Decimal`, then rounded to four decimal places. Free rows, batch variants, aliases, negative variable-price routers, and malformed entries are excluded.
+
+After the core price scan, `collector/endpoints.py` follows each retained model's OpenRouter endpoint link with bounded concurrency. It stores venue offers separately rather than flattening them into the Tape. Volatile latency and uptime observations are intentionally excluded; the public feed changes only when an offer, rate, context, quantization, maximum output, or supported parameter changes. A failed model request reuses that model's previous offer set, and a fresh feed must cover at least 80% of the target models. Operational status is written to `collector/state/offers-heartbeat.json`.
 
 The collector refuses to replace the feed when:
 
@@ -67,6 +70,7 @@ python3 collector/collect.py --source-file fixture.json --min-models 1
 MARGINALTOKEN_MODELS_URL=https://example.test/models python3 collector/collect.py
 python3 collector/collect.py --skip-firstparty-refresh
 MARGINALTOKEN_FIRSTPARTY_MAX_STALE_HOURS=24 python3 collector/collect.py
+MARGINALTOKEN_ENDPOINT_WORKERS=6 python3 collector/endpoints.py
 ```
 
 ## Development
@@ -158,6 +162,6 @@ Add the model metadata and a reviewed fallback rate to `collector/firstparty.jso
 
 `site/src/lib/shortlist.ts` defines 15 permanent editorial slots rather than discovering models from names. When a lab releases a production successor, verify its standard API rate, add its key to the front of the appropriate slot's `candidates` list, and keep the prior key as a fallback. Do not add dated snapshots, image/audio variants, coding-only models, fast modes, or extra provider tiers. Preview models are used only when they are the current enterprise-facing top tier and are labelled in the visualization. A first-party model row remains authoritative; OpenRouter-only entries are visibly marked as routed quotes.
 
-## Phase 2 placeholder
+## Venue offers
 
-`collector/endpoints.py` records the intended boundary for per-host OpenRouter prices. The Spreads view, cache and batch tracking, a full Cut Log, calculators, and RSS are not part of Phase 1.
+`collector/endpoints.py` is the data boundary for a future Spreads view. The first implementation preserves standard per-host OpenRouter offers and cache rates. It does not yet expose the data in the UI, compare batch or priority tiers, track offer history, or make equivalence claims across quantizations and serving configurations.

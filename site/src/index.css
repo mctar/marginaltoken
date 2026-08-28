@@ -1806,6 +1806,311 @@ a {
   font-weight: 500;
 }
 
+.model-offers {
+  margin-top: 3.2rem;
+  border-top: 4px solid var(--ink);
+  padding-top: 1.2rem;
+}
+
+.model-offers-heading {
+  display: grid;
+  gap: 0.8rem;
+  align-items: end;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 1.2rem;
+}
+
+.model-offers-heading h2 {
+  margin: 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.model-offers-heading-aside > p {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--ink-muted);
+  font-family: 'Source Serif 4', Georgia, serif;
+  line-height: 1.45;
+}
+
+.model-offers-heading-aside {
+  display: grid;
+  justify-items: start;
+  gap: 0.9rem;
+}
+
+.offer-market-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border-bottom: 1px solid var(--ink);
+  background: var(--paper-deep);
+}
+
+.offer-market-summary > div {
+  min-width: 0;
+  padding: 1rem clamp(0.55rem, 2vw, 1.2rem);
+}
+
+.offer-market-summary > div + div {
+  border-left: 1px solid var(--rule);
+}
+
+.offer-market-summary dt,
+.offer-range-pair span {
+  color: var(--ink-muted);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.offer-market-summary dd {
+  margin: 0.25rem 0 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.offer-group-list {
+  border-bottom: 1px solid var(--ink);
+}
+
+.offer-group {
+  border-bottom: 1px solid var(--rule);
+}
+
+.offer-group:last-child {
+  border-bottom: 0;
+}
+
+.offer-group summary {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 1.2rem 2rem 1.2rem 0;
+}
+
+.offer-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.offer-group summary::after {
+  position: absolute;
+  top: 1.25rem;
+  right: 0.2rem;
+  content: '+';
+  color: var(--ink-muted);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.offer-group[open] summary::after {
+  content: '−';
+}
+
+.offer-group[open] summary {
+  border-bottom: 1px solid var(--rule);
+}
+
+.offer-configuration {
+  min-width: 0;
+}
+
+.offer-configuration strong,
+.offer-configuration small {
+  display: block;
+}
+
+.offer-configuration strong {
+  margin-top: 0.45rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.offer-configuration small {
+  margin-top: 0.35rem;
+  color: var(--ink-muted);
+  font-size: 0.58rem;
+  line-height: 1.45;
+}
+
+.offer-confidence {
+  display: inline-block;
+  border: 1px solid var(--teal);
+  color: var(--teal);
+  padding: 0.25rem 0.42rem;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.offer-confidence.nominal {
+  border-color: var(--ink-faint);
+  color: var(--ink-muted);
+}
+
+.offer-range-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: center;
+}
+
+.offer-range-pair > div {
+  min-width: 0;
+}
+
+.offer-range-pair > div + div {
+  border-left: 1px solid var(--rule);
+  padding-left: 0.9rem;
+}
+
+.offer-range-pair strong,
+.offer-range-pair small {
+  display: block;
+}
+
+.offer-range-pair strong {
+  margin-top: 0.2rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1rem, 3vw, 1.35rem);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.offer-range-pair small {
+  margin-top: 0.2rem;
+  color: var(--teal);
+  font-size: 0.55rem;
+  font-weight: 700;
+}
+
+.offer-group-body {
+  padding: 0 0 1.2rem;
+}
+
+.offer-capabilities {
+  margin: 0;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.7rem 0;
+  color: var(--ink-muted);
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.offer-table-wrap {
+  overflow-x: auto;
+}
+
+.offer-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.68rem;
+}
+
+.offer-table th,
+.offer-table td {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.65rem 0.7rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.offer-table th:first-child,
+.offer-table td:first-child {
+  padding-left: 0;
+}
+
+.offer-table th:nth-last-child(-n + 2),
+.offer-table td:nth-last-child(-n + 2) {
+  text-align: right;
+}
+
+.offer-table thead th {
+  color: var(--ink-muted);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.offer-table tbody th {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.offer-table code {
+  color: var(--ink-muted);
+  font-size: 0.61rem;
+}
+
+.offer-hidden-note,
+.offer-empty,
+.offer-source-note {
+  color: var(--ink-muted);
+  font-family: 'Source Serif 4', Georgia, serif;
+  line-height: 1.5;
+}
+
+.offer-hidden-note {
+  margin: 0;
+  border-bottom: 1px solid var(--ink);
+  padding: 0.8rem 0;
+  font-size: 0.72rem;
+}
+
+.offer-empty {
+  border-bottom: 1px solid var(--ink);
+  padding: 2.5rem 0;
+}
+
+.offer-empty strong {
+  color: var(--ink);
+  font-size: 1.35rem;
+}
+
+.offer-empty p {
+  max-width: 42rem;
+  margin: 0.35rem 0 0;
+}
+
+.offer-source-note {
+  display: grid;
+  gap: 0.55rem;
+  padding-top: 0.8rem;
+  font-size: 0.72rem;
+}
+
+.offer-source-note p {
+  max-width: 53rem;
+  margin: 0;
+}
+
+.offer-source-note a {
+  color: var(--blue);
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-underline-offset: 0.2em;
+  text-transform: uppercase;
+}
+
 .model-alternatives {
   margin-top: 3.2rem;
   border-top: 4px solid var(--ink);
@@ -2192,6 +2497,20 @@ a {
   .model-provenance > div + div {
     border-top: 0;
     border-left: 1px solid var(--rule);
+  }
+
+  .model-offers-heading {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.85fr);
+  }
+
+  .offer-group summary {
+    grid-template-columns: minmax(15rem, 0.85fr) minmax(22rem, 1.15fr);
+    align-items: center;
+  }
+
+  .offer-source-note {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
   }
 
   .model-alternatives-heading {

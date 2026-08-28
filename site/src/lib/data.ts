@@ -1,4 +1,4 @@
-import type { BriefFeed, ChangesFeed, FeedData, HistoryFeed, MetaFeed, PricesFeed, ProvenanceFeed } from './types'
+import type { BriefFeed, ChangesFeed, FeedData, HistoryFeed, MetaFeed, OffersFeed, PricesFeed, ProvenanceFeed } from './types'
 
 async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(path, { cache: 'no-store' })
@@ -16,14 +16,15 @@ async function fetchOptionalJson<T>(path: string): Promise<T | null> {
   }
 }
 
-export async function loadFeed(): Promise<FeedData> {
-  const [prices, history, changes, meta, candidateBrief, candidateProvenance] = await Promise.all([
+export async function loadFeed(includeOffers = false): Promise<FeedData> {
+  const [prices, history, changes, meta, candidateBrief, candidateProvenance, candidateOffers] = await Promise.all([
     fetchJson<PricesFeed>('/data/prices.json'),
     fetchJson<HistoryFeed>('/data/history.json'),
     fetchJson<ChangesFeed>('/data/changes.json'),
     fetchJson<MetaFeed>('/data/meta.json'),
     fetchOptionalJson<BriefFeed>('/data/brief.json'),
     fetchOptionalJson<ProvenanceFeed>('/data/provenance.json'),
+    includeOffers ? fetchOptionalJson<OffersFeed>('/data/offers.json') : Promise.resolve(null),
   ])
   if (!Array.isArray(prices.models) || !Array.isArray(meta.indexHistory)) {
     throw new Error('The published feed is incomplete')
@@ -41,5 +42,12 @@ export async function loadFeed(): Promise<FeedData> {
     && Array.isArray(candidateProvenance.conflicts)
     ? candidateProvenance
     : null
-  return { prices, history, changes, meta, brief, provenance }
+  const offers = candidateOffers
+    && typeof candidateOffers.generatedAt === 'string'
+    && typeof candidateOffers.asOf === 'string'
+    && candidateOffers.comparisonPolicy?.version === 1
+    && Array.isArray(candidateOffers.models)
+    ? candidateOffers
+    : null
+  return { prices, history, changes, meta, brief, provenance, offers }
 }

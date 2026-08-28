@@ -1,8 +1,9 @@
 import { contextSize, longDate, price, providerName, shortDate } from './format'
 import { capabilityTags } from './models'
+import { comparableOfferGroups, widestOutputSpread } from './offers'
 import { shareSourceLabel } from './share'
 import { logPricePosition, selectShortlist, shortlistProviderColor } from './shortlist'
-import type { IndexPoint, PriceModel } from './types'
+import type { IndexPoint, OfferModel, PriceModel } from './types'
 
 export const SHARE_IMAGE_WIDTH = 1200
 export const SHARE_IMAGE_HEIGHT = 630
@@ -560,6 +561,90 @@ export async function createModelShareImage(options: {
   )
   drawFooter(context, {
     source: shareSourceLabel(model),
+    asOf: options.asOf,
+    path: options.path,
+  })
+  return canvasToBlob(canvas)
+}
+
+export async function createOffersShareImage(options: {
+  model: PriceModel
+  offerModel: OfferModel
+  asOf: string
+  path?: string
+}): Promise<Blob> {
+  const groups = comparableOfferGroups(options.offerModel).slice(0, 3)
+  if (groups.length === 0) throw new Error('No comparable venue offers to share')
+
+  const { canvas, context } = await prepareCanvas()
+  drawTitle(
+    context,
+    'Routed market · like for like',
+    `${options.model.display} venue offers`,
+    `${groups.length} leading configurations · highest posted quote versus lowest within each match`,
+  )
+
+  context.textAlign = 'right'
+  context.fillStyle = TEAL
+  context.font = `600 42px ${SERIF}`
+  context.fillText(`+${widestOutputSpread(groups).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`, 1140, 150)
+  context.fillStyle = MUTED
+  context.font = `700 9px ${SANS}`
+  context.letterSpacing = '1.2px'
+  context.fillText('WIDEST OUTPUT GAP', 1140, 173)
+  context.textAlign = 'left'
+  context.letterSpacing = '0px'
+
+  const top = 220
+  const rowHeight = 102
+  groups.forEach((group, index) => {
+    const y = top + index * rowHeight
+    context.strokeStyle = RULE
+    context.lineWidth = 1
+    context.beginPath()
+    context.moveTo(60, y + rowHeight - 10)
+    context.lineTo(1140, y + rowHeight - 10)
+    context.stroke()
+
+    context.fillStyle = group.confidence === 'declared' ? TEAL : MUTED
+    context.font = `700 9px ${SANS}`
+    context.letterSpacing = '1px'
+    context.fillText(group.confidence === 'declared' ? 'DECLARED MATCH' : 'NOMINAL MATCH', 60, y + 14)
+    context.letterSpacing = '0px'
+    context.fillStyle = INK
+    context.font = `600 21px ${SERIF}`
+    const precision = group.quantization === 'undisclosed' ? 'Precision undisclosed' : group.quantization.toUpperCase()
+    fitAndFillText(context, `${precision} · ${contextSize(group.context)} context`, 60, y + 43, 360)
+    context.fillStyle = MUTED
+    context.font = `600 10px ${SANS}`
+    context.fillText(`${group.offerCount} OFFERS · ${group.venueCount} VENUES`, 60, y + 66)
+
+    const metrics = [
+      { label: 'INPUT / MTOK', range: group.input_mtok },
+      { label: 'OUTPUT / MTOK', range: group.output_mtok },
+    ]
+    metrics.forEach((metric, metricIndex) => {
+      const x = 500 + metricIndex * 325
+      context.fillStyle = MUTED
+      context.font = `700 9px ${SANS}`
+      context.letterSpacing = '1px'
+      context.fillText(metric.label, x, y + 14)
+      context.letterSpacing = '0px'
+      context.fillStyle = INK
+      context.font = `600 23px ${SERIF}`
+      context.fillText(`${price(metric.range.min)}–${price(metric.range.max)}`, x, y + 43)
+      context.fillStyle = TEAL
+      context.font = `700 10px ${SANS}`
+      const spread = metric.range.spreadPct ?? 0
+      context.fillText(spread > 0 ? `HIGH QUOTE +${spread.toLocaleString('en-US', { maximumFractionDigits: 2 })}%` : 'NO SPREAD', x, y + 66)
+    })
+  })
+
+  context.fillStyle = MUTED
+  context.font = `400 14px ${SERIF}`
+  context.fillText('Matching posted configurations only. Not a quality, latency, residency, reliability or SLA comparison.', 60, 542)
+  drawFooter(context, {
+    source: 'OpenRouter endpoint offers · reported serving configurations',
     asOf: options.asOf,
     path: options.path,
   })

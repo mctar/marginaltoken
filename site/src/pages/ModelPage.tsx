@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import OfferPanel from '../components/OfferPanel'
 import ShareImageButton from '../components/ShareImageButton'
 import { cheaperMatches } from '../lib/alternatives'
 import { comparisonPath, modelComparisonPath } from '../lib/compare'
@@ -6,7 +7,7 @@ import { contextSize, longDate, price, providerName } from '../lib/format'
 import { capabilityTags, modalityList, modelPath } from '../lib/models'
 import { createModelShareImage } from '../lib/share-image'
 import { shareImageFilename } from '../lib/share'
-import type { PriceModel } from '../lib/types'
+import type { OfferModel, PriceModel } from '../lib/types'
 
 async function copyText(value: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
@@ -33,7 +34,19 @@ function modelSource(model: PriceModel): { href: string; label: string } {
   return { href: `https://openrouter.ai/${model.key}`, label: 'OpenRouter listing' }
 }
 
-export default function ModelPage({ model, models, asOf }: { model: PriceModel; models: PriceModel[]; asOf: string }) {
+export default function ModelPage({
+  model,
+  models,
+  asOf,
+  offerModel,
+  offersAsOf,
+}: {
+  model: PriceModel
+  models: PriceModel[]
+  asOf: string
+  offerModel: OfferModel | null
+  offersAsOf: string | null
+}) {
   const [shareStatus, setShareStatus] = useState('')
   const tags = capabilityTags(model)
   const source = modelSource(model)
@@ -183,6 +196,8 @@ export default function ModelPage({ model, models, asOf }: { model: PriceModel; 
           )}
         </footer>
       </article>
+
+      {offerModel && offersAsOf && <OfferPanel model={model} offerModel={offerModel} asOf={offersAsOf} />}
 
       <section className="model-alternatives" aria-labelledby="cheaper-matches-title">
         <header className="model-alternatives-heading">

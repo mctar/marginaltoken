@@ -60,7 +60,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">07</span>
           <h2>Share images</h2>
           <p>
-            Every principal visualization can be exported as a 1200 × 630 pixel PNG. The image is drawn in the browser from the same structured data as the page rather than captured from the screen. Each export permanently includes marginaltoken.com, the price-file date, and a concise source description. Native file sharing is used where available; otherwise the image is copied or downloaded locally.
+            Every principal visualization, including comparable venue panels, can be exported as a 1200 × 630 pixel PNG. The image is drawn in the browser from the same structured data as the page rather than captured from the screen. Each export permanently includes marginaltoken.com, the price-file date, and a concise source description. Native file sharing is used where available; otherwise the image is copied or downloaded locally.
           </p>
         </section>
         <section>
@@ -75,6 +75,13 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <h2>Honesty caveats</h2>
           <p>
             These are list prices, not negotiated prices. Standard rates are used, not batch, cached, flex, priority, regional, or long-context premiums. Tokenizers differ, so equal token counts do not always represent equal text. Price says nothing by itself about model quality. Nothing here is investment advice.
+          </p>
+        </section>
+        <section>
+          <span className="method-number">10</span>
+          <h2>Venue comparisons</h2>
+          <p>
+            Model cards may show multiple OpenRouter routes. A spread is calculated only when canonical model, reported precision, context window, maximum output, reasoning, tool, and structured-output support match. Disclosed precision is labelled declared; undisclosed precision is nominal. Missing limits are never treated as comparable. These groups do not establish equal quality, throughput, residency, reliability, or contractual terms.
           </p>
         </section>
       </article>

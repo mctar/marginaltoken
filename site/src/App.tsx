@@ -42,10 +42,10 @@ export default function App() {
   const modelKey = route === '/model/' ? modelKeyFor(window.location.pathname) : null
 
   useEffect(() => {
-    loadFeed()
+    loadFeed(route === '/model/')
       .then((data) => setState({ status: 'ready', data }))
       .catch((error: unknown) => setState({ status: 'error', message: error instanceof Error ? error.message : String(error) }))
-  }, [])
+  }, [route])
 
   if (state.status === 'loading') {
     return <div className="loading-page">Reading the tape.</div>
@@ -61,6 +61,7 @@ export default function App() {
 
   const { data } = state
   const model = modelKey ? data.prices.models.find((candidate) => candidate.key === modelKey) : null
+  const offerModel = modelKey ? data.offers?.models.find((candidate) => candidate.key === modelKey) ?? null : null
   return (
     <div className="min-h-screen">
       <a className="skip-link" href="#main">Skip to content</a>
@@ -69,7 +70,15 @@ export default function App() {
       {route === '/tape/' && <TapePage prices={data.prices} />}
       {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} />}
       {route === '/methodology/' && <MethodologyPage meta={data.meta} provenance={data.provenance} />}
-      {route === '/model/' && (model ? <ModelPage model={model} models={data.prices.models} asOf={data.meta.asOf} /> : <MissingModelPage />)}
+      {route === '/model/' && (model ? (
+        <ModelPage
+          model={model}
+          models={data.prices.models}
+          asOf={data.meta.asOf}
+          offerModel={offerModel}
+          offersAsOf={data.offers?.asOf ?? null}
+        />
+      ) : <MissingModelPage />)}
       {route === '/' && <FrontPage data={data} />}
       <Footer generatedAt={data.meta.generatedAt} modelCount={data.meta.modelCount} />
     </div>

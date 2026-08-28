@@ -128,6 +128,76 @@ export type ProvenanceFeed = {
   conflicts: SourceConflict[]
 }
 
+export type OfferPriceRange = {
+  min: number
+  max: number
+  spreadPct?: number
+}
+
+export type VenueOffer = {
+  venue: string
+  tag: string
+  input_mtok: number
+  output_mtok: number
+  cached_input_mtok?: number
+  cache_write_mtok?: number
+  reasoning_mtok?: number
+  context: number
+  quantization?: string
+  maxOutputTokens?: number
+  supportedParameters: string[]
+  supportsReasoning: boolean
+  supportsTools: boolean
+  supportsStructuredOutput: boolean
+  configurationKey: string
+}
+
+export type OfferComparisonGroup = {
+  key: string
+  confidence: 'declared' | 'nominal' | 'incomplete'
+  comparable: boolean
+  offerCount: number
+  venueCount: number
+  quantization: string
+  context: number
+  maxOutputTokens?: number
+  supportsReasoning: boolean
+  supportsTools: boolean
+  supportsStructuredOutput: boolean
+  input_mtok: OfferPriceRange
+  output_mtok: OfferPriceRange
+}
+
+export type OfferModel = {
+  key: string
+  canonicalKey: string
+  sourceUrl: string
+  configurationCount: number
+  comparableGroupCount: number
+  comparisonGroups: OfferComparisonGroup[]
+  offers: VenueOffer[]
+}
+
+export type OffersFeed = {
+  generatedAt: string
+  asOf: string
+  source: 'openrouter-endpoints'
+  targetModelCount: number
+  modelCount: number
+  offerCount: number
+  venueCount: number
+  comparableModelCount: number
+  comparableGroupCount: number
+  declaredComparableGroupCount: number
+  nominalComparableGroupCount: number
+  comparisonPolicy: {
+    version: number
+    scope: string
+    matchingFields: string[]
+  }
+  models: OfferModel[]
+}
+
 export type FeedData = {
   prices: PricesFeed
   history: HistoryFeed
@@ -135,4 +205,5 @@ export type FeedData = {
   meta: MetaFeed
   brief: BriefFeed | null
   provenance: ProvenanceFeed | null
+  offers: OffersFeed | null
 }

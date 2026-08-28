@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-28T20:03:33Z",
+  "generatedAt": "2026-08-28T23:00:33Z",
   "asOf": "2026-08-28",
   "source": "openrouter-endpoints",
   "targetModelCount": 319,
   "modelCount": 319,
-  "offerCount": 1152,
+  "offerCount": 1157,
   "venueCount": 71,
-  "comparableModelCount": 118,
-  "comparableGroupCount": 168,
-  "declaredComparableGroupCount": 59,
-  "nominalComparableGroupCount": 109,
+  "comparableModelCount": 119,
+  "comparableGroupCount": 171,
+  "declaredComparableGroupCount": 61,
+  "nominalComparableGroupCount": 110,
   "comparisonPolicy": {
     "version": 1,
     "scope": "same-canonical-model",
@@ -6551,13 +6551,13 @@
           "supportsTools": false,
           "supportsStructuredOutput": false,
           "input_mtok": {
-            "min": 0.5,
-            "max": 0.5,
+            "min": 0.25,
+            "max": 0.25,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 1.6,
-            "max": 1.6,
+            "min": 0.8,
+            "max": 0.8,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 128000
@@ -6615,6 +6615,29 @@
           "quantization": "fp8",
           "maxOutputTokens": 64000,
           "configurationKey": "cfg-8e3e222fa676d274"
+        },
+        {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 0.25,
+          "output_mtok": 0.8,
+          "context": 163840,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "temperature",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": false,
+          "supportsStructuredOutput": false,
+          "cached_input_mtok": 0.075,
+          "quantization": "unknown",
+          "maxOutputTokens": 128000,
+          "configurationKey": "cfg-f7e2610afc861a40"
         },
         {
           "venue": "SiliconFlow",
@@ -6858,29 +6881,6 @@
           "quantization": "unknown",
           "maxOutputTokens": 147456,
           "configurationKey": "cfg-80521b799b560a15"
-        },
-        {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 0.5,
-          "output_mtok": 1.6,
-          "context": 163840,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "temperature",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": false,
-          "supportsStructuredOutput": false,
-          "cached_input_mtok": 0.15,
-          "quantization": "unknown",
-          "maxOutputTokens": 128000,
-          "configurationKey": "cfg-f7e2610afc861a40"
         },
         {
           "venue": "Google",
@@ -7140,13 +7140,13 @@
           "supportsStructuredOutput": true,
           "input_mtok": {
             "min": 0.14,
-            "max": 0.16,
-            "spreadPct": 14.29
+            "max": 0.17,
+            "spreadPct": 21.43
           },
           "output_mtok": {
             "min": 0.28,
-            "max": 0.45,
-            "spreadPct": 60.71
+            "max": 0.5,
+            "spreadPct": 78.57
           },
           "maxOutputTokens": 943718
         },
@@ -7185,13 +7185,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.0869,
-            "max": 0.0869,
+            "min": 0.0867,
+            "max": 0.0867,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.1739,
-            "max": 0.1739,
+            "min": 0.1733,
+            "max": 0.1733,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 131072
@@ -7231,13 +7231,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.14,
-            "max": 0.14,
+            "min": 0.0679,
+            "max": 0.0679,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.28,
-            "max": 0.28,
+            "min": 0.168,
+            "max": 0.168,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 943718
@@ -7392,13 +7392,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.0868,
-            "max": 0.0868,
+            "min": 0.0865,
+            "max": 0.0865,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.1736,
-            "max": 0.1736,
+            "min": 0.173,
+            "max": 0.173,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 384000
@@ -7429,10 +7429,38 @@
       ],
       "offers": [
         {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 0.0679,
+          "output_mtok": 0.168,
+          "context": 1048576,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.0168,
+          "quantization": "unknown",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-7cdfb3e406b45cf7"
+        },
+        {
           "venue": "StreamLake",
           "tag": "streamlake/fp8",
-          "input_mtok": 0.0868,
-          "output_mtok": 0.1736,
+          "input_mtok": 0.0865,
+          "output_mtok": 0.173,
           "context": 1024000,
           "supportedParameters": [
             "include_reasoning",
@@ -7452,7 +7480,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0174,
+          "cached_input_mtok": 0.0173,
           "quantization": "fp8",
           "maxOutputTokens": 384000,
           "configurationKey": "cfg-d60d5c80b35670cf"
@@ -7460,8 +7488,8 @@
         {
           "venue": "Baidu",
           "tag": "baidu/fp8",
-          "input_mtok": 0.0869,
-          "output_mtok": 0.1739,
+          "input_mtok": 0.0867,
+          "output_mtok": 0.1733,
           "context": 1048576,
           "supportedParameters": [
             "include_reasoning",
@@ -7479,7 +7507,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0174,
+          "cached_input_mtok": 0.0173,
           "quantization": "fp8",
           "maxOutputTokens": 131072,
           "configurationKey": "cfg-32caa1fd2ca41f19"
@@ -7701,34 +7729,6 @@
           "configurationKey": "cfg-11866492f82c06d3"
         },
         {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 0.14,
-          "output_mtok": 0.28,
-          "context": 1048576,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.028,
-          "quantization": "unknown",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-7cdfb3e406b45cf7"
-        },
-        {
           "venue": "NextBit",
           "tag": "nextbit/fp8",
           "input_mtok": 0.14,
@@ -7828,8 +7828,8 @@
         {
           "venue": "Mancer 2",
           "tag": "mancer/fp8",
-          "input_mtok": 0.16,
-          "output_mtok": 0.45,
+          "input_mtok": 0.17,
+          "output_mtok": 0.5,
           "context": 1048576,
           "supportedParameters": [
             "frequency_penalty",
@@ -8022,14 +8022,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.14,
+            "min": 0.08,
             "max": 0.28,
-            "spreadPct": 100.0
+            "spreadPct": 250.0
           },
           "output_mtok": {
-            "min": 0.28,
+            "min": 0.252,
             "max": 0.66,
-            "spreadPct": 135.71
+            "spreadPct": 161.9
           },
           "maxOutputTokens": 943718
         },
@@ -8183,13 +8183,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.0599,
-            "max": 0.0599,
+            "min": 0.05,
+            "max": 0.05,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.1198,
-            "max": 0.1198,
+            "min": 0.1,
+            "max": 0.1,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 131072
@@ -8480,6 +8480,33 @@
           "configurationKey": "cfg-c171ef567ab4b373"
         },
         {
+          "venue": "Baidu",
+          "tag": "baidu/fp8",
+          "input_mtok": 0.05,
+          "output_mtok": 0.1,
+          "context": 1048576,
+          "supportedParameters": [
+            "include_reasoning",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.01,
+          "quantization": "fp8",
+          "maxOutputTokens": 131072,
+          "configurationKey": "cfg-8859213605baada1"
+        },
+        {
           "venue": "Relace",
           "tag": "relace/fp4",
           "input_mtok": 0.05,
@@ -8509,33 +8536,6 @@
           "quantization": "fp4",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-c7ea818229405718"
-        },
-        {
-          "venue": "Baidu",
-          "tag": "baidu/fp8",
-          "input_mtok": 0.0599,
-          "output_mtok": 0.1198,
-          "context": 1048576,
-          "supportedParameters": [
-            "include_reasoning",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.012,
-          "quantization": "fp8",
-          "maxOutputTokens": 131072,
-          "configurationKey": "cfg-8859213605baada1"
         },
         {
           "venue": "Ambient",
@@ -8604,6 +8604,33 @@
           "quantization": "fp8",
           "maxOutputTokens": 384000,
           "configurationKey": "cfg-0baa52bb47906698"
+        },
+        {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 0.08,
+          "output_mtok": 0.252,
+          "context": 1048576,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.0252,
+          "quantization": "unknown",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-47c99023c8c39182"
         },
         {
           "venue": "StreamLake",
@@ -8859,33 +8886,6 @@
           "configurationKey": "cfg-cf1468152d90410d"
         },
         {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 0.14,
-          "output_mtok": 0.28,
-          "context": 1048576,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.028,
-          "quantization": "unknown",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-47c99023c8c39182"
-        },
-        {
           "venue": "Parasail",
           "tag": "parasail/fp8",
           "input_mtok": 0.14,
@@ -8954,42 +8954,6 @@
           "configurationKey": "cfg-47c99023c8c39182"
         },
         {
-          "venue": "Mancer 2",
-          "tag": "mancer/fp8",
-          "input_mtok": 0.16,
-          "output_mtok": 0.45,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "logprobs",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_a",
-            "top_k",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "quantization": "fp8",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-5139e07e820e4c97"
-        },
-        {
           "venue": "Venice",
           "tag": "venice",
           "input_mtok": 0.175,
@@ -9049,6 +9013,42 @@
           "quantization": "unknown",
           "maxOutputTokens": 393216,
           "configurationKey": "cfg-e5eb4e195e45293e"
+        },
+        {
+          "venue": "Mancer 2",
+          "tag": "mancer/fp8",
+          "input_mtok": 0.18,
+          "output_mtok": 0.5,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "logprobs",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_a",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "quantization": "fp8",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-5139e07e820e4c97"
         },
         {
           "venue": "DeepSeek",
@@ -9482,14 +9482,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.7504,
+            "min": 0.7402,
             "max": 1.6,
-            "spreadPct": 113.22
+            "spreadPct": 116.16
           },
           "output_mtok": {
-            "min": 1.5007,
+            "min": 1.4804,
             "max": 3.2,
-            "spreadPct": 113.23
+            "spreadPct": 116.16
           },
           "maxOutputTokens": 393216
         },
@@ -9505,13 +9505,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.7416,
-            "max": 0.7416,
+            "min": 0.7315,
+            "max": 0.7315,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 1.4832,
-            "max": 1.4832,
+            "min": 1.463,
+            "max": 1.463,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 384000
@@ -9528,14 +9528,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 1.74,
+            "min": 0.87,
             "max": 1.74,
-            "spreadPct": 0.0
+            "spreadPct": 100.0
           },
           "output_mtok": {
-            "min": 3.48,
+            "min": 1.74,
             "max": 3.48,
-            "spreadPct": 0.0
+            "spreadPct": 100.0
           },
           "maxOutputTokens": 943718
         },
@@ -9682,8 +9682,8 @@
         {
           "venue": "StreamLake",
           "tag": "streamlake/fp8",
-          "input_mtok": 0.7416,
-          "output_mtok": 1.4832,
+          "input_mtok": 0.7315,
+          "output_mtok": 1.463,
           "context": 1024000,
           "supportedParameters": [
             "include_reasoning",
@@ -9703,7 +9703,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0618,
+          "cached_input_mtok": 0.061,
           "quantization": "fp8",
           "maxOutputTokens": 384000,
           "configurationKey": "cfg-696a416a6b34af85"
@@ -9711,8 +9711,8 @@
         {
           "venue": "Baidu",
           "tag": "baidu/fp8",
-          "input_mtok": 0.7504,
-          "output_mtok": 1.5007,
+          "input_mtok": 0.7402,
+          "output_mtok": 1.4804,
           "context": 1048576,
           "supportedParameters": [
             "include_reasoning",
@@ -9730,7 +9730,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0622,
+          "cached_input_mtok": 0.0613,
           "quantization": "fp8",
           "maxOutputTokens": 393216,
           "configurationKey": "cfg-33f1310784dd2c05"
@@ -9760,6 +9760,33 @@
           "quantization": "fp8",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-d10f21eefa761e82"
+        },
+        {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 0.87,
+          "output_mtok": 1.74,
+          "context": 1048576,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.174,
+          "quantization": "unknown",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-6db517e1d09a8be8"
         },
         {
           "venue": "Ionstream",
@@ -10073,33 +10100,6 @@
           "quantization": "fp4",
           "maxOutputTokens": 262144,
           "configurationKey": "cfg-b8566020959b809c"
-        },
-        {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 1.74,
-          "output_mtok": 3.48,
-          "context": 1048576,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.348,
-          "quantization": "unknown",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-6db517e1d09a8be8"
         },
         {
           "venue": "Fireworks",
@@ -15587,29 +15587,6 @@
           "maxOutputTokens": 131072
         },
         {
-          "key": "cfg-85f75e54340e9a31",
-          "confidence": "nominal",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
-          "quantization": "undisclosed",
-          "context": 262144,
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": false,
-          "input_mtok": {
-            "min": 0.38,
-            "max": 0.38,
-            "spreadPct": 0.0
-          },
-          "output_mtok": {
-            "min": 1.15,
-            "max": 1.15,
-            "spreadPct": 0.0
-          },
-          "maxOutputTokens": 235929
-        },
-        {
           "key": "cfg-8792140ebd15c5bd",
           "confidence": "declared",
           "comparable": false,
@@ -15746,6 +15723,29 @@
             "spreadPct": 0.0
           },
           "maxOutputTokens": 65536
+        },
+        {
+          "key": "cfg-eb9d3b4aac37f3c6",
+          "confidence": "nominal",
+          "comparable": false,
+          "offerCount": 1,
+          "venueCount": 1,
+          "quantization": "undisclosed",
+          "context": 131072,
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": false,
+          "input_mtok": {
+            "min": 0.38,
+            "max": 0.38,
+            "spreadPct": 0.0
+          },
+          "output_mtok": {
+            "min": 1.15,
+            "max": 1.15,
+            "spreadPct": 0.0
+          },
+          "maxOutputTokens": 117964
         },
         {
           "key": "cfg-f303cc523636d2d5",
@@ -16182,7 +16182,7 @@
           "tag": "sambanova",
           "input_mtok": 0.38,
           "output_mtok": 1.15,
-          "context": 262144,
+          "context": 131072,
           "supportedParameters": [
             "include_reasoning",
             "max_tokens",
@@ -16198,8 +16198,8 @@
           "supportsTools": true,
           "supportsStructuredOutput": false,
           "quantization": "unknown",
-          "maxOutputTokens": 235929,
-          "configurationKey": "cfg-85f75e54340e9a31"
+          "maxOutputTokens": 117964,
+          "configurationKey": "cfg-eb9d3b4aac37f3c6"
         },
         {
           "venue": "Together",
@@ -18498,13 +18498,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.25,
-            "max": 0.25,
+            "min": 0.2,
+            "max": 0.2,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.87,
-            "max": 0.87,
+            "min": 0.696,
+            "max": 0.696,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 115200
@@ -18604,6 +18604,30 @@
       ],
       "offers": [
         {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 0.2,
+          "output_mtok": 0.696,
+          "context": 128000,
+          "supportedParameters": [
+            "logprobs",
+            "max_tokens",
+            "response_format",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": false,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "quantization": "unknown",
+          "maxOutputTokens": 115200,
+          "configurationKey": "cfg-1686ccaf3d315cf7"
+        },
+        {
           "venue": "DeepInfra",
           "tag": "deepinfra/base",
           "input_mtok": 0.2,
@@ -18630,30 +18654,6 @@
           "quantization": "fp8",
           "maxOutputTokens": 16384,
           "configurationKey": "cfg-f5f42ff9bde94ab6"
-        },
-        {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 0.25,
-          "output_mtok": 0.87,
-          "context": 128000,
-          "supportedParameters": [
-            "logprobs",
-            "max_tokens",
-            "response_format",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": false,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "quantization": "unknown",
-          "maxOutputTokens": 115200,
-          "configurationKey": "cfg-1686ccaf3d315cf7"
         },
         {
           "venue": "Novita",
@@ -26298,6 +26298,34 @@
           "configurationKey": "cfg-c91457c18cee7620"
         },
         {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 2.85,
+          "output_mtok": 14.25,
+          "context": 1048576,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.285,
+          "quantization": "unknown",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-0077cbed90792344"
+        },
+        {
           "venue": "BaseTen",
           "tag": "baseten/fp8",
           "input_mtok": 3.0,
@@ -26353,34 +26381,6 @@
           "quantization": "mxfp4",
           "maxOutputTokens": 65535,
           "configurationKey": "cfg-07aff676b18a0636"
-        },
-        {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 3.0,
-          "output_mtok": 15.0,
-          "context": 1048576,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.3,
-          "quantization": "unknown",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-0077cbed90792344"
         },
         {
           "venue": "Fireworks",
@@ -33053,13 +33053,13 @@
           "supportsTools": false,
           "supportsStructuredOutput": false,
           "input_mtok": {
-            "min": 0.1,
-            "max": 0.1,
+            "min": 0.055,
+            "max": 0.055,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.7,
-            "max": 0.7,
+            "min": 0.385,
+            "max": 0.385,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 115200
@@ -33352,8 +33352,8 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.085,
-            "max": 0.085,
+            "min": 0.075,
+            "max": 0.075,
             "spreadPct": 0.0
           },
           "output_mtok": {
@@ -33525,9 +33525,33 @@
           "configurationKey": "cfg-bcf5ec17db65bf75"
         },
         {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 0.055,
+          "output_mtok": 0.385,
+          "context": 128000,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "temperature",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": false,
+          "supportsStructuredOutput": false,
+          "cached_input_mtok": 0.02,
+          "quantization": "unknown",
+          "maxOutputTokens": 115200,
+          "configurationKey": "cfg-47fbbc439091d46f"
+        },
+        {
           "venue": "Mancer 2",
           "tag": "mancer/fp8",
-          "input_mtok": 0.085,
+          "input_mtok": 0.075,
           "output_mtok": 0.5,
           "context": 131072,
           "supportedParameters": [
@@ -33614,30 +33638,6 @@
           "quantization": "fp4",
           "maxOutputTokens": 115264,
           "configurationKey": "cfg-98293db25736def8"
-        },
-        {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 0.1,
-          "output_mtok": 0.7,
-          "context": 128000,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "temperature",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": false,
-          "supportsStructuredOutput": false,
-          "cached_input_mtok": 0.02,
-          "quantization": "unknown",
-          "maxOutputTokens": 115200,
-          "configurationKey": "cfg-47fbbc439091d46f"
         },
         {
           "venue": "Parasail",
@@ -43192,13 +43192,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 2.0,
-            "max": 2.0,
+            "min": 2.5,
+            "max": 2.5,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 6.0,
-            "max": 6.0,
+            "min": 6.25,
+            "max": 6.25,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 909000
@@ -43501,8 +43501,8 @@
         {
           "venue": "Together",
           "tag": "together",
-          "input_mtok": 2.0,
-          "output_mtok": 6.0,
+          "input_mtok": 2.5,
+          "output_mtok": 6.25,
           "context": 1010000,
           "supportedParameters": [
             "frequency_penalty",
@@ -43528,7 +43528,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.25,
+          "cached_input_mtok": 0.5,
           "quantization": "unknown",
           "maxOutputTokens": 909000,
           "configurationKey": "cfg-102021cc06aeeb8c"
@@ -44030,6 +44030,7 @@
             "stop",
             "structured_outputs",
             "temperature",
+            "tool_choice",
             "tools",
             "top_k",
             "top_p"
@@ -48002,13 +48003,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.8,
-            "max": 0.8,
+            "min": 0.4,
+            "max": 0.4,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 3.0,
-            "max": 3.0,
+            "min": 1.5,
+            "max": 1.5,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 235929
@@ -48093,6 +48094,33 @@
           "quantization": "fp8",
           "maxOutputTokens": 131072,
           "configurationKey": "cfg-65d5e98777d87cfe"
+        },
+        {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 0.4,
+          "output_mtok": 1.5,
+          "context": 262144,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "response_format",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.08,
+          "quantization": "unknown",
+          "maxOutputTokens": 235929,
+          "configurationKey": "cfg-fd388b7ffa60231d"
         },
         {
           "venue": "AtlasCloud",
@@ -48199,33 +48227,6 @@
           "quantization": "unknown",
           "maxOutputTokens": 128000,
           "configurationKey": "cfg-90c5377163b9f14b"
-        },
-        {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 0.8,
-          "output_mtok": 3.0,
-          "context": 262144,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "response_format",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.16,
-          "quantization": "unknown",
-          "maxOutputTokens": 235929,
-          "configurationKey": "cfg-fd388b7ffa60231d"
         }
       ]
     },
@@ -51300,14 +51301,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 1.4,
+            "min": 0.7,
             "max": 2.1,
-            "spreadPct": 50.0
+            "spreadPct": 200.0
           },
           "output_mtok": {
-            "min": 4.4,
+            "min": 2.2,
             "max": 6.6,
-            "spreadPct": 50.0
+            "spreadPct": 200.0
           },
           "maxOutputTokens": 235929
         },
@@ -51528,6 +51529,33 @@
           "quantization": "fp4",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-8fc9a063bb49cf24"
+        },
+        {
+          "venue": "DigitalOcean",
+          "tag": "digitalocean",
+          "input_mtok": 0.7,
+          "output_mtok": 2.2,
+          "context": 262144,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.105,
+          "quantization": "unknown",
+          "maxOutputTokens": 235929,
+          "configurationKey": "cfg-d0570a71863e10a1"
         },
         {
           "venue": "Inceptron",
@@ -51983,33 +52011,6 @@
           "quantization": "fp8",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-b6d76d10eed946d2"
-        },
-        {
-          "venue": "DigitalOcean",
-          "tag": "digitalocean",
-          "input_mtok": 1.4,
-          "output_mtok": 4.4,
-          "context": 262144,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.21,
-          "quantization": "unknown",
-          "maxOutputTokens": 235929,
-          "configurationKey": "cfg-d0570a71863e10a1"
         },
         {
           "venue": "Fireworks",
@@ -52471,23 +52472,23 @@
       "canonicalKey": "z-ai/glm-5.3-20260816",
       "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-20260816/endpoints",
       "configurationCount": 7,
-      "comparableGroupCount": 0,
+      "comparableGroupCount": 3,
       "comparisonGroups": [
         {
           "key": "cfg-1b4b5c9058d3ad6f",
           "confidence": "declared",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
+          "comparable": true,
+          "offerCount": 2,
+          "venueCount": 2,
           "quantization": "fp8",
           "context": 1048576,
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 1.4,
+            "min": 1.3,
             "max": 1.4,
-            "spreadPct": 0.0
+            "spreadPct": 7.69
           },
           "output_mtok": {
             "min": 4.4,
@@ -52522,9 +52523,9 @@
         {
           "key": "cfg-541d8e965ea20a60",
           "confidence": "nominal",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
+          "comparable": true,
+          "offerCount": 3,
+          "venueCount": 3,
           "quantization": "undisclosed",
           "context": 1048576,
           "supportsReasoning": true,
@@ -52591,9 +52592,9 @@
         {
           "key": "cfg-e1c8c1290563fd92",
           "confidence": "declared",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
+          "comparable": true,
+          "offerCount": 2,
+          "venueCount": 2,
           "quantization": "fp8",
           "context": 262144,
           "supportsReasoning": true,
@@ -52601,13 +52602,13 @@
           "supportsStructuredOutput": true,
           "input_mtok": {
             "min": 1.25,
-            "max": 1.25,
-            "spreadPct": 0.0
+            "max": 1.26,
+            "spreadPct": 0.8
           },
           "output_mtok": {
-            "min": 4.4,
+            "min": 3.96,
             "max": 4.4,
-            "spreadPct": 0.0
+            "spreadPct": 11.11
           },
           "maxOutputTokens": 131072
         },
@@ -52668,6 +52669,73 @@
           "quantization": "fp8",
           "maxOutputTokens": 131072,
           "configurationKey": "cfg-e1c8c1290563fd92"
+        },
+        {
+          "venue": "AtlasCloud",
+          "tag": "atlas-cloud/fp8",
+          "input_mtok": 1.26,
+          "output_mtok": 3.96,
+          "context": 262144,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.234,
+          "quantization": "fp8",
+          "maxOutputTokens": 131072,
+          "configurationKey": "cfg-e1c8c1290563fd92"
+        },
+        {
+          "venue": "AkashML",
+          "tag": "akashml/fp8",
+          "input_mtok": 1.3,
+          "output_mtok": 4.4,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.26,
+          "quantization": "fp8",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-1b4b5c9058d3ad6f"
         },
         {
           "venue": "BaseTen",
@@ -52766,6 +52834,40 @@
           "configurationKey": "cfg-e5953e8b5cd5e496"
         },
         {
+          "venue": "Fireworks",
+          "tag": "fireworks",
+          "input_mtok": 1.4,
+          "output_mtok": 4.4,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "logprobs",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.26,
+          "quantization": "unknown",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-541d8e965ea20a60"
+        },
+        {
           "venue": "Friendli",
           "tag": "friendli",
           "input_mtok": 1.4,
@@ -52823,6 +52925,35 @@
           "quantization": "fp8",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-1b4b5c9058d3ad6f"
+        },
+        {
+          "venue": "Modal",
+          "tag": "modal",
+          "input_mtok": 1.4,
+          "output_mtok": 4.4,
+          "context": 1048576,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.26,
+          "quantization": "unknown",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-541d8e965ea20a60"
         },
         {
           "venue": "Z.AI",
@@ -53001,8 +53132,8 @@
           "key": "cfg-711b64606ae98574",
           "confidence": "declared",
           "comparable": true,
-          "offerCount": 3,
-          "venueCount": 3,
+          "offerCount": 4,
+          "venueCount": 4,
           "quantization": "fp8",
           "context": 1048576,
           "supportsReasoning": true,
@@ -53032,14 +53163,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.15,
+            "min": 0.1399,
             "max": 0.15,
-            "spreadPct": 0.0
+            "spreadPct": 7.22
           },
           "output_mtok": {
-            "min": 0.5,
+            "min": 0.4699,
             "max": 0.5,
-            "spreadPct": 0.0
+            "spreadPct": 6.41
           },
           "maxOutputTokens": 943718
         },
@@ -53126,6 +53257,37 @@
           "configurationKey": "cfg-711b64606ae98574"
         },
         {
+          "venue": "Relace",
+          "tag": "relace/fp8",
+          "input_mtok": 0.075,
+          "output_mtok": 0.25,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.015,
+          "quantization": "fp8",
+          "maxOutputTokens": 131072,
+          "configurationKey": "cfg-711b64606ae98574"
+        },
+        {
           "venue": "Z.AI",
           "tag": "z-ai/fp8",
           "input_mtok": 0.075,
@@ -53150,6 +53312,42 @@
           "quantization": "fp8",
           "maxOutputTokens": 131072,
           "configurationKey": "cfg-711b64606ae98574"
+        },
+        {
+          "venue": "Makora",
+          "tag": "makora",
+          "input_mtok": 0.1399,
+          "output_mtok": 0.4699,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "logprobs",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.025,
+          "quantization": "unknown",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-95fca0a85020660f"
         },
         {
           "venue": "BaseTen",
@@ -53339,42 +53537,6 @@
           "quantization": "fp8",
           "maxOutputTokens": 131072,
           "configurationKey": "cfg-44317d45042b29fc"
-        },
-        {
-          "venue": "Makora",
-          "tag": "makora",
-          "input_mtok": 0.15,
-          "output_mtok": 0.5,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "logprobs",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.03,
-          "quantization": "unknown",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-95fca0a85020660f"
         },
         {
           "venue": "Modal",

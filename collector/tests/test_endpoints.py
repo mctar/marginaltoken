@@ -95,6 +95,73 @@ class OfferNormalizationTests(unittest.TestCase):
         self.assertTrue(cheapest["supportsReasoning"])
         self.assertTrue(cheapest["supportsTools"])
         self.assertTrue(cheapest["supportsStructuredOutput"])
+        self.assertNotEqual(
+            normalized["offers"][0]["configurationKey"],
+            normalized["offers"][1]["configurationKey"],
+        )
+        self.assertEqual(normalized["configurationCount"], 2)
+        self.assertEqual(normalized["comparableGroupCount"], 0)
+
+    def test_matching_reported_configurations_form_a_comparable_group(self) -> None:
+        target = offer_targets({"data": [raw_model("lab/model")]})[0]
+        first = raw_offer("Venue A", "venue-a/bf16", "0.00000003", "0.00000017")
+        second = raw_offer("Venue B", "venue-b/bf16", "0.00000006", "0.00000051")
+
+        normalized = normalize_offers(target, endpoint_payload(first, second))
+
+        self.assertEqual(normalized["configurationCount"], 1)
+        self.assertEqual(normalized["comparableGroupCount"], 1)
+        group = normalized["comparisonGroups"][0]
+        self.assertEqual(group["confidence"], "declared")
+        self.assertTrue(group["comparable"])
+        self.assertEqual(group["offerCount"], 2)
+        self.assertEqual(group["venueCount"], 2)
+        self.assertEqual(group["input_mtok"], {"min": 0.03, "max": 0.06, "spreadPct": 100.0})
+        self.assertEqual(group["output_mtok"], {"min": 0.17, "max": 0.51, "spreadPct": 200.0})
+        self.assertEqual(
+            normalized["offers"][0]["configurationKey"],
+            normalized["offers"][1]["configurationKey"],
+        )
+
+    def test_undisclosed_and_incomplete_configurations_are_labelled_conservatively(self) -> None:
+        target = offer_targets({"data": [raw_model("lab/model")]})[0]
+        nominal_a = raw_offer("Venue A", "venue-a")
+        nominal_b = raw_offer("Venue B", "venue-b")
+        nominal_a["quantization"] = "unknown"
+        nominal_b["quantization"] = "unknown"
+        incomplete = raw_offer("Venue C", "venue-c/fp8")
+        incomplete.pop("max_completion_tokens")
+
+        normalized = normalize_offers(target, endpoint_payload(nominal_a, nominal_b, incomplete))
+
+        groups = {group["confidence"]: group for group in normalized["comparisonGroups"]}
+        self.assertTrue(groups["nominal"]["comparable"])
+        self.assertEqual(groups["nominal"]["quantization"], "undisclosed")
+        self.assertFalse(groups["incomplete"]["comparable"])
+        self.assertNotIn("maxOutputTokens", groups["incomplete"])
+
+    def test_each_policy_field_separates_serving_configurations(self) -> None:
+        target = offer_targets({"data": [raw_model("lab/model")]})[0]
+
+        def remove_parameter(offer: dict, parameter: str) -> None:
+            offer["supported_parameters"].remove(parameter)
+
+        mutations = {
+            "quantization": lambda offer: offer.update(quantization="FP8"),
+            "context": lambda offer: offer.update(context_length=65536),
+            "maximum output": lambda offer: offer.update(max_completion_tokens=8192),
+            "reasoning": lambda offer: remove_parameter(offer, "reasoning"),
+            "tools": lambda offer: remove_parameter(offer, "tools"),
+            "structured output": lambda offer: remove_parameter(offer, "response_format"),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(field=label):
+                first = raw_offer("Venue A", "venue-a/bf16")
+                second = raw_offer("Venue B", "venue-b/bf16")
+                mutate(second)
+                normalized = normalize_offers(target, endpoint_payload(first, second))
+                self.assertEqual(normalized["configurationCount"], 2)
+                self.assertEqual(normalized["comparableGroupCount"], 0)
 
 
 class OfferCollectorTests(unittest.TestCase):
@@ -133,6 +200,9 @@ class OfferCollectorTests(unittest.TestCase):
         self.assertEqual(feed["modelCount"], 2)
         self.assertEqual(feed["offerCount"], 2)
         self.assertEqual(feed["venueCount"], 2)
+        self.assertEqual(feed["comparableModelCount"], 0)
+        self.assertEqual(feed["comparableGroupCount"], 0)
+        self.assertEqual(feed["comparisonPolicy"]["version"], 1)
         self.assertEqual([model["key"] for model in feed["models"]], ["lab/a", "lab/b"])
         self.assertTrue((self.state_dir / "publish-pending").exists())
 
@@ -155,6 +225,43 @@ class OfferCollectorTests(unittest.TestCase):
         self.assertEqual(heartbeat["failedModelCount"], 1)
         self.assertEqual(heartbeat["reusedModelCount"], 1)
         self.assertFalse((self.state_dir / "publish-pending").exists())
+
+    def test_legacy_fallback_is_upgraded_to_the_current_comparison_schema(self) -> None:
+        self.collect()
+        feed = json.loads(self.data_file.read_text())
+        for model in feed["models"]:
+            model.pop("configurationCount")
+            model.pop("comparableGroupCount")
+            model.pop("comparisonGroups")
+            for offer in model["offers"]:
+                offer.pop("configurationKey")
+        for field in (
+            "comparableModelCount",
+            "comparableGroupCount",
+            "declaredComparableGroupCount",
+            "nominalComparableGroupCount",
+            "comparisonPolicy",
+        ):
+            feed.pop(field)
+        self.data_file.write_text(json.dumps(feed))
+        (self.state_dir / "publish-pending").unlink()
+
+        def failed_fetcher(target: dict[str, str]) -> dict:
+            raise OSError(target["key"])
+
+        self.assertEqual(self.collect(failed_fetcher), "changed")
+        upgraded = json.loads(self.data_file.read_text())
+        self.assertEqual(upgraded["comparisonPolicy"]["version"], 1)
+        self.assertTrue(
+            all("comparisonGroups" in model for model in upgraded["models"])
+        )
+        self.assertTrue(
+            all(
+                "configurationKey" in offer
+                for model in upgraded["models"]
+                for offer in model["offers"]
+            )
+        )
 
     def test_low_initial_coverage_does_not_write_a_partial_feed(self) -> None:
         def failed_fetcher(target: dict[str, str]) -> dict:

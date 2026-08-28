@@ -25,7 +25,7 @@ The five core deterministic files carry the same `generatedAt` revision timestam
 - `data/meta.json`: the current index, persisted base, current basket, and chart-ready index history.
 - `data/provenance.json`: provider freshness plus matching-key differences between verified first-party and OpenRouter prices.
 - `data/brief.json`: an optional, revision-matched headline and two-sentence note generated locally from verified events.
-- `data/offers.json`: per-model OpenRouter venue offers with standard input/output rates, cache rates, context, quantization, maximum output, and supported API parameters.
+- `data/offers.json`: per-model OpenRouter venue offers with standard input/output rates, cache rates, context, quantization, maximum output, supported API parameters, and conservative like-for-like comparison groups.
 
 The Deflator is an equal-weighted output-price index. The basket contains one current, production, general-purpose frontier representative per independent provider, using its public first-party standard global API rate. The current mean is divided by the inception mean and multiplied by 100. Genuine successor substitutions affect the index and produce a basket event; provider additions and methodology corrections are rebased rather than reported as price moves.
 
@@ -40,6 +40,8 @@ python3 collector/collect.py
 OpenRouter prices are converted from dollars per token to dollars per million tokens with `Decimal`, then rounded to four decimal places. Free rows, batch variants, aliases, negative variable-price routers, and malformed entries are excluded.
 
 After the core price scan, `collector/endpoints.py` follows each retained model's OpenRouter endpoint link with bounded concurrency. It stores venue offers separately rather than flattening them into the Tape. Volatile latency and uptime observations are intentionally excluded; the public feed changes only when an offer, rate, context, quantization, maximum output, or supported parameter changes. A failed model request reuses that model's previous offer set, and a fresh feed must cover at least 80% of the target models. Operational status is written to `collector/state/offers-heartbeat.json`.
+
+An offer is grouped only with the same canonical model, exact reported quantization, context window, maximum output, and core reasoning, tool, and structured-output capabilities. Matching groups with disclosed precision are `declared`; matching proprietary or otherwise undisclosed precision is `nominal`; missing limits make a group `incomplete` and therefore non-comparable. Spread percentages are computed only inside a comparable group. These labels describe posted serving configurations, not quality, throughput, residency, reliability, or contractual equivalence.
 
 The collector refuses to replace the feed when:
 
@@ -164,4 +166,4 @@ Add the model metadata and a reviewed fallback rate to `collector/firstparty.jso
 
 ## Venue offers
 
-`collector/endpoints.py` is the data boundary for a future Spreads view. The first implementation preserves standard per-host OpenRouter offers and cache rates. It does not yet expose the data in the UI, compare batch or priority tiers, track offer history, or make equivalence claims across quantizations and serving configurations.
+`collector/endpoints.py` is the data boundary for a future Spreads view. It preserves standard per-host OpenRouter offers and cache rates, assigns deterministic serving-configuration keys, and summarizes price ranges only within conservative comparison groups. It does not yet expose the data in the UI, compare batch or priority tiers, track offer history, or claim equivalent quality, throughput, reliability, or contractual terms.

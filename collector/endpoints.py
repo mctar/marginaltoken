@@ -13,6 +13,7 @@ does not force a publication on every hourly scan.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -21,7 +22,7 @@ import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any, Callable
 
@@ -66,6 +67,25 @@ MAX_RESPONSE_BYTES = 10 * 1024 * 1024
 DEFAULT_WORKERS = 8
 DEFAULT_MIN_COVERAGE = Decimal("0.80")
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+UNDISCLOSED_QUANTIZATIONS = {"", "unknown", "unspecified", "none", "n/a"}
+COMPARISON_POLICY = {
+    "version": 1,
+    "scope": "same-canonical-model",
+    "matchingFields": [
+        "canonicalKey",
+        "quantization",
+        "context",
+        "maxOutputTokens",
+        "supportsReasoning",
+        "supportsTools",
+        "supportsStructuredOutput",
+    ],
+    "confidenceLevels": {
+        "declared": "Matching precision, limits, and core capabilities are reported.",
+        "nominal": "The named model and reported configuration match, but precision is undisclosed.",
+        "incomplete": "A context or output limit is missing; the group is not treated as comparable.",
+    },
+}
 
 
 def details_url(value: Any) -> str | None:
@@ -112,6 +132,96 @@ def optional_mtok(pricing: dict[str, Any], field: str, label: str) -> float | No
         return mtok_value(value, f"{label} {field} price")
     except CollectorError:
         return None
+
+
+def declared_quantization(offer: dict[str, Any]) -> str | None:
+    value = offer.get("quantization")
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip().lower()
+    return normalized if normalized not in UNDISCLOSED_QUANTIZATIONS else None
+
+
+def comparison_signature(target: dict[str, str], offer: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "canonicalKey": target["canonicalKey"],
+        "quantization": declared_quantization(offer) or "undisclosed",
+        "context": offer.get("context", 0),
+        "maxOutputTokens": offer.get("maxOutputTokens", 0),
+        "supportsReasoning": offer.get("supportsReasoning", False),
+        "supportsTools": offer.get("supportsTools", False),
+        "supportsStructuredOutput": offer.get("supportsStructuredOutput", False),
+    }
+
+
+def configuration_key(signature: dict[str, Any]) -> str:
+    serialized = json.dumps(signature, sort_keys=True, separators=(",", ":"))
+    return "cfg-" + hashlib.sha256(serialized.encode("utf-8")).hexdigest()[:16]
+
+
+def comparison_confidence(signature: dict[str, Any]) -> str:
+    if not signature["context"] or not signature["maxOutputTokens"]:
+        return "incomplete"
+    if signature["quantization"] == "undisclosed":
+        return "nominal"
+    return "declared"
+
+
+def price_range(values: list[float]) -> dict[str, float]:
+    minimum = min(values)
+    maximum = max(values)
+    result = {"min": minimum, "max": maximum}
+    if minimum > 0:
+        spread = ((Decimal(str(maximum)) / Decimal(str(minimum))) - 1) * 100
+        result["spreadPct"] = float(spread.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    return result
+
+
+def model_with_comparisons(
+    target: dict[str, str],
+    offers: list[dict[str, Any]],
+) -> dict[str, Any]:
+    grouped: dict[str, dict[str, Any]] = {}
+    for offer in offers:
+        signature = comparison_signature(target, offer)
+        key = configuration_key(signature)
+        offer["configurationKey"] = key
+        group = grouped.setdefault(key, {"signature": signature, "offers": []})
+        group["offers"].append(offer)
+
+    comparison_groups: list[dict[str, Any]] = []
+    for key in sorted(grouped):
+        raw_group = grouped[key]
+        signature = raw_group["signature"]
+        group_offers = raw_group["offers"]
+        confidence = comparison_confidence(signature)
+        group: dict[str, Any] = {
+            "key": key,
+            "confidence": confidence,
+            "comparable": len(group_offers) >= 2 and confidence != "incomplete",
+            "offerCount": len(group_offers),
+            "venueCount": len({offer["venue"] for offer in group_offers}),
+            "quantization": signature["quantization"],
+            "context": signature["context"],
+            "supportsReasoning": signature["supportsReasoning"],
+            "supportsTools": signature["supportsTools"],
+            "supportsStructuredOutput": signature["supportsStructuredOutput"],
+            "input_mtok": price_range([offer["input_mtok"] for offer in group_offers]),
+            "output_mtok": price_range([offer["output_mtok"] for offer in group_offers]),
+        }
+        if signature["maxOutputTokens"]:
+            group["maxOutputTokens"] = signature["maxOutputTokens"]
+        comparison_groups.append(group)
+
+    return {
+        "key": target["key"],
+        "canonicalKey": target["canonicalKey"],
+        "sourceUrl": target["sourceUrl"],
+        "configurationCount": len(comparison_groups),
+        "comparableGroupCount": sum(group["comparable"] for group in comparison_groups),
+        "comparisonGroups": comparison_groups,
+        "offers": offers,
+    }
 
 
 def normalize_offers(target: dict[str, str], payload: Any) -> dict[str, Any]:
@@ -189,12 +299,7 @@ def normalize_offers(target: dict[str, str], payload: Any) -> dict[str, Any]:
             offer["tag"].lower(),
         )
     )
-    return {
-        "key": target["key"],
-        "canonicalKey": target["canonicalKey"],
-        "sourceUrl": target["sourceUrl"],
-        "offers": offers,
-    }
+    return model_with_comparisons(target, offers)
 
 
 def fetch_endpoint(target: dict[str, str]) -> dict[str, Any]:
@@ -280,8 +385,12 @@ def collect_offers(
             continue
         previous_model = previous_by_key.get(key)
         if previous_model is not None:
-            collected[key] = previous_model
-            reused += 1
+            previous_offers = previous_model.get("offers")
+            if isinstance(previous_offers, list) and previous_offers:
+                copied_offers = [dict(offer) for offer in previous_offers if isinstance(offer, dict)]
+                if copied_offers:
+                    collected[key] = model_with_comparisons(target, copied_offers)
+                    reused += 1
 
     coverage = Decimal(len(collected)) / Decimal(len(targets))
     if coverage < min_coverage:
@@ -292,6 +401,8 @@ def collect_offers(
 
     models = [collected[key] for key in sorted(collected)]
     offers = [offer for model in models for offer in model["offers"]]
+    comparison_groups = [group for model in models for group in model["comparisonGroups"]]
+    comparable_groups = [group for group in comparison_groups if group["comparable"]]
     venue_count = len({offer["venue"] for offer in offers})
     payload = {
         "generatedAt": generated_at,
@@ -301,6 +412,15 @@ def collect_offers(
         "modelCount": len(models),
         "offerCount": len(offers),
         "venueCount": venue_count,
+        "comparableModelCount": sum(model["comparableGroupCount"] > 0 for model in models),
+        "comparableGroupCount": len(comparable_groups),
+        "declaredComparableGroupCount": sum(
+            group["confidence"] == "declared" for group in comparable_groups
+        ),
+        "nominalComparableGroupCount": sum(
+            group["confidence"] == "nominal" for group in comparable_groups
+        ),
+        "comparisonPolicy": COMPARISON_POLICY,
         "models": models,
     }
     changed = core_payload(payload) != core_payload(previous)
@@ -313,6 +433,8 @@ def collect_offers(
         "modelCount": len(models),
         "offerCount": len(offers),
         "venueCount": venue_count,
+        "comparableModelCount": payload["comparableModelCount"],
+        "comparableGroupCount": payload["comparableGroupCount"],
         "failedModelCount": len(failures),
         "reusedModelCount": reused,
     }

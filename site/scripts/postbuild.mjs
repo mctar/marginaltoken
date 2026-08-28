@@ -36,6 +36,23 @@ const compareDir = path.join(distDir, 'compare')
 await mkdir(compareDir, { recursive: true })
 await writeFile(path.join(compareDir, 'index.html'), compareHtml)
 
+const spreadsTitle = 'AI model price spreads — The Marginal Token'
+const spreadsDescription = 'Compare like-for-like routed AI model API prices across serving venues and find the widest posted price gaps.'
+const spreadsUrl = 'https://marginaltoken.com/spreads/'
+let spreadsHtml = shell
+  .replace('<title>The Marginal Token</title>', `<title>${spreadsTitle}</title>`)
+  .replaceAll(
+    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    `content="${spreadsDescription}"`,
+  )
+  .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${spreadsUrl}" />`)
+  .replace('<meta property="og:title" content="The Marginal Token" />', `<meta property="og:title" content="${spreadsTitle}" />`)
+  .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${spreadsUrl}" />`)
+  .replace('<meta name="twitter:title" content="The Marginal Token" />', `<meta name="twitter:title" content="${spreadsTitle}" />`)
+const spreadsDir = path.join(distDir, 'spreads')
+await mkdir(spreadsDir, { recursive: true })
+await writeFile(path.join(spreadsDir, 'index.html'), spreadsHtml)
+
 const prices = JSON.parse(await readFile(path.join(rootDir, 'data', 'prices.json'), 'utf8'))
 const escapeAttribute = (value) => String(value)
   .replaceAll('&', '&amp;')

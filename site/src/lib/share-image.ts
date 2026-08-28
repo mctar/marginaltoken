@@ -1,6 +1,6 @@
 import { contextSize, longDate, price, providerName, shortDate } from './format'
 import { capabilityTags } from './models'
-import { comparableOfferGroups, widestOutputSpread } from './offers'
+import { comparableOfferGroups, widestOutputSpread, type SpreadConfidence, type SpreadRow } from './offers'
 import { shareSourceLabel } from './share'
 import { logPricePosition, selectShortlist, shortlistProviderColor } from './shortlist'
 import type { IndexPoint, OfferModel, PriceModel } from './types'
@@ -643,6 +643,95 @@ export async function createOffersShareImage(options: {
   context.fillStyle = MUTED
   context.font = `400 14px ${SERIF}`
   context.fillText('Matching posted configurations only. Not a quality, latency, residency, reliability or SLA comparison.', 60, 542)
+  drawFooter(context, {
+    source: 'OpenRouter endpoint offers · reported serving configurations',
+    asOf: options.asOf,
+    path: options.path,
+  })
+  return canvasToBlob(canvas)
+}
+
+export async function createSpreadsShareImage(options: {
+  rows: SpreadRow[]
+  asOf: string
+  confidence: SpreadConfidence
+  path?: string
+}): Promise<Blob> {
+  const rows = options.rows.slice(0, 5)
+  if (rows.length === 0) throw new Error('No market price spreads to share')
+
+  const { canvas, context } = await prepareCanvas()
+  const confidenceLabel = options.confidence === 'all'
+    ? 'declared + nominal matches'
+    : `${options.confidence} matches`
+  drawTitle(
+    context,
+    'Routed market · like for like',
+    'The Spreads',
+    `Leading posted price gaps · ${confidenceLabel} · highest quote premium over lowest`,
+  )
+
+  const top = 218
+  const rowHeight = 61
+  rows.forEach((row, index) => {
+    const y = top + index * rowHeight
+    context.strokeStyle = RULE
+    context.lineWidth = 1
+    context.beginPath()
+    context.moveTo(60, y + rowHeight - 8)
+    context.lineTo(1140, y + rowHeight - 8)
+    context.stroke()
+
+    context.fillStyle = MUTED
+    context.font = `700 9px ${SANS}`
+    context.letterSpacing = '1px'
+    context.fillText(`${index + 1}`.padStart(2, '0'), 60, y + 15)
+    context.letterSpacing = '0px'
+
+    context.fillStyle = INK
+    context.font = `600 19px ${SERIF}`
+    fitAndFillText(context, row.model.display, 96, y + 21, 310)
+    context.fillStyle = MUTED
+    context.font = `700 8px ${SANS}`
+    const precision = row.group.quantization === 'undisclosed' ? 'PRECISION UNDISCLOSED' : row.group.quantization.toUpperCase()
+    fitAndFillText(
+      context,
+      `${precision} · ${contextSize(row.group.context).toUpperCase()} CONTEXT · ${row.group.venueCount} VENUES`,
+      96,
+      y + 40,
+      330,
+    )
+
+    const metrics = [
+      { x: 485, label: 'INPUT', range: row.group.input_mtok, gap: row.inputSpreadPct },
+      { x: 720, label: 'OUTPUT', range: row.group.output_mtok, gap: row.outputSpreadPct },
+    ]
+    metrics.forEach((metric) => {
+      context.fillStyle = MUTED
+      context.font = `700 8px ${SANS}`
+      context.letterSpacing = '1px'
+      context.fillText(metric.label, metric.x, y + 12)
+      context.letterSpacing = '0px'
+      context.fillStyle = INK
+      context.font = `600 17px ${SERIF}`
+      context.fillText(`${price(metric.range.min)}–${price(metric.range.max)}`, metric.x, y + 35)
+    })
+
+    context.textAlign = 'right'
+    context.fillStyle = TEAL
+    context.font = `600 27px ${SERIF}`
+    context.fillText(`+${row.widestSpreadPct.toLocaleString('en-US', { maximumFractionDigits: 2 })}%`, 1140, y + 28)
+    context.fillStyle = MUTED
+    context.font = `700 8px ${SANS}`
+    context.letterSpacing = '1px'
+    context.fillText('WIDEST GAP', 1140, y + 44)
+    context.textAlign = 'left'
+    context.letterSpacing = '0px'
+  })
+
+  context.fillStyle = MUTED
+  context.font = `400 14px ${SERIF}`
+  context.fillText('Posted routed prices only. Matching reported configurations; not a quality, latency, reliability or SLA comparison.', 60, 542)
   drawFooter(context, {
     source: 'OpenRouter endpoint offers · reported serving configurations',
     asOf: options.asOf,

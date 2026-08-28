@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import ShareImageButton from './ShareImageButton'
 import { contextSize, longDate, price } from '../lib/format'
 import { modelPath } from '../lib/models'
@@ -33,6 +34,15 @@ function spreadText(value: number | undefined): string {
   return `High quote +${value.toLocaleString('en-US', { maximumFractionDigits: 2 })}%`
 }
 
+function targetedGroupKey(): string {
+  if (typeof window === 'undefined') return ''
+  try {
+    return decodeURIComponent(window.location.hash.replace(/^#/, ''))
+  } catch {
+    return ''
+  }
+}
+
 export default function OfferPanel({
   model,
   offerModel,
@@ -43,8 +53,18 @@ export default function OfferPanel({
   asOf: string
 }) {
   const groups = comparableOfferGroups(offerModel)
-  const visibleGroups = groups.slice(0, MAX_VISIBLE_OFFER_GROUPS)
+  const targetGroupKey = targetedGroupKey()
+  const targetGroup = groups.find((group) => group.key === targetGroupKey)
+  const leadingGroups = groups.slice(0, targetGroup ? MAX_VISIBLE_OFFER_GROUPS - 1 : MAX_VISIBLE_OFFER_GROUPS)
+  const visibleGroups = targetGroup && !leadingGroups.includes(targetGroup)
+    ? [...leadingGroups, targetGroup]
+    : groups.slice(0, MAX_VISIBLE_OFFER_GROUPS)
   const hiddenGroupCount = groups.length - visibleGroups.length
+
+  useEffect(() => {
+    if (!targetGroup) return
+    window.requestAnimationFrame(() => document.getElementById(targetGroup.key)?.scrollIntoView({ block: 'start' }))
+  }, [targetGroup])
 
   return (
     <section className="model-offers" aria-labelledby="venue-offers-title">
@@ -94,7 +114,12 @@ export default function OfferPanel({
             {visibleGroups.map((group, index) => {
               const offers = offersForGroup(offerModel, group.key)
               return (
-                <details className="offer-group" key={group.key} open={index === 0}>
+                <details
+                  className="offer-group"
+                  id={group.key}
+                  key={group.key}
+                  open={group.key === targetGroupKey || (!targetGroupKey && index === 0)}
+                >
                   <summary>
                     <div className="offer-configuration">
                       <span className={`offer-confidence ${group.confidence}`}>

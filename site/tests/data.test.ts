@@ -19,7 +19,7 @@ const coreFeeds: Record<string, object> = {
   },
 }
 
-test('loads the large offers feed only for model-card routes', async (context) => {
+test('loads the large offers feed only when a route requests routed-market data', async (context) => {
   const requested: string[] = []
   const originalFetch = globalThis.fetch
   context.after(() => { globalThis.fetch = originalFetch })

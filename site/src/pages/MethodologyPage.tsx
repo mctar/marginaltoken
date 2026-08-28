@@ -81,7 +81,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">10</span>
           <h2>Venue comparisons</h2>
           <p>
-            Model cards may show multiple OpenRouter routes. A spread is calculated only when canonical model, reported precision, context window, maximum output, reasoning, tool, and structured-output support match. Disclosed precision is labelled declared; undisclosed precision is nominal. Missing limits are never treated as comparable. These groups do not establish equal quality, throughput, residency, reliability, or contractual terms.
+            Model cards and The Spreads may show multiple OpenRouter routes. A spread is calculated only when canonical model, reported precision, context window, maximum output, reasoning, tool, and structured-output support match. The market ranking excludes configurations whose posted prices are identical. Disclosed precision is labelled declared; undisclosed precision is nominal. Missing limits are never treated as comparable. These groups do not establish equal quality, throughput, residency, reliability, or contractual terms.
           </p>
         </section>
       </article>

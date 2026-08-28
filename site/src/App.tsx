@@ -8,6 +8,7 @@ import FrontPage from './pages/FrontPage'
 import ComparePage from './pages/ComparePage'
 import MethodologyPage from './pages/MethodologyPage'
 import ModelPage, { MissingModelPage } from './pages/ModelPage'
+import SpreadsPage from './pages/SpreadsPage'
 import TapePage from './pages/TapePage'
 
 type State =
@@ -15,11 +16,12 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ready'; data: FeedData }
 
-type Route = '/' | '/tape/' | '/compare/' | '/methodology/' | '/model/'
+type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/methodology/' | '/model/'
 
 function routeFor(pathname: string): Route {
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
   if (normalized === '/tape/') return '/tape/'
+  if (normalized === '/spreads/') return '/spreads/'
   if (normalized === '/compare/') return '/compare/'
   if (normalized === '/methodology/') return '/methodology/'
   if (normalized.startsWith('/model/')) return '/model/'
@@ -42,7 +44,7 @@ export default function App() {
   const modelKey = route === '/model/' ? modelKeyFor(window.location.pathname) : null
 
   useEffect(() => {
-    loadFeed(route === '/model/')
+    loadFeed(route === '/model/' || route === '/spreads/')
       .then((data) => setState({ status: 'ready', data }))
       .catch((error: unknown) => setState({ status: 'error', message: error instanceof Error ? error.message : String(error) }))
   }, [route])
@@ -68,6 +70,7 @@ export default function App() {
       <Header asOf={data.meta.asOf} route={route} />
       <SourceWatch provenance={data.provenance} />
       {route === '/tape/' && <TapePage prices={data.prices} />}
+      {route === '/spreads/' && <SpreadsPage prices={data.prices} offers={data.offers} />}
       {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} />}
       {route === '/methodology/' && <MethodologyPage meta={data.meta} provenance={data.provenance} />}
       {route === '/model/' && (model ? (

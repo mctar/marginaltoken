@@ -8,6 +8,7 @@ type HeaderProps = {
 const navigation = [
   { href: '/', label: 'Front' },
   { href: '/tape/', label: 'The Tape' },
+  { href: '/spreads/', label: 'Spreads' },
   { href: '/compare/', label: 'Compare' },
   { href: '/methodology/', label: 'Methodology' },
 ]

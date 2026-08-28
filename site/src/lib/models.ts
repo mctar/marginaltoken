@@ -8,6 +8,7 @@ export function capabilityTags(model: PriceModel): string[] {
   const tags: string[] = []
   if (model.inputModalities?.includes('image')) tags.push('Vision')
   if (model.inputModalities?.includes('audio')) tags.push('Audio')
+  if (model.outputModalities?.includes('audio')) tags.push('Audio output')
   if (model.inputModalities?.includes('video')) tags.push('Video')
   if (model.supportsReasoning) tags.push('Reasoning')
   if (model.supportsTools) tags.push('Tool calling')

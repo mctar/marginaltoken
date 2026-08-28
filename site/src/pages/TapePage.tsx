@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { capabilityOptions as capabilities, supportsCapability, type Capability } from '../lib/capabilities'
 import { modelComparisonPath } from '../lib/compare'
 import { contextSize, price, providerName } from '../lib/format'
 import { capabilityTags, modelPath } from '../lib/models'
@@ -10,7 +11,6 @@ type SourceFilter = 'all' | 'firstparty' | 'openrouter'
 type RowLimit = '50' | '100' | 'all'
 type PriceBand = 'under-1' | '1-5' | '5-15' | '15-50' | '50-plus'
 type ContextBand = 'under-128k' | '128k-256k' | '256k-1m' | '1m-plus'
-type Capability = 'vision' | 'audio' | 'video' | 'reasoning' | 'tools' | 'structured'
 type ReleaseStage = 'stable' | 'preview' | 'experimental'
 
 const columns: Array<{ key: SortKey; label: string; align?: 'right' }> = [
@@ -35,15 +35,6 @@ const contextBands: Array<{ value: ContextBand; label: string }> = [
   { value: '128k-256k', label: '128k to 255k' },
   { value: '256k-1m', label: '256k to 999k' },
   { value: '1m-plus', label: '1m and above' },
-]
-
-const capabilities: Array<{ value: Capability; label: string }> = [
-  { value: 'vision', label: 'Vision input' },
-  { value: 'audio', label: 'Audio input' },
-  { value: 'video', label: 'Video input' },
-  { value: 'reasoning', label: 'Reasoning' },
-  { value: 'tools', label: 'Tool calling' },
-  { value: 'structured', label: 'Structured output' },
 ]
 
 const releaseStages: Array<{ value: ReleaseStage; label: string }> = [
@@ -106,15 +97,6 @@ function matchesContextBand(value: number, band: ContextBand): boolean {
   if (band === '128k-256k') return value >= 128000 && value < 256000
   if (band === '256k-1m') return value >= 256000 && value < 1000000
   return value >= 1000000
-}
-
-function supportsCapability(model: PriceModel, capability: Capability): boolean {
-  if (capability === 'vision') return model.inputModalities?.includes('image') ?? false
-  if (capability === 'audio') return model.inputModalities?.includes('audio') ?? false
-  if (capability === 'video') return model.inputModalities?.includes('video') ?? false
-  if (capability === 'reasoning') return model.supportsReasoning ?? false
-  if (capability === 'tools') return model.supportsTools ?? false
-  return model.supportsStructuredOutput ?? false
 }
 
 function numericMaximum(value: string): number | null {

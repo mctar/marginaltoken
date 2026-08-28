@@ -18,7 +18,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">01</span>
           <h2>What is tracked</h2>
           <p>
-            The Tape lists text-token input and output rates in US dollars per million tokens. Free models, batch variants, aliases, and variable-price routers are excluded. Cache reads, cache writes, tools, images, audio, and per-request charges are outside this edition. Modality, reasoning, tool, structured-output, release-stage, and lifecycle filters use objective metadata published with the OpenRouter model record; missing capabilities are not inferred.
+            The Tape lists text-token input and output rates in US dollars per million tokens. Free models, batch variants, aliases, and variable-price routers are excluded. Cache reads, cache writes, tools, images, audio, and per-request charges are outside this edition. Modality, reasoning, tool, structured-output, release-stage, and lifecycle filters use objective metadata published with the OpenRouter model record; missing capabilities are not inferred. Audio input and audio output are separate requirements.
           </p>
         </section>
         <section>

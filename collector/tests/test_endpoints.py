@@ -8,7 +8,12 @@ from decimal import Decimal
 from pathlib import Path
 
 from collector.collect import CollectorError
-from collector.endpoints import collect_offers, normalize_offers, offer_targets
+from collector.endpoints import (
+    collect_offers,
+    merge_together_catalog,
+    normalize_offers,
+    offer_targets,
+)
 
 
 def raw_model(key: str, *, details: str | None = None) -> dict:
@@ -164,6 +169,86 @@ class OfferNormalizationTests(unittest.TestCase):
                 self.assertEqual(normalized["comparableGroupCount"], 0)
 
 
+class TogetherMergeTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.target = offer_targets({"data": [raw_model("lab/model")]})[0]
+
+    def catalog_row(self) -> dict:
+        return {
+            "key": "lab/model",
+            "canonicalKey": "lab/model",
+            "togetherModelId": "lab/model",
+            "input_mtok": 0.07,
+            "cached_input_mtok": 0.03,
+            "output_mtok": 0.21,
+            "context": 131072,
+            "quantization": "fp8",
+            "supportsTools": True,
+            "supportsStructuredOutput": True,
+            "sourceUrl": "https://docs.together.ai/docs/serverless/models",
+        }
+
+    def test_direct_catalog_verifies_an_existing_together_route(self) -> None:
+        together = raw_offer("Together", "openrouter/together", "0.00000009", "0.00000027")
+        collected = {
+            "lab/model": normalize_offers(self.target, endpoint_payload(together))
+        }
+
+        stats = merge_together_catalog(
+            collected=collected,
+            targets=[self.target],
+            catalog=[self.catalog_row()],
+        )
+
+        self.assertEqual(stats["verifiedOfferCount"], 1)
+        self.assertEqual(stats["addedOfferCount"], 0)
+        model = collected["lab/model"]
+        self.assertEqual(len(model["offers"]), 1)
+        offer = model["offers"][0]
+        self.assertEqual(offer["venue"], "Together AI")
+        self.assertEqual(offer["tag"], "lab/model")
+        self.assertEqual(offer["input_mtok"], 0.07)
+        self.assertEqual(offer["cached_input_mtok"], 0.03)
+        self.assertEqual(offer["output_mtok"], 0.21)
+        self.assertEqual(offer["quantization"], "fp8")
+        self.assertEqual(offer["source"], "together-catalog")
+        self.assertEqual(offer["configurationSource"], "openrouter-endpoints")
+        self.assertIn("input_mtok", offer["verifiedFields"])
+        self.assertEqual(
+            [source["key"] for source in model["sources"]],
+            ["openrouter-endpoints", "together-catalog"],
+        )
+
+    def test_direct_only_offer_keeps_unreported_configuration_incomplete(self) -> None:
+        other = raw_offer("Venue A", "venue-a")
+        collected = {
+            "lab/model": normalize_offers(self.target, endpoint_payload(other))
+        }
+
+        stats = merge_together_catalog(
+            collected=collected,
+            targets=[self.target],
+            catalog=[self.catalog_row()],
+        )
+
+        self.assertEqual(stats["verifiedOfferCount"], 0)
+        self.assertEqual(stats["addedOfferCount"], 1)
+        direct = next(
+            offer for offer in collected["lab/model"]["offers"] if offer["venue"] == "Together AI"
+        )
+        self.assertEqual(
+            direct["reportedUnknowns"],
+            ["maxOutputTokens", "supportsReasoning"],
+        )
+        direct_group = next(
+            group
+            for group in collected["lab/model"]["comparisonGroups"]
+            if direct["configurationKey"] == group["key"]
+        )
+        self.assertFalse(direct_group["comparable"])
+        self.assertEqual(direct_group["confidence"], "incomplete")
+
+
 class OfferCollectorTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
@@ -183,7 +268,7 @@ class OfferCollectorTests(unittest.TestCase):
             endpoint_payload(raw_offer(venue, venue.lower().replace(" ", "-"))),
         )
 
-    def collect(self, fetcher=None) -> str:
+    def collect(self, fetcher=None, **kwargs) -> str:
         return collect_offers(
             models_payload=self.payload,
             data_file=self.data_file,
@@ -192,6 +277,7 @@ class OfferCollectorTests(unittest.TestCase):
             workers=2,
             min_coverage=Decimal("0.80"),
             fetcher=fetcher or self.fetcher,
+            **kwargs,
         )
 
     def test_first_run_writes_a_stable_public_offer_feed(self) -> None:
@@ -270,6 +356,31 @@ class OfferCollectorTests(unittest.TestCase):
         with self.assertRaisesRegex(CollectorError, "below the 80% minimum"):
             self.collect(failed_fetcher)
         self.assertFalse(self.data_file.exists())
+
+    def test_feed_reports_each_marketplace_source(self) -> None:
+        catalog = [{
+            "togetherModelId": "lab/a",
+            "input_mtok": 0.2,
+            "output_mtok": 0.8,
+            "context": 131072,
+            "sourceUrl": "https://docs.together.ai/docs/serverless-models",
+        }]
+        status = {
+            "sourceUrl": "https://docs.together.ai/docs/serverless-models",
+            "status": "healthy",
+        }
+
+        self.assertEqual(
+            self.collect(together_catalog=catalog, together_status=status),
+            "changed",
+        )
+        feed = json.loads(self.data_file.read_text())
+        self.assertEqual(feed["source"], "multi-source")
+        self.assertEqual(
+            [source["key"] for source in feed["sources"]],
+            ["openrouter-endpoints", "together-catalog"],
+        )
+        self.assertEqual(feed["sources"][1]["addedOfferCount"], 1)
 
 
 if __name__ == "__main__":

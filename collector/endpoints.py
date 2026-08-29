@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Collect OpenRouter's per-venue model offers into a separate public feed.
+"""Collect per-venue model offers into a separate public feed.
 
 The price tape intentionally carries one normalized quote per model. This
 collector preserves the market beneath that quote: every routed venue, its
 posted token rates, context, quantization, and supported API parameters.
+OpenRouter supplies the broad route set; direct marketplace catalogs can
+verify or supplement the fields they explicitly publish.
 
 Transient endpoint failures reuse the previous model-level offer set. A new
 feed is written only when stable offer data changes, so volatile routing health
@@ -41,6 +43,12 @@ try:
         string_list,
         utc_now,
     )
+    from collector.together import (
+        TOGETHER_CATALOG_URL,
+        TOGETHER_SOURCE_KEY,
+        match_together_catalog,
+        refresh_together_catalog,
+    )
 except ModuleNotFoundError:  # Direct execution: python3 collector/endpoints.py
     from collect import (  # type: ignore[no-redef]
         CollectorError,
@@ -56,6 +64,12 @@ except ModuleNotFoundError:  # Direct execution: python3 collector/endpoints.py
         string_list,
         utc_now,
     )
+    from together import (  # type: ignore[no-redef]
+        TOGETHER_CATALOG_URL,
+        TOGETHER_SOURCE_KEY,
+        match_together_catalog,
+        refresh_together_catalog,
+    )
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -63,6 +77,8 @@ DEFAULT_DATA_FILE = ROOT / "data" / "offers.json"
 DEFAULT_STATE_DIR = Path(__file__).resolve().parent / "state"
 DEFAULT_MODELS_SOURCE = DEFAULT_STATE_DIR / "last-good-openrouter.json"
 OPENROUTER_ORIGIN = "https://openrouter.ai"
+OPENROUTER_SOURCE_KEY = "openrouter-endpoints"
+OPENROUTER_SOURCE_LABEL = "OpenRouter endpoints"
 MAX_RESPONSE_BYTES = 10 * 1024 * 1024
 DEFAULT_WORKERS = 8
 DEFAULT_MIN_COVERAGE = Decimal("0.80")
@@ -183,6 +199,8 @@ def model_with_comparisons(
 ) -> dict[str, Any]:
     grouped: dict[str, dict[str, Any]] = {}
     for offer in offers:
+        offer.setdefault("source", OPENROUTER_SOURCE_KEY)
+        offer.setdefault("sourceUrl", target["sourceUrl"])
         signature = comparison_signature(target, offer)
         key = configuration_key(signature)
         offer["configurationKey"] = key
@@ -213,10 +231,26 @@ def model_with_comparisons(
             group["maxOutputTokens"] = signature["maxOutputTokens"]
         comparison_groups.append(group)
 
+    sources_by_key: dict[str, dict[str, str]] = {
+        OPENROUTER_SOURCE_KEY: {
+            "key": OPENROUTER_SOURCE_KEY,
+            "label": OPENROUTER_SOURCE_LABEL,
+            "sourceUrl": target["sourceUrl"],
+        }
+    }
+    for offer in offers:
+        source = offer.get("source")
+        source_url = offer.get("sourceUrl")
+        if not isinstance(source, str) or not isinstance(source_url, str):
+            continue
+        label = "Together AI" if source == TOGETHER_SOURCE_KEY else OPENROUTER_SOURCE_LABEL
+        sources_by_key[source] = {"key": source, "label": label, "sourceUrl": source_url}
+
     return {
         "key": target["key"],
         "canonicalKey": target["canonicalKey"],
         "sourceUrl": target["sourceUrl"],
+        "sources": [sources_by_key[key] for key in sorted(sources_by_key)],
         "configurationCount": len(comparison_groups),
         "comparableGroupCount": sum(group["comparable"] for group in comparison_groups),
         "comparisonGroups": comparison_groups,
@@ -262,6 +296,8 @@ def normalize_offers(target: dict[str, str], payload: Any) -> dict[str, Any]:
         offer: dict[str, Any] = {
             "venue": venue.strip(),
             "tag": offer_tag,
+            "source": OPENROUTER_SOURCE_KEY,
+            "sourceUrl": target["sourceUrl"],
             "input_mtok": input_mtok,
             "output_mtok": output_mtok,
             "context": context,
@@ -300,6 +336,121 @@ def normalize_offers(target: dict[str, str], payload: Any) -> dict[str, Any]:
         )
     )
     return model_with_comparisons(target, offers)
+
+
+def merge_together_catalog(
+    *,
+    collected: dict[str, dict[str, Any]],
+    targets: list[dict[str, str]],
+    catalog: list[dict[str, Any]],
+) -> dict[str, Any]:
+    matched, unmatched = match_together_catalog(catalog, targets)
+    targets_by_key = {target["key"]: target for target in targets}
+    verified = 0
+    added = 0
+    skipped = 0
+
+    for row in matched:
+        key = row["key"]
+        model = collected.get(key)
+        target = targets_by_key.get(key)
+        if model is None or target is None:
+            skipped += 1
+            continue
+        offers = [dict(offer) for offer in model.get("offers", []) if isinstance(offer, dict)]
+        together_offers = [
+            offer
+            for offer in offers
+            if str(offer.get("venue", "")).strip().lower() in {"together", "together ai"}
+        ]
+
+        if len(together_offers) == 1:
+            offer = together_offers[0]
+            offer["venue"] = "Together AI"
+            offer["tag"] = row["togetherModelId"]
+            offer["input_mtok"] = row["input_mtok"]
+            offer["output_mtok"] = row["output_mtok"]
+            offer["source"] = TOGETHER_SOURCE_KEY
+            offer["sourceUrl"] = row["sourceUrl"]
+            offer["configurationSource"] = OPENROUTER_SOURCE_KEY
+            verified_fields = ["input_mtok", "output_mtok"]
+            if row.get("context"):
+                offer["context"] = row["context"]
+                verified_fields.append("context")
+            if isinstance(row.get("quantization"), str):
+                offer["quantization"] = row["quantization"]
+                verified_fields.append("quantization")
+            if "cached_input_mtok" in row:
+                offer["cached_input_mtok"] = row["cached_input_mtok"]
+                verified_fields.append("cached_input_mtok")
+            supported_parameters = set(offer.get("supportedParameters", []))
+            if isinstance(row.get("supportsTools"), bool):
+                offer["supportsTools"] = row["supportsTools"]
+                verified_fields.append("supportsTools")
+                if row["supportsTools"]:
+                    supported_parameters.add("tools")
+                else:
+                    supported_parameters.discard("tools")
+                    supported_parameters.discard("tool_choice")
+            if isinstance(row.get("supportsStructuredOutput"), bool):
+                offer["supportsStructuredOutput"] = row["supportsStructuredOutput"]
+                verified_fields.append("supportsStructuredOutput")
+                if row["supportsStructuredOutput"]:
+                    supported_parameters.add("response_format")
+                else:
+                    supported_parameters.discard("response_format")
+                    supported_parameters.discard("structured_outputs")
+            offer["supportedParameters"] = sorted(supported_parameters)
+            offer["verifiedFields"] = sorted(verified_fields)
+            verified += 1
+        elif len(together_offers) == 0:
+            supported_parameters: list[str] = []
+            if row.get("supportsTools") is True:
+                supported_parameters.append("tools")
+            if row.get("supportsStructuredOutput") is True:
+                supported_parameters.append("response_format")
+            direct_offer: dict[str, Any] = {
+                "venue": "Together AI",
+                "tag": row["togetherModelId"],
+                "source": TOGETHER_SOURCE_KEY,
+                "sourceUrl": row["sourceUrl"],
+                "input_mtok": row["input_mtok"],
+                "output_mtok": row["output_mtok"],
+                "context": row.get("context", 0),
+                "supportedParameters": sorted(supported_parameters),
+                "supportsReasoning": False,
+                "supportsTools": row.get("supportsTools", False),
+                "supportsStructuredOutput": row.get("supportsStructuredOutput", False),
+                "reportedUnknowns": ["maxOutputTokens", "supportsReasoning"],
+            }
+            for field in ("cached_input_mtok", "quantization"):
+                if field in row:
+                    direct_offer[field] = row[field]
+            offers.append(direct_offer)
+            added += 1
+        else:
+            skipped += 1
+            continue
+
+        offers.sort(
+            key=lambda offer: (
+                offer["input_mtok"],
+                offer["output_mtok"],
+                offer["venue"].lower(),
+                offer["tag"].lower(),
+            )
+        )
+        collected[key] = model_with_comparisons(target, offers)
+
+    return {
+        "catalogModelCount": len(catalog),
+        "matchedModelCount": len(matched),
+        "verifiedOfferCount": verified,
+        "addedOfferCount": added,
+        "skippedModelCount": skipped,
+        "unmatchedModelCount": len(unmatched),
+        "unmatchedModels": unmatched[:50],
+    }
 
 
 def fetch_endpoint(target: dict[str, str]) -> dict[str, Any]:
@@ -345,6 +496,8 @@ def collect_offers(
     workers: int = DEFAULT_WORKERS,
     min_coverage: Decimal = DEFAULT_MIN_COVERAGE,
     fetcher: Callable[[dict[str, str]], dict[str, Any]] = fetch_endpoint,
+    together_catalog: list[dict[str, Any]] | None = None,
+    together_status: dict[str, Any] | None = None,
 ) -> str:
     now = now or utc_now()
     generated_at = iso_utc(now)
@@ -399,15 +552,59 @@ def collect_offers(
             f"below the {min_coverage:.0%} minimum"
         )
 
+    together_merge = {
+        "catalogModelCount": 0,
+        "matchedModelCount": 0,
+        "verifiedOfferCount": 0,
+        "addedOfferCount": 0,
+        "skippedModelCount": 0,
+        "unmatchedModelCount": 0,
+        "unmatchedModels": [],
+    }
+    if together_catalog:
+        together_merge = merge_together_catalog(
+            collected=collected,
+            targets=targets,
+            catalog=together_catalog,
+        )
+
     models = [collected[key] for key in sorted(collected)]
     offers = [offer for model in models for offer in model["offers"]]
     comparison_groups = [group for model in models for group in model["comparisonGroups"]]
     comparable_groups = [group for group in comparison_groups if group["comparable"]]
     venue_count = len({offer["venue"] for offer in offers})
+    openrouter_offer_count = sum(
+        offer.get("source") == OPENROUTER_SOURCE_KEY
+        or offer.get("configurationSource") == OPENROUTER_SOURCE_KEY
+        for offer in offers
+    )
+    together_offer_count = sum(offer.get("source") == TOGETHER_SOURCE_KEY for offer in offers)
+    source_records: list[dict[str, Any]] = [
+        {
+            "key": OPENROUTER_SOURCE_KEY,
+            "label": OPENROUTER_SOURCE_LABEL,
+            "sourceUrl": OPENROUTER_MODELS_URL,
+            "modelCount": len(models),
+            "offerCount": openrouter_offer_count,
+        }
+    ]
+    if together_status is not None:
+        together_record = {
+            "key": TOGETHER_SOURCE_KEY,
+            "label": "Together AI",
+            "sourceUrl": together_status.get("sourceUrl", TOGETHER_CATALOG_URL),
+            "catalogModelCount": together_merge["catalogModelCount"],
+            "modelCount": together_merge["matchedModelCount"],
+            "offerCount": together_offer_count,
+            "verifiedOfferCount": together_merge["verifiedOfferCount"],
+            "addedOfferCount": together_merge["addedOfferCount"],
+        }
+        source_records.append(together_record)
     payload = {
         "generatedAt": generated_at,
         "asOf": date,
-        "source": "openrouter-endpoints",
+        "source": "multi-source",
+        "sources": source_records,
         "targetModelCount": len(targets),
         "modelCount": len(models),
         "offerCount": len(offers),
@@ -426,9 +623,13 @@ def collect_offers(
     changed = core_payload(payload) != core_payload(previous)
 
     state_dir.mkdir(parents=True, exist_ok=True)
+    together_degraded = together_status is not None and together_status.get("status") in {
+        "last_good",
+        "unavailable",
+    }
     heartbeat = {
         "checkedAt": generated_at,
-        "status": "degraded" if failures else "healthy",
+        "status": "degraded" if failures or together_degraded else "healthy",
         "targetModelCount": len(targets),
         "modelCount": len(models),
         "offerCount": len(offers),
@@ -437,6 +638,19 @@ def collect_offers(
         "comparableGroupCount": payload["comparableGroupCount"],
         "failedModelCount": len(failures),
         "reusedModelCount": reused,
+        "sources": [
+            {
+                "key": OPENROUTER_SOURCE_KEY,
+                "status": "degraded" if failures else "healthy",
+                "modelCount": len(models),
+                "offerCount": openrouter_offer_count,
+            },
+            *(
+                [{**together_status, **together_merge, "offerCount": together_offer_count}]
+                if together_status is not None
+                else []
+            ),
+        ],
     }
     if failures:
         heartbeat["failedModels"] = sorted(failures)[:50]
@@ -454,11 +668,16 @@ def collect_offers(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Collect OpenRouter per-venue model offers")
+    parser = argparse.ArgumentParser(description="Collect per-venue model offers")
     parser.add_argument("--models-source", type=Path, default=DEFAULT_MODELS_SOURCE)
     parser.add_argument("--models-url", default=None, help="fetch a current model list instead of reading state")
     parser.add_argument("--data-file", type=Path, default=DEFAULT_DATA_FILE)
     parser.add_argument("--state-dir", type=Path, default=DEFAULT_STATE_DIR)
+    parser.add_argument(
+        "--together-url",
+        default=os.environ.get("MARGINALTOKEN_TOGETHER_URL", TOGETHER_CATALOG_URL),
+    )
+    parser.add_argument("--no-together", action="store_true")
     parser.add_argument(
         "--workers",
         type=int,
@@ -482,12 +701,29 @@ def main(argv: list[str] | None = None) -> int:
         )
         if not isinstance(models_payload, dict) or not isinstance(models_payload.get("data"), list):
             raise CollectorError("OpenRouter model source must contain a data array")
+        if args.no_together:
+            together_catalog: list[dict[str, Any]] = []
+            together_status: dict[str, Any] = {
+                "key": TOGETHER_SOURCE_KEY,
+                "label": "Together AI",
+                "sourceUrl": args.together_url,
+                "status": "skipped",
+                "checkedAt": iso_utc(utc_now()),
+                "catalogModelCount": 0,
+            }
+        else:
+            together_catalog, together_status = refresh_together_catalog(
+                state_dir=args.state_dir,
+                url=args.together_url,
+            )
         result = collect_offers(
             models_payload=models_payload,
             data_file=args.data_file,
             state_dir=args.state_dir,
             workers=args.workers,
             min_coverage=args.min_coverage,
+            together_catalog=together_catalog,
+            together_status=together_status,
         )
         print(result)
         return 0

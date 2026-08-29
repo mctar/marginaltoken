@@ -62,6 +62,9 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
   const visibleRows = rows.slice(0, visibleCount)
   const declaredRows = marketRows.filter((row) => row.group.confidence === 'declared')
   const widestDeclared = declaredRows[0]?.widestSpreadPct ?? 0
+  const sourceLabels = offers?.sources?.length
+    ? offers.sources.map((source) => source.label)
+    : ['OpenRouter endpoints']
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
@@ -79,7 +82,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
   return (
     <main id="main" className="spreads-page mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
       <header className="page-heading spreads-heading">
-        <p className="section-kicker">Routed market</p>
+        <p className="section-kicker">Venue market</p>
         <div className="spreads-title-row">
           <h1>The Spreads</h1>
           {offers && rows.length > 0 && (
@@ -92,7 +95,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
               })}
               filename={shareImageFilename('market-price-spreads')}
               shareTitle="AI model price spreads — The Marginal Token"
-              shareText="Like-for-like routed AI model API price gaps across serving venues."
+              shareText="Like-for-like AI model API price gaps across serving venues."
             />
           )}
         </div>
@@ -122,7 +125,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
             <div>
               <dt>Venues observed</dt>
               <dd>{offers.venueCount.toLocaleString('en-US')}</dd>
-              <small>across the routed feed</small>
+              <small>across {sourceLabels.length} {sourceLabels.length === 1 ? 'source feed' : 'source feeds'}</small>
             </div>
           </dl>
 
@@ -236,7 +239,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
           </section>
 
           <p className="spread-disclaimer">
-            Matching posted configurations only. A lower price is not evidence of equal quality, latency, residency, throughput, reliability, or contractual terms. Source: OpenRouter endpoint offers, as of {offers.asOf}.
+            Matching posted configurations only. A lower price is not evidence of equal quality, latency, residency, throughput, reliability, or contractual terms. Sources: {sourceLabels.join(' + ')}, as of {offers.asOf}.
           </p>
         </>
       ) : (

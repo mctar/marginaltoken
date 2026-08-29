@@ -13,7 +13,7 @@ site/        Static three-route publication
 deploy/      GitHub Pages publisher and systemd units
 ```
 
-OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows. A second OpenRouter scan preserves every venue-level offer for the standard-rate models without changing the single-quote Tape.
+OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows. A separate venue scan preserves OpenRouter's route-level offers and verifies supported fields against direct marketplace catalogs, beginning with Together AI, without changing the single-quote Tape.
 
 ## Feed contract
 
@@ -25,7 +25,7 @@ The five core deterministic files carry the same `generatedAt` revision timestam
 - `data/meta.json`: the current index, persisted base, current basket, and chart-ready index history.
 - `data/provenance.json`: provider freshness plus matching-key differences between verified first-party and OpenRouter prices.
 - `data/brief.json`: an optional, revision-matched headline and two-sentence note generated locally from verified events.
-- `data/offers.json`: per-model OpenRouter venue offers with standard input/output rates, cache rates, context, quantization, maximum output, supported API parameters, and conservative like-for-like comparison groups.
+- `data/offers.json`: per-model marketplace offers with field-level source links, standard input/output rates, cache rates, context, quantization, maximum output, supported API parameters, and conservative like-for-like comparison groups.
 
 The Deflator is an equal-weighted output-price index. The basket contains one current, production, general-purpose frontier representative per independent provider, using its public first-party standard global API rate. The current mean is divided by the inception mean and multiplied by 100. Genuine successor substitutions affect the index and produce a basket event; provider additions and methodology corrections are rebased rather than reported as price moves.
 
@@ -39,7 +39,9 @@ python3 collector/collect.py
 
 OpenRouter prices are converted from dollars per token to dollars per million tokens with `Decimal`, then rounded to four decimal places. Free rows, batch variants, aliases, negative variable-price routers, and malformed entries are excluded.
 
-After the core price scan, `collector/endpoints.py` follows each retained model's OpenRouter endpoint link with bounded concurrency. It stores venue offers separately rather than flattening them into the Tape. Volatile latency and uptime observations are intentionally excluded; the public feed changes only when an offer, rate, context, quantization, maximum output, or supported parameter changes. A failed model request reuses that model's previous offer set, and a fresh feed must cover at least 80% of the target models. Operational status is written to `collector/state/offers-heartbeat.json`.
+After the core price scan, `collector/endpoints.py` follows each retained model's OpenRouter endpoint link with bounded concurrency, then parses Together AI's public serverless catalog. It stores venue offers separately rather than flattening them into the Tape. A direct catalog overrides only the fields it explicitly reports. When Together identifies the same route, its direct price and published configuration fields are marked as verified while output limits and other fields may retain explicit OpenRouter route provenance. A direct-only offer with an unreported output limit remains incomplete and cannot enter a spread. Volatile latency and uptime observations are intentionally excluded; the public feed changes only when an offer, rate, configuration, or provenance changes.
+
+Each venue source has an independent last-good path. A failed OpenRouter model request reuses that model's previous offer set, a fresh route feed must cover at least 80% of the target models, and a failed Together refresh reuses `collector/state/last-good-together.json`. Operational source health is written to `collector/state/offers-heartbeat.json` without causing a public-feed revision by itself.
 
 An offer is grouped only with the same canonical model, exact reported quantization, context window, maximum output, and core reasoning, tool, and structured-output capabilities. Matching groups with disclosed precision are `declared`; matching proprietary or otherwise undisclosed precision is `nominal`; missing limits make a group `incomplete` and therefore non-comparable. Spread percentages are computed only inside a comparable group. These labels describe posted serving configurations, not quality, throughput, residency, reliability, or contractual equivalence.
 
@@ -73,6 +75,8 @@ MARGINALTOKEN_MODELS_URL=https://example.test/models python3 collector/collect.p
 python3 collector/collect.py --skip-firstparty-refresh
 MARGINALTOKEN_FIRSTPARTY_MAX_STALE_HOURS=24 python3 collector/collect.py
 MARGINALTOKEN_ENDPOINT_WORKERS=6 python3 collector/endpoints.py
+MARGINALTOKEN_TOGETHER_URL=https://example.test/serverless-models.md python3 collector/endpoints.py
+python3 collector/endpoints.py --no-together
 ```
 
 ## Development
@@ -101,7 +105,7 @@ npm run preview
 `npm run preview` serves the completed production build at an HTTP address,
 normally `http://127.0.0.1:4173/`.
 
-The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Shortlist is a 15-slot editorial view of the general-purpose enterprise API shelf, rendered as paired input/output markers on a common logarithmic price scale. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. The Compare view costs two to four selected models against a shared request volume and keeps its selections and workload assumptions in the URL. Model cards surface strictly cheaper stable matches that preserve all recorded modalities, capabilities, and context, with direct two-model comparison links. When venue data exists, a model card also shows up to four conservative configuration groups and their routed quotes; the large offers feed is fetched only on model-card routes. The Shortlist, Deflator, comparison results, model cards, and comparable venue panels each generate a 1200 × 630 PNG from their structured data. Every image includes the canonical site origin, the price-file date, and an explicit source line, then uses native file sharing, clipboard copy, or download according to browser support. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
+The frontend contains no chart library. The Deflator is a small accessible SVG chart. The Shortlist is a 15-slot editorial view of the general-purpose enterprise API shelf, rendered as paired input/output markers on a common logarithmic price scale. The Tape sorts all six columns in the browser and provides URL-shareable search, provider, source, price, context, basket, capability, lifecycle, and provenance filters. The Compare view costs two to four selected models against a shared request volume and keeps its selections and workload assumptions in the URL. Model cards surface strictly cheaper stable matches that preserve all recorded modalities, capabilities, and context, with direct two-model comparison links. When venue data exists, a model card also shows up to four conservative configuration groups and their source-labelled quotes; The Spreads ranks every non-zero like-for-like market gap. The large offers feed is fetched only on those market routes. The Shortlist, Deflator, comparison results, model cards, venue panels, and market spreads each generate a 1200 × 630 PNG from their structured data. Every image includes the canonical site origin, the price-file date, and an explicit source line, then uses native file sharing, clipboard copy, or download according to browser support. A current machine note appears between the chart and Latest moves; a missing, invalid, or stale note is omitted without affecting the page.
 
 ## Publishing to GitHub Pages
 
@@ -166,4 +170,4 @@ Add the model metadata and a reviewed fallback rate to `collector/firstparty.jso
 
 ## Venue offers
 
-`collector/endpoints.py` preserves standard per-host OpenRouter offers and cache rates, assigns deterministic serving-configuration keys, and summarizes price ranges only within conservative comparison groups. Model cards expose the leading declared configurations and widest spreads, with expandable route-level price tables and a labelled empty state when no match exists. A full market-wide Spreads view, batch or priority tiers, offer history, and claims of equivalent quality, throughput, reliability, or contractual terms remain outside this edition.
+`collector/endpoints.py` preserves standard per-host OpenRouter offers and cache rates, then verifies or supplements fields from supported direct marketplace catalogs. Every offer carries its price source; mixed-source configuration fields carry separate provenance. Deterministic serving-configuration keys summarize price ranges only within conservative comparison groups. Model cards expose the leading declared configurations and widest spreads with expandable, source-labelled offer tables, while The Spreads ranks all non-zero comparable gaps. Batch or priority tiers, offer history, and claims of equivalent quality, throughput, reliability, or contractual terms remain outside this edition.

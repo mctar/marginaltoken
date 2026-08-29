@@ -137,6 +137,11 @@ export type OfferPriceRange = {
 export type VenueOffer = {
   venue: string
   tag: string
+  source?: 'openrouter-endpoints' | 'together-catalog'
+  sourceUrl?: string
+  configurationSource?: 'openrouter-endpoints'
+  verifiedFields?: string[]
+  reportedUnknowns?: string[]
   input_mtok: number
   output_mtok: number
   cached_input_mtok?: number
@@ -150,6 +155,17 @@ export type VenueOffer = {
   supportsTools: boolean
   supportsStructuredOutput: boolean
   configurationKey: string
+}
+
+export type OfferSource = {
+  key: 'openrouter-endpoints' | 'together-catalog'
+  label: string
+  sourceUrl: string
+  modelCount?: number
+  offerCount?: number
+  catalogModelCount?: number
+  verifiedOfferCount?: number
+  addedOfferCount?: number
 }
 
 export type OfferComparisonGroup = {
@@ -172,6 +188,7 @@ export type OfferModel = {
   key: string
   canonicalKey: string
   sourceUrl: string
+  sources?: OfferSource[]
   configurationCount: number
   comparableGroupCount: number
   comparisonGroups: OfferComparisonGroup[]
@@ -181,7 +198,8 @@ export type OfferModel = {
 export type OffersFeed = {
   generatedAt: string
   asOf: string
-  source: 'openrouter-endpoints'
+  source: 'openrouter-endpoints' | 'multi-source'
+  sources?: OfferSource[]
   targetModelCount: number
   modelCount: number
   offerCount: number

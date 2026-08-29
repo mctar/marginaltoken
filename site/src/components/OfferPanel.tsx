@@ -43,6 +43,10 @@ function targetedGroupKey(): string {
   }
 }
 
+function offerSourceLabel(source: string | undefined): string {
+  return source === 'together-catalog' ? 'Direct catalog' : 'OpenRouter route'
+}
+
 export default function OfferPanel({
   model,
   offerModel,
@@ -60,6 +64,9 @@ export default function OfferPanel({
     ? [...leadingGroups, targetGroup]
     : groups.slice(0, MAX_VISIBLE_OFFER_GROUPS)
   const hiddenGroupCount = groups.length - visibleGroups.length
+  const sources = offerModel.sources?.length
+    ? offerModel.sources
+    : [{ key: 'openrouter-endpoints' as const, label: 'OpenRouter endpoints', sourceUrl: offerModel.sourceUrl }]
 
   useEffect(() => {
     if (!targetGroup) return
@@ -70,12 +77,12 @@ export default function OfferPanel({
     <section className="model-offers" aria-labelledby="venue-offers-title">
       <header className="model-offers-heading">
         <div>
-          <p className="section-kicker">Routed market</p>
+          <p className="section-kicker">Venue market</p>
           <h2 id="venue-offers-title">Venue offers</h2>
         </div>
         <div className="model-offers-heading-aside">
           <p>
-            Like-for-like OpenRouter routes only. Precision, context, output limit, and core API capabilities must match before prices share a spread.
+            Like-for-like venue offers only. Canonical model, precision, context, output limit, and core API capabilities must match before prices share a spread.
           </p>
           {groups.length > 0 && (
             <ShareImageButton
@@ -87,7 +94,7 @@ export default function OfferPanel({
               })}
               filename={shareImageFilename(`${model.display}-venue-offers`)}
               shareTitle={`${model.display} venue offers — The Marginal Token`}
-              shareText={`Like-for-like routed API price ranges for ${model.display}.`}
+              shareText={`Like-for-like venue API price ranges for ${model.display}.`}
             />
           )}
         </div>
@@ -160,7 +167,15 @@ export default function OfferPanel({
                         <tbody>
                           {offers.map((offer) => (
                             <tr key={`${offer.venue}:${offer.tag}`}>
-                              <th scope="row">{offer.venue}</th>
+                              <th scope="row">
+                                {offer.venue}
+                                <a
+                                  className={`offer-source-label ${offer.source === 'together-catalog' ? 'direct' : ''}`}
+                                  href={offer.sourceUrl ?? offerModel.sourceUrl}
+                                >
+                                  {offerSourceLabel(offer.source)}
+                                </a>
+                              </th>
                               <td><code>{offer.tag}</code></td>
                               <td>{price(offer.input_mtok)}</td>
                               <td>{price(offer.output_mtok)}</td>
@@ -184,16 +199,20 @@ export default function OfferPanel({
         <div className="offer-empty">
           <strong>No like-for-like spread yet.</strong>
           <p>
-            {offerModel.offers.length.toLocaleString('en-US')} routed {offerModel.offers.length === 1 ? 'offer is' : 'offers are'} published, but no two report a matching configuration complete enough to compare.
+            {offerModel.offers.length.toLocaleString('en-US')} venue {offerModel.offers.length === 1 ? 'offer is' : 'offers are'} published, but no two report a matching configuration complete enough to compare.
           </p>
         </div>
       )}
 
       <footer className="offer-source-note">
         <p>
-          Declared matches report precision; nominal matches do not. Posted routed prices are not a quality, latency, residency, reliability, or SLA comparison.
+          Declared matches report precision; nominal matches do not. Direct catalogs verify only the fields they publish, and missing limits remain non-comparable. Posted prices are not a quality, latency, residency, reliability, or SLA comparison.
         </p>
-        <a href={offerModel.sourceUrl}>OpenRouter endpoints · {longDate(asOf)}</a>
+        <div className="offer-source-links">
+          <span>Sources:</span>
+          {sources.map((source) => <a href={source.sourceUrl} key={source.key}>{source.label}</a>)}
+          <span>· {longDate(asOf)}</span>
+        </div>
       </footer>
     </section>
   )

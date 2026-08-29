@@ -579,7 +579,7 @@ export async function createOffersShareImage(options: {
   const { canvas, context } = await prepareCanvas()
   drawTitle(
     context,
-    'Routed market · like for like',
+    'Venue market · like for like',
     `${options.model.display} venue offers`,
     `${groups.length} leading configurations · highest posted quote versus lowest within each match`,
   )
@@ -644,7 +644,7 @@ export async function createOffersShareImage(options: {
   context.font = `400 14px ${SERIF}`
   context.fillText('Matching posted configurations only. Not a quality, latency, residency, reliability or SLA comparison.', 60, 542)
   drawFooter(context, {
-    source: 'OpenRouter endpoint offers · reported serving configurations',
+    source: 'OpenRouter endpoints + direct venue catalogs · reported configurations',
     asOf: options.asOf,
     path: options.path,
   })
@@ -666,7 +666,7 @@ export async function createSpreadsShareImage(options: {
     : `${options.confidence} matches`
   drawTitle(
     context,
-    'Routed market · like for like',
+    'Venue market · like for like',
     'The Spreads',
     `Leading posted price gaps · ${confidenceLabel} · highest quote premium over lowest`,
   )
@@ -733,7 +733,7 @@ export async function createSpreadsShareImage(options: {
   context.font = `400 14px ${SERIF}`
   context.fillText('Posted routed prices only. Matching reported configurations; not a quality, latency, reliability or SLA comparison.', 60, 542)
   drawFooter(context, {
-    source: 'OpenRouter endpoint offers · reported serving configurations',
+    source: 'OpenRouter endpoints + direct venue catalogs · reported configurations',
     asOf: options.asOf,
     path: options.path,
   })

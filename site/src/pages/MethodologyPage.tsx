@@ -81,7 +81,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">10</span>
           <h2>Venue comparisons</h2>
           <p>
-            Model cards and The Spreads may show multiple OpenRouter routes. A spread is calculated only when canonical model, reported precision, context window, maximum output, reasoning, tool, and structured-output support match. The market ranking excludes configurations whose posted prices are identical. Disclosed precision is labelled declared; undisclosed precision is nominal. Missing limits are never treated as comparable. These groups do not establish equal quality, throughput, residency, reliability, or contractual terms.
+            Model cards and The Spreads combine OpenRouter route records with supported direct marketplace catalogs, beginning with Together AI. Direct catalogs override only the fields they explicitly publish; configuration fields retained from a route record carry separate provenance, while unreported limits remain unknown. A spread is calculated only when canonical model, reported precision, context window, maximum output, reasoning, tool, and structured-output support match. The market ranking excludes configurations whose posted prices are identical. Disclosed precision is labelled declared; undisclosed precision is nominal. Missing limits are never treated as comparable. These groups do not establish equal quality, throughput, residency, reliability, or contractual terms.
           </p>
         </section>
       </article>
@@ -110,6 +110,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
         <h2 id="source-title" className="section-title">Source register</h2>
         <div>
           <a href="https://openrouter.ai/api/v1/models">OpenRouter models API</a>
+          <a href="https://docs.together.ai/docs/serverless-models">Together AI serverless models</a>
           <a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic pricing</a>
           <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a>
           <a href="https://ai.google.dev/gemini-api/docs/pricing">Google pricing</a>

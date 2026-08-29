@@ -108,6 +108,7 @@ export function filterSpreadRows(
       precision,
       ...row.venues,
       ...offers.map((offer) => offer.tag),
+      ...offers.map((offer) => offer.source ?? ''),
     ].join(' '))
     return terms.every((term) => haystack.includes(term))
   })

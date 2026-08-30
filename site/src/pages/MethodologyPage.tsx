@@ -53,7 +53,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">06</span>
           <h2>Detection and publication</h2>
           <p>
-            The collector checks OpenRouter and every supported official source hourly. A price move must exceed $0.0001 per million tokens after rounding to four decimals. A valid change produces one feed revision. Failed, empty, or materially incomplete responses leave last-good data in place. Provider freshness and matching-key disagreements are published in the source-health feed. The site republishes only when prices or source status change.
+            The collector checks OpenRouter and every supported official source hourly. A price move must exceed $0.0001 per million tokens after rounding to four decimals. DeepSeek now publishes time-banded standard rates, so the Tape records its peak weekday rate as the deterministic quote and labels the 50%-lower off-peak schedule. A valid change produces one feed revision. Failed, empty, or materially incomplete responses leave last-good data in place. Provider freshness and matching-key disagreements are published in the source-health feed. The site republishes only when prices or source status change.
           </p>
         </section>
         <section>
@@ -81,7 +81,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">10</span>
           <h2>Venue comparisons</h2>
           <p>
-            Model cards and The Spreads combine OpenRouter route records with supported direct marketplace catalogs, beginning with Together AI. Direct catalogs override only the fields they explicitly publish; configuration fields retained from a route record carry separate provenance, while unreported limits remain unknown. A spread is calculated only when canonical model, reported precision, context window, maximum output, reasoning, tool, and structured-output support match. The market ranking excludes configurations whose posted prices are identical. Disclosed precision is labelled declared; undisclosed precision is nominal. Missing limits are never treated as comparable. These groups do not establish equal quality, throughput, residency, reliability, or contractual terms.
+            Model cards and The Spreads combine OpenRouter route records with direct Standard pricing from Together AI and Fireworks AI. Priority, Fast, US-only, batch, and size-banded marketplace rates are excluded. Direct sources override only the fields they explicitly publish; configuration fields retained from a route record carry separate provenance, while unreported limits remain unknown. A spread is calculated only when canonical model, reported precision, context window, maximum output, reasoning, tool, and structured-output support match. The market ranking excludes configurations whose posted prices are identical. Disclosed precision is labelled declared; undisclosed precision is nominal. Missing limits are never treated as comparable. These groups do not establish equal quality, throughput, residency, reliability, or contractual terms.
           </p>
         </section>
       </article>
@@ -111,10 +111,11 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
         <div>
           <a href="https://openrouter.ai/api/v1/models">OpenRouter models API</a>
           <a href="https://docs.together.ai/docs/serverless-models">Together AI serverless models</a>
+          <a href="https://docs.fireworks.ai/serverless/pricing">Fireworks AI serverless pricing</a>
           <a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic pricing</a>
           <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a>
           <a href="https://ai.google.dev/gemini-api/docs/pricing">Google pricing</a>
-          <a href="https://docs.mistral.ai/models/model-cards/mistral-medium-3-5-26-04">Mistral pricing</a>
+          <a href="https://docs.mistral.ai/inference/pricing">Mistral pricing</a>
           <a href="https://www.kimi.com/resources/kimi-k3-pricing">Kimi pricing</a>
           <a href="https://api-docs.deepseek.com/quick_start/pricing/">DeepSeek pricing</a>
           <a href="https://docs.x.ai/developers/models">xAI pricing</a>

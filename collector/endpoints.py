@@ -46,8 +46,17 @@ try:
     from collector.together import (
         TOGETHER_CATALOG_URL,
         TOGETHER_SOURCE_KEY,
+        TOGETHER_SOURCE_LABEL,
         match_together_catalog,
         refresh_together_catalog,
+    )
+    from collector.fireworks import (
+        FIREWORKS_PRICING_URL,
+        FIREWORKS_PUBLIC_URL,
+        FIREWORKS_SOURCE_KEY,
+        FIREWORKS_SOURCE_LABEL,
+        match_fireworks_pricing,
+        refresh_fireworks_pricing,
     )
 except ModuleNotFoundError:  # Direct execution: python3 collector/endpoints.py
     from collect import (  # type: ignore[no-redef]
@@ -67,8 +76,17 @@ except ModuleNotFoundError:  # Direct execution: python3 collector/endpoints.py
     from together import (  # type: ignore[no-redef]
         TOGETHER_CATALOG_URL,
         TOGETHER_SOURCE_KEY,
+        TOGETHER_SOURCE_LABEL,
         match_together_catalog,
         refresh_together_catalog,
+    )
+    from fireworks import (  # type: ignore[no-redef]
+        FIREWORKS_PRICING_URL,
+        FIREWORKS_PUBLIC_URL,
+        FIREWORKS_SOURCE_KEY,
+        FIREWORKS_SOURCE_LABEL,
+        match_fireworks_pricing,
+        refresh_fireworks_pricing,
     )
 
 
@@ -79,6 +97,11 @@ DEFAULT_MODELS_SOURCE = DEFAULT_STATE_DIR / "last-good-openrouter.json"
 OPENROUTER_ORIGIN = "https://openrouter.ai"
 OPENROUTER_SOURCE_KEY = "openrouter-endpoints"
 OPENROUTER_SOURCE_LABEL = "OpenRouter endpoints"
+SOURCE_LABELS = {
+    OPENROUTER_SOURCE_KEY: OPENROUTER_SOURCE_LABEL,
+    TOGETHER_SOURCE_KEY: TOGETHER_SOURCE_LABEL,
+    FIREWORKS_SOURCE_KEY: FIREWORKS_SOURCE_LABEL,
+}
 MAX_RESPONSE_BYTES = 10 * 1024 * 1024
 DEFAULT_WORKERS = 8
 DEFAULT_MIN_COVERAGE = Decimal("0.80")
@@ -243,14 +266,18 @@ def model_with_comparisons(
         source_url = offer.get("sourceUrl")
         if not isinstance(source, str) or not isinstance(source_url, str):
             continue
-        label = "Together AI" if source == TOGETHER_SOURCE_KEY else OPENROUTER_SOURCE_LABEL
+        label = SOURCE_LABELS.get(source, source)
         sources_by_key[source] = {"key": source, "label": label, "sourceUrl": source_url}
+    ordered_sources = [
+        OPENROUTER_SOURCE_KEY,
+        *(key for key in sorted(sources_by_key) if key != OPENROUTER_SOURCE_KEY),
+    ]
 
     return {
         "key": target["key"],
         "canonicalKey": target["canonicalKey"],
         "sourceUrl": target["sourceUrl"],
-        "sources": [sources_by_key[key] for key in sorted(sources_by_key)],
+        "sources": [sources_by_key[key] for key in ordered_sources],
         "configurationCount": len(comparison_groups),
         "comparableGroupCount": sum(group["comparable"] for group in comparison_groups),
         "comparisonGroups": comparison_groups,
@@ -338,13 +365,18 @@ def normalize_offers(target: dict[str, str], payload: Any) -> dict[str, Any]:
     return model_with_comparisons(target, offers)
 
 
-def merge_together_catalog(
+def merge_direct_catalog(
     *,
     collected: dict[str, dict[str, Any]],
     targets: list[dict[str, str]],
-    catalog: list[dict[str, Any]],
+    matched: list[dict[str, Any]],
+    unmatched: list[str],
+    catalog_count: int,
+    source_key: str,
+    source_label: str,
+    model_id_field: str,
+    offer_selector: Callable[[dict[str, Any]], bool],
 ) -> dict[str, Any]:
-    matched, unmatched = match_together_catalog(catalog, targets)
     targets_by_key = {target["key"]: target for target in targets}
     verified = 0
     added = 0
@@ -358,19 +390,15 @@ def merge_together_catalog(
             skipped += 1
             continue
         offers = [dict(offer) for offer in model.get("offers", []) if isinstance(offer, dict)]
-        together_offers = [
-            offer
-            for offer in offers
-            if str(offer.get("venue", "")).strip().lower() in {"together", "together ai"}
-        ]
+        direct_offers = [offer for offer in offers if offer_selector(offer)]
 
-        if len(together_offers) == 1:
-            offer = together_offers[0]
-            offer["venue"] = "Together AI"
-            offer["tag"] = row["togetherModelId"]
+        if len(direct_offers) == 1:
+            offer = direct_offers[0]
+            offer["venue"] = source_label
+            offer["tag"] = row[model_id_field]
             offer["input_mtok"] = row["input_mtok"]
             offer["output_mtok"] = row["output_mtok"]
-            offer["source"] = TOGETHER_SOURCE_KEY
+            offer["source"] = source_key
             offer["sourceUrl"] = row["sourceUrl"]
             offer["configurationSource"] = OPENROUTER_SOURCE_KEY
             verified_fields = ["input_mtok", "output_mtok"]
@@ -403,16 +431,23 @@ def merge_together_catalog(
             offer["supportedParameters"] = sorted(supported_parameters)
             offer["verifiedFields"] = sorted(verified_fields)
             verified += 1
-        elif len(together_offers) == 0:
+        elif len(direct_offers) == 0:
             supported_parameters: list[str] = []
             if row.get("supportsTools") is True:
                 supported_parameters.append("tools")
             if row.get("supportsStructuredOutput") is True:
                 supported_parameters.append("response_format")
+            reported_unknowns = ["maxOutputTokens", "supportsReasoning"]
+            if not row.get("context"):
+                reported_unknowns.append("context")
+            if "supportsTools" not in row:
+                reported_unknowns.append("supportsTools")
+            if "supportsStructuredOutput" not in row:
+                reported_unknowns.append("supportsStructuredOutput")
             direct_offer: dict[str, Any] = {
-                "venue": "Together AI",
-                "tag": row["togetherModelId"],
-                "source": TOGETHER_SOURCE_KEY,
+                "venue": source_label,
+                "tag": row[model_id_field],
+                "source": source_key,
                 "sourceUrl": row["sourceUrl"],
                 "input_mtok": row["input_mtok"],
                 "output_mtok": row["output_mtok"],
@@ -421,7 +456,7 @@ def merge_together_catalog(
                 "supportsReasoning": False,
                 "supportsTools": row.get("supportsTools", False),
                 "supportsStructuredOutput": row.get("supportsStructuredOutput", False),
-                "reportedUnknowns": ["maxOutputTokens", "supportsReasoning"],
+                "reportedUnknowns": sorted(reported_unknowns),
             }
             for field in ("cached_input_mtok", "quantization"):
                 if field in row:
@@ -443,7 +478,7 @@ def merge_together_catalog(
         collected[key] = model_with_comparisons(target, offers)
 
     return {
-        "catalogModelCount": len(catalog),
+        "catalogModelCount": catalog_count,
         "matchedModelCount": len(matched),
         "verifiedOfferCount": verified,
         "addedOfferCount": added,
@@ -451,6 +486,50 @@ def merge_together_catalog(
         "unmatchedModelCount": len(unmatched),
         "unmatchedModels": unmatched[:50],
     }
+
+
+def merge_together_catalog(
+    *,
+    collected: dict[str, dict[str, Any]],
+    targets: list[dict[str, str]],
+    catalog: list[dict[str, Any]],
+) -> dict[str, Any]:
+    matched, unmatched = match_together_catalog(catalog, targets)
+    return merge_direct_catalog(
+        collected=collected,
+        targets=targets,
+        matched=matched,
+        unmatched=unmatched,
+        catalog_count=len(catalog),
+        source_key=TOGETHER_SOURCE_KEY,
+        source_label=TOGETHER_SOURCE_LABEL,
+        model_id_field="togetherModelId",
+        offer_selector=lambda offer: str(offer.get("venue", "")).strip().lower()
+        in {"together", "together ai"},
+    )
+
+
+def merge_fireworks_catalog(
+    *,
+    collected: dict[str, dict[str, Any]],
+    targets: list[dict[str, str]],
+    catalog: list[dict[str, Any]],
+) -> dict[str, Any]:
+    matched, unmatched = match_fireworks_pricing(catalog, targets)
+    return merge_direct_catalog(
+        collected=collected,
+        targets=targets,
+        matched=matched,
+        unmatched=unmatched,
+        catalog_count=len(catalog),
+        source_key=FIREWORKS_SOURCE_KEY,
+        source_label=FIREWORKS_SOURCE_LABEL,
+        model_id_field="fireworksModelId",
+        offer_selector=lambda offer: (
+            str(offer.get("venue", "")).strip().lower() == "fireworks"
+            and str(offer.get("tag", "")).strip().lower() == "fireworks"
+        ),
+    )
 
 
 def fetch_endpoint(target: dict[str, str]) -> dict[str, Any]:
@@ -498,6 +577,8 @@ def collect_offers(
     fetcher: Callable[[dict[str, str]], dict[str, Any]] = fetch_endpoint,
     together_catalog: list[dict[str, Any]] | None = None,
     together_status: dict[str, Any] | None = None,
+    fireworks_catalog: list[dict[str, Any]] | None = None,
+    fireworks_status: dict[str, Any] | None = None,
 ) -> str:
     now = now or utc_now()
     generated_at = iso_utc(now)
@@ -567,6 +648,21 @@ def collect_offers(
             targets=targets,
             catalog=together_catalog,
         )
+    fireworks_merge = {
+        "catalogModelCount": 0,
+        "matchedModelCount": 0,
+        "verifiedOfferCount": 0,
+        "addedOfferCount": 0,
+        "skippedModelCount": 0,
+        "unmatchedModelCount": 0,
+        "unmatchedModels": [],
+    }
+    if fireworks_catalog:
+        fireworks_merge = merge_fireworks_catalog(
+            collected=collected,
+            targets=targets,
+            catalog=fireworks_catalog,
+        )
 
     models = [collected[key] for key in sorted(collected)]
     offers = [offer for model in models for offer in model["offers"]]
@@ -579,6 +675,7 @@ def collect_offers(
         for offer in offers
     )
     together_offer_count = sum(offer.get("source") == TOGETHER_SOURCE_KEY for offer in offers)
+    fireworks_offer_count = sum(offer.get("source") == FIREWORKS_SOURCE_KEY for offer in offers)
     source_records: list[dict[str, Any]] = [
         {
             "key": OPENROUTER_SOURCE_KEY,
@@ -591,7 +688,7 @@ def collect_offers(
     if together_status is not None:
         together_record = {
             "key": TOGETHER_SOURCE_KEY,
-            "label": "Together AI",
+            "label": TOGETHER_SOURCE_LABEL,
             "sourceUrl": together_status.get("sourceUrl", TOGETHER_CATALOG_URL),
             "catalogModelCount": together_merge["catalogModelCount"],
             "modelCount": together_merge["matchedModelCount"],
@@ -600,6 +697,17 @@ def collect_offers(
             "addedOfferCount": together_merge["addedOfferCount"],
         }
         source_records.append(together_record)
+    if fireworks_status is not None:
+        source_records.append({
+            "key": FIREWORKS_SOURCE_KEY,
+            "label": FIREWORKS_SOURCE_LABEL,
+            "sourceUrl": fireworks_status.get("sourceUrl", FIREWORKS_PUBLIC_URL),
+            "catalogModelCount": fireworks_merge["catalogModelCount"],
+            "modelCount": fireworks_merge["matchedModelCount"],
+            "offerCount": fireworks_offer_count,
+            "verifiedOfferCount": fireworks_merge["verifiedOfferCount"],
+            "addedOfferCount": fireworks_merge["addedOfferCount"],
+        })
     payload = {
         "generatedAt": generated_at,
         "asOf": date,
@@ -627,9 +735,13 @@ def collect_offers(
         "last_good",
         "unavailable",
     }
+    fireworks_degraded = fireworks_status is not None and fireworks_status.get("status") in {
+        "last_good",
+        "unavailable",
+    }
     heartbeat = {
         "checkedAt": generated_at,
-        "status": "degraded" if failures or together_degraded else "healthy",
+        "status": "degraded" if failures or together_degraded or fireworks_degraded else "healthy",
         "targetModelCount": len(targets),
         "modelCount": len(models),
         "offerCount": len(offers),
@@ -648,6 +760,11 @@ def collect_offers(
             *(
                 [{**together_status, **together_merge, "offerCount": together_offer_count}]
                 if together_status is not None
+                else []
+            ),
+            *(
+                [{**fireworks_status, **fireworks_merge, "offerCount": fireworks_offer_count}]
+                if fireworks_status is not None
                 else []
             ),
         ],
@@ -679,6 +796,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--no-together", action="store_true")
     parser.add_argument(
+        "--fireworks-url",
+        default=os.environ.get("MARGINALTOKEN_FIREWORKS_URL", FIREWORKS_PRICING_URL),
+    )
+    parser.add_argument("--no-fireworks", action="store_true")
+    parser.add_argument(
         "--workers",
         type=int,
         default=int(os.environ.get("MARGINALTOKEN_ENDPOINT_WORKERS", DEFAULT_WORKERS)),
@@ -705,7 +827,7 @@ def main(argv: list[str] | None = None) -> int:
             together_catalog: list[dict[str, Any]] = []
             together_status: dict[str, Any] = {
                 "key": TOGETHER_SOURCE_KEY,
-                "label": "Together AI",
+                "label": TOGETHER_SOURCE_LABEL,
                 "sourceUrl": args.together_url,
                 "status": "skipped",
                 "checkedAt": iso_utc(utc_now()),
@@ -716,6 +838,21 @@ def main(argv: list[str] | None = None) -> int:
                 state_dir=args.state_dir,
                 url=args.together_url,
             )
+        if args.no_fireworks:
+            fireworks_catalog: list[dict[str, Any]] = []
+            fireworks_status: dict[str, Any] = {
+                "key": FIREWORKS_SOURCE_KEY,
+                "label": FIREWORKS_SOURCE_LABEL,
+                "sourceUrl": FIREWORKS_PUBLIC_URL,
+                "status": "skipped",
+                "checkedAt": iso_utc(utc_now()),
+                "catalogModelCount": 0,
+            }
+        else:
+            fireworks_catalog, fireworks_status = refresh_fireworks_pricing(
+                state_dir=args.state_dir,
+                url=args.fireworks_url,
+            )
         result = collect_offers(
             models_payload=models_payload,
             data_file=args.data_file,
@@ -724,6 +861,8 @@ def main(argv: list[str] | None = None) -> int:
             min_coverage=args.min_coverage,
             together_catalog=together_catalog,
             together_status=together_status,
+            fireworks_catalog=fireworks_catalog,
+            fireworks_status=fireworks_status,
         )
         print(result)
         return 0

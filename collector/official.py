@@ -31,7 +31,7 @@ PROVIDER_URLS = {
     "anthropic": "https://platform.claude.com/docs/en/about-claude/pricing",
     "openai": "https://developers.openai.com/api/docs/pricing.md",
     "google": "https://ai.google.dev/gemini-api/docs/pricing",
-    "mistralai": "https://docs.mistral.ai/models/model-cards/mistral-medium-3-5-26-04",
+    "mistralai": "https://docs.mistral.ai/inference/pricing",
     "moonshotai": "https://www.kimi.com/resources/kimi-k3-pricing",
     "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
     "x-ai": "https://docs.x.ai/developers/models",
@@ -254,6 +254,18 @@ def parse_mistral(source: str, rows: list[dict[str, Any]], now: datetime) -> dic
         found: tuple[float, float] | None = None
         for start in starts:
             segment = text[start : start + 1200]
+            table_match = re.search(
+                rf"{re.escape(str(row['display']))}\s*\|\s*(?:↗\s*\|\s*)?"
+                r"\$\s*([0-9.]+)\s*\|\s*\$\s*([0-9.]+)\s*\|\s*\$\s*([0-9.]+)",
+                segment,
+                re.I,
+            )
+            if table_match:
+                found = (
+                    price(table_match.group(1), f"{row['model']} input"),
+                    price(table_match.group(3), f"{row['model']} output"),
+                )
+                break
             match = re.search(
                 r"Price(?:\s*\|\s*i)?\s*\|\s*\$\s*\|\s*([0-9.]+)\s*\|\s*/M Tokens\s*\|\s*\$\s*\|\s*([0-9.]+)\s*\|\s*/M Tokens",
                 segment,
@@ -287,14 +299,48 @@ def parse_moonshot(source: str, rows: list[dict[str, Any]], now: datetime) -> di
 def parse_deepseek(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
     del now
     text = visible_text(source)
-    match = re.search(
-        r"deepseek-v4-flash.*?deepseek-v4-pro.*?1M INPUT TOKENS \(CACHE MISS\).*?\$([0-9.]+).*?\$([0-9.]+).*?1M OUTPUT TOKENS.*?\$([0-9.]+).*?\$([0-9.]+)",
+    model_order = re.search(r"deepseek-v4-flash.*?deepseek-v4-pro", text, re.I)
+    if not model_order:
+        raise OfficialSourceError("DeepSeek V4 pricing table not found")
+
+    input_section = re.search(
+        r"1M INPUT TOKENS\s*\(CACHE MISS\)(?P<body>.*?)1M OUTPUT TOKENS",
         text,
         re.I,
     )
-    if not match:
-        raise OfficialSourceError("DeepSeek V4 pricing table not found")
-    values = (price(match.group(2), "DeepSeek V4 Pro input"), price(match.group(4), "DeepSeek V4 Pro output"))
+    output_section = re.search(
+        r"1M OUTPUT TOKENS(?P<body>.*?)(?:Concurrency Limit|Deduction Rules)",
+        text,
+        re.I,
+    )
+    tiered_input = re.search(
+        r"(?<!-)\bPEAK\s*\|\s*\$([0-9.]+)\s*\|\s*\$([0-9.]+)",
+        input_section.group("body") if input_section else "",
+        re.I,
+    )
+    tiered_output = re.search(
+        r"(?<!-)\bPEAK\s*\|\s*\$([0-9.]+)\s*\|\s*\$([0-9.]+)",
+        output_section.group("body") if output_section else "",
+        re.I,
+    )
+    if tiered_input and tiered_output:
+        values = (
+            price(tiered_input.group(2), "DeepSeek V4 Pro peak input"),
+            price(tiered_output.group(2), "DeepSeek V4 Pro peak output"),
+        )
+        return {str(row["model"]): values for row in rows}
+
+    legacy = re.search(
+        r"1M INPUT TOKENS \(CACHE MISS\).*?\$([0-9.]+).*?\$([0-9.]+).*?1M OUTPUT TOKENS.*?\$([0-9.]+).*?\$([0-9.]+)",
+        text,
+        re.I,
+    )
+    if not legacy:
+        raise OfficialSourceError("DeepSeek V4 prices missing")
+    values = (
+        price(legacy.group(2), "DeepSeek V4 Pro input"),
+        price(legacy.group(4), "DeepSeek V4 Pro output"),
+    )
     return {str(row["model"]): values for row in rows}
 
 

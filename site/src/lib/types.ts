@@ -137,7 +137,7 @@ export type OfferPriceRange = {
 export type VenueOffer = {
   venue: string
   tag: string
-  source?: 'openrouter-endpoints' | 'together-catalog'
+  source?: 'openrouter-endpoints' | 'together-catalog' | 'fireworks-pricing'
   sourceUrl?: string
   configurationSource?: 'openrouter-endpoints'
   verifiedFields?: string[]
@@ -158,7 +158,7 @@ export type VenueOffer = {
 }
 
 export type OfferSource = {
-  key: 'openrouter-endpoints' | 'together-catalog'
+  key: 'openrouter-endpoints' | 'together-catalog' | 'fireworks-pricing'
   label: string
   sourceUrl: string
   modelCount?: number

@@ -13,7 +13,7 @@ site/        Static three-route publication
 deploy/      GitHub Pages publisher and systemd units
 ```
 
-OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows. A separate venue scan preserves OpenRouter's route-level offers and verifies supported fields against direct marketplace catalogs, beginning with Together AI, without changing the single-quote Tape.
+OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows. A separate venue scan preserves OpenRouter's route-level offers and verifies supported fields against direct Standard pricing from Together AI and Fireworks AI without changing the single-quote Tape.
 
 ## Feed contract
 
@@ -39,9 +39,9 @@ python3 collector/collect.py
 
 OpenRouter prices are converted from dollars per token to dollars per million tokens with `Decimal`, then rounded to four decimal places. Free rows, batch variants, aliases, negative variable-price routers, and malformed entries are excluded.
 
-After the core price scan, `collector/endpoints.py` follows each retained model's OpenRouter endpoint link with bounded concurrency, then parses Together AI's public serverless catalog. It stores venue offers separately rather than flattening them into the Tape. A direct catalog overrides only the fields it explicitly reports. When Together identifies the same route, its direct price and published configuration fields are marked as verified while output limits and other fields may retain explicit OpenRouter route provenance. A direct-only offer with an unreported output limit remains incomplete and cannot enter a spread. Volatile latency and uptime observations are intentionally excluded; the public feed changes only when an offer, rate, configuration, or provenance changes.
+After the core price scan, `collector/endpoints.py` follows each retained model's OpenRouter endpoint link with bounded concurrency, then parses Together AI's model catalog and Fireworks AI's headline Standard pricing table. It stores venue offers separately rather than flattening them into the Tape. Priority, Fast, US-only, batch, and size-banded marketplace rates are excluded. A direct source overrides only the fields it explicitly reports. When it identifies the same route, its price and published configuration fields are marked as verified while unreported fields retain explicit OpenRouter route provenance. A direct-only offer with an unreported configuration or output limit remains incomplete and cannot enter a spread. Volatile latency and uptime observations are intentionally excluded; the public feed changes only when an offer, rate, configuration, or provenance changes.
 
-Each venue source has an independent last-good path. A failed OpenRouter model request reuses that model's previous offer set, a fresh route feed must cover at least 80% of the target models, and a failed Together refresh reuses `collector/state/last-good-together.json`. Operational source health is written to `collector/state/offers-heartbeat.json` without causing a public-feed revision by itself.
+Each venue source has an independent last-good path. A failed OpenRouter model request reuses that model's previous offer set, a fresh route feed must cover at least 80% of the target models, and failed direct refreshes reuse `collector/state/last-good-together.json` or `collector/state/last-good-fireworks.json`. Operational source health is written to `collector/state/offers-heartbeat.json` without causing a public-feed revision by itself.
 
 An offer is grouped only with the same canonical model, exact reported quantization, context window, maximum output, and core reasoning, tool, and structured-output capabilities. Matching groups with disclosed precision are `declared`; matching proprietary or otherwise undisclosed precision is `nominal`; missing limits make a group `incomplete` and therefore non-comparable. Spread percentages are computed only inside a comparable group. These labels describe posted serving configurations, not quality, throughput, residency, reliability, or contractual equivalence.
 
@@ -55,6 +55,8 @@ The collector refuses to replace the feed when:
 Failures return a non-zero exit status and leave `data/` untouched. This makes the systemd unit visibly fail and prevents it from publishing after a bad collection. Operational status is written to the ignored `collector/state/heartbeat.json` file. A successful feed change creates `collector/state/publish-pending`. That marker remains until publication succeeds, which makes a failed build or push retryable on the next timer run.
 
 Official sources have independent last-good snapshots in `collector/state/firstparty-last-good.json`. One unavailable or changed provider page therefore cannot erase another provider's verified data. A source is marked stale after 48 hours without successful verification, and the public source-health feed distinguishes fresh, last-good, stale, and manual fallback data. Matching OpenRouter prices are compared field by field and disagreements are published while the verified first-party rate remains authoritative.
+
+When a first party publishes multiple time-banded standard rates, the Tape uses the highest applicable standard rate as its deterministic quote rather than changing with the clock. DeepSeek's V4 peak weekday rate is therefore recorded, with its 50%-lower off-peak schedule stated in the model note.
 
 `--rebase-index` is an operator-only correction path for the inception basket. It preserves the original base date, resets the basis to the corrected basket mean, and suppresses a false basket-move event. It must not be used for genuine market price changes.
 
@@ -77,6 +79,8 @@ MARGINALTOKEN_FIRSTPARTY_MAX_STALE_HOURS=24 python3 collector/collect.py
 MARGINALTOKEN_ENDPOINT_WORKERS=6 python3 collector/endpoints.py
 MARGINALTOKEN_TOGETHER_URL=https://example.test/serverless-models.md python3 collector/endpoints.py
 python3 collector/endpoints.py --no-together
+MARGINALTOKEN_FIREWORKS_URL=https://example.test/pricing.md python3 collector/endpoints.py
+python3 collector/endpoints.py --no-fireworks
 ```
 
 ## Development
@@ -162,7 +166,7 @@ the same validated feed revisions as GitHub Pages.
 
 ## Updating first-party prices
 
-Add the model metadata and a reviewed fallback rate to `collector/firstparty.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Add or extend that provider's strict parser in `collector/official.py` and a compact source fixture in `collector/tests/test_official.py`. Standard uncached, non-batch, global rates are used. For tiered products, record the lowest standard context tier and explain it in `rate_note`.
+Add the model metadata and a reviewed fallback rate to `collector/firstparty.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Add or extend that provider's strict parser in `collector/official.py` and a compact source fixture in `collector/tests/test_official.py`. Standard uncached, non-batch, global rates are used. For context tiers, record the lowest standard tier; for time-banded prices, record the highest standard rate. Explain either choice in `rate_note`.
 
 ## Updating The Shortlist
 

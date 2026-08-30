@@ -95,6 +95,14 @@ Batch
         rows = [row("mistralai", "mistral-medium-3.5", "Mistral Medium 3.5")]
         self.assertEqual(parse_mistral(source, rows, NOW), {"mistral-medium-3.5": (1.5, 7.5)})
 
+    def test_mistral_consolidated_pricing_table(self) -> None:
+        source = """
+<table><tr><th>Model</th><th>Input</th><th>Cached input</th><th>Output</th></tr>
+<tr><td>Mistral Medium 3.5</td><td>↗</td><td>$1.5</td><td>$0.15</td><td>$7.5</td></tr></table>
+"""
+        rows = [row("mistralai", "mistral-medium-3.5", "Mistral Medium 3.5")]
+        self.assertEqual(parse_mistral(source, rows, NOW), {"mistral-medium-3.5": (1.5, 7.5)})
+
     def test_moonshot_json_ld_copy(self) -> None:
         source = "Kimi K3 API pricing is calculated based on token usage. Input tokens are billed at $3.00 per 1M tokens on a cache miss. Output tokens are billed at $15.00 per 1M tokens."
         rows = [row("moonshotai", "kimi-k3", "Kimi K3")]
@@ -108,6 +116,18 @@ Batch
 """
         rows = [row("deepseek", "deepseek-v4-pro", "DeepSeek V4 Pro")]
         self.assertEqual(parse_deepseek(source, rows, NOW), {"deepseek-v4-pro": (0.435, 0.87)})
+
+    def test_deepseek_uses_peak_rate_from_time_banded_table(self) -> None:
+        source = """
+<table><tr><td>MODEL</td><td>deepseek-v4-flash</td><td>deepseek-v4-pro</td></tr>
+<tr><td>1M INPUT TOKENS (CACHE MISS)</td><td>OFF-PEAK</td><td>$0.22</td><td>$0.66</td></tr>
+<tr><td>PEAK</td><td>$0.44</td><td>$1.32</td></tr>
+<tr><td>1M OUTPUT TOKENS</td><td>OFF-PEAK</td><td>$0.66</td><td>$1.98</td></tr>
+<tr><td>PEAK</td><td>$1.32</td><td>$3.96</td></tr>
+<tr><td>Concurrency Limit</td><td>2500</td><td>500</td></tr></table>
+"""
+        rows = [row("deepseek", "deepseek-v4-pro", "DeepSeek V4 Pro")]
+        self.assertEqual(parse_deepseek(source, rows, NOW), {"deepseek-v4-pro": (1.32, 3.96)})
 
     def test_xai_embedded_model_data(self) -> None:
         source = r'{\"name\":\"grok-4.5\",\"promptTextTokenPrice\":\"20000\",\"completionTextTokenPrice\":\"60000\"}'

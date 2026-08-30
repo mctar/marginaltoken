@@ -10,6 +10,7 @@ from pathlib import Path
 from collector.collect import CollectorError
 from collector.endpoints import (
     collect_offers,
+    merge_fireworks_catalog,
     merge_together_catalog,
     normalize_offers,
     offer_targets,
@@ -249,6 +250,75 @@ class TogetherMergeTests(unittest.TestCase):
         self.assertEqual(direct_group["confidence"], "incomplete")
 
 
+class FireworksMergeTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.target = offer_targets({"data": [raw_model("moonshotai/kimi-k3")]})[0]
+        self.catalog = [{
+            "fireworksModelId": "accounts/fireworks/models/kimi-k3",
+            "fireworksSlug": "kimi-k3",
+            "input_mtok": 3.0,
+            "cached_input_mtok": 0.3,
+            "output_mtok": 15.0,
+            "sourceUrl": "https://docs.fireworks.ai/serverless/pricing",
+        }]
+
+    def test_verifies_only_the_standard_fireworks_route(self) -> None:
+        standard = raw_offer("Fireworks", "fireworks", "0.000003", "0.000015")
+        fast = raw_offer("Fireworks", "fireworks/fast", "0.0000045", "0.0000225")
+        us = raw_offer("Fireworks", "fireworks/us", "0.0000033", "0.0000165")
+        collected = {
+            "moonshotai/kimi-k3": normalize_offers(
+                self.target,
+                endpoint_payload(standard, fast, us),
+            )
+        }
+
+        stats = merge_fireworks_catalog(
+            collected=collected,
+            targets=[self.target],
+            catalog=self.catalog,
+        )
+
+        self.assertEqual(stats["verifiedOfferCount"], 1)
+        self.assertEqual(stats["addedOfferCount"], 0)
+        offers = collected["moonshotai/kimi-k3"]["offers"]
+        verified = next(offer for offer in offers if offer["source"] == "fireworks-pricing")
+        self.assertEqual(verified["venue"], "Fireworks AI")
+        self.assertEqual(verified["tag"], "accounts/fireworks/models/kimi-k3")
+        self.assertEqual(verified["cached_input_mtok"], 0.3)
+        self.assertEqual(
+            sum(offer["source"] == "openrouter-endpoints" for offer in offers),
+            2,
+        )
+
+    def test_direct_only_fireworks_price_cannot_enter_a_spread(self) -> None:
+        other = raw_offer("Venue A", "venue-a")
+        collected = {
+            "moonshotai/kimi-k3": normalize_offers(self.target, endpoint_payload(other))
+        }
+
+        stats = merge_fireworks_catalog(
+            collected=collected,
+            targets=[self.target],
+            catalog=self.catalog,
+        )
+
+        self.assertEqual(stats["addedOfferCount"], 1)
+        direct = next(
+            offer
+            for offer in collected["moonshotai/kimi-k3"]["offers"]
+            if offer["source"] == "fireworks-pricing"
+        )
+        self.assertIn("context", direct["reportedUnknowns"])
+        group = next(
+            group
+            for group in collected["moonshotai/kimi-k3"]["comparisonGroups"]
+            if group["key"] == direct["configurationKey"]
+        )
+        self.assertFalse(group["comparable"])
+        self.assertEqual(group["confidence"], "incomplete")
+
+
 class OfferCollectorTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
@@ -358,6 +428,7 @@ class OfferCollectorTests(unittest.TestCase):
         self.assertFalse(self.data_file.exists())
 
     def test_feed_reports_each_marketplace_source(self) -> None:
+        self.payload["data"].append(raw_model("moonshotai/kimi-k3"))
         catalog = [{
             "togetherModelId": "lab/a",
             "input_mtok": 0.2,
@@ -369,18 +440,36 @@ class OfferCollectorTests(unittest.TestCase):
             "sourceUrl": "https://docs.together.ai/docs/serverless-models",
             "status": "healthy",
         }
+        fireworks_catalog = [{
+            "fireworksModelId": "accounts/fireworks/models/kimi-k3",
+            "fireworksSlug": "kimi-k3",
+            "input_mtok": 3.0,
+            "cached_input_mtok": 0.3,
+            "output_mtok": 15.0,
+            "sourceUrl": "https://docs.fireworks.ai/serverless/pricing",
+        }]
+        fireworks_status = {
+            "sourceUrl": "https://docs.fireworks.ai/serverless/pricing",
+            "status": "healthy",
+        }
 
         self.assertEqual(
-            self.collect(together_catalog=catalog, together_status=status),
+            self.collect(
+                together_catalog=catalog,
+                together_status=status,
+                fireworks_catalog=fireworks_catalog,
+                fireworks_status=fireworks_status,
+            ),
             "changed",
         )
         feed = json.loads(self.data_file.read_text())
         self.assertEqual(feed["source"], "multi-source")
         self.assertEqual(
             [source["key"] for source in feed["sources"]],
-            ["openrouter-endpoints", "together-catalog"],
+            ["openrouter-endpoints", "together-catalog", "fireworks-pricing"],
         )
         self.assertEqual(feed["sources"][1]["addedOfferCount"], 1)
+        self.assertEqual(feed["sources"][2]["addedOfferCount"], 1)
 
 
 if __name__ == "__main__":

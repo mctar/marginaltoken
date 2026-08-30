@@ -44,7 +44,7 @@ function targetedGroupKey(): string {
 }
 
 function offerSourceLabel(source: string | undefined): string {
-  return source === 'together-catalog' ? 'Direct catalog' : 'OpenRouter route'
+  return source && source !== 'openrouter-endpoints' ? 'Direct pricing' : 'OpenRouter route'
 }
 
 export default function OfferPanel({
@@ -170,7 +170,7 @@ export default function OfferPanel({
                               <th scope="row">
                                 {offer.venue}
                                 <a
-                                  className={`offer-source-label ${offer.source === 'together-catalog' ? 'direct' : ''}`}
+                                  className={`offer-source-label ${offer.source && offer.source !== 'openrouter-endpoints' ? 'direct' : ''}`}
                                   href={offer.sourceUrl ?? offerModel.sourceUrl}
                                 >
                                   {offerSourceLabel(offer.source)}

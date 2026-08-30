@@ -119,12 +119,12 @@ Batch
 
     def test_deepseek_uses_peak_rate_from_time_banded_table(self) -> None:
         source = """
-<table><tr><td>MODEL</td><td>deepseek-v4-flash</td><td>deepseek-v4-pro</td></tr>
-<tr><td>1M INPUT TOKENS (CACHE MISS)</td><td>OFF-PEAK</td><td>$0.22</td><td>$0.66</td></tr>
-<tr><td>PEAK</td><td>$0.44</td><td>$1.32</td></tr>
-<tr><td>1M OUTPUT TOKENS</td><td>OFF-PEAK</td><td>$0.66</td><td>$1.98</td></tr>
-<tr><td>PEAK</td><td>$1.32</td><td>$3.96</td></tr>
-<tr><td>Concurrency Limit</td><td>2500</td><td>500</td></tr></table>
+<table><tr><td>MODEL</td><td>deepseek-v4-flash</td><td>deepseek-v4-pro</td><td>deepseek-v4-flash-vision-exp</td></tr>
+<tr><td>1M INPUT TOKENS<br>(CACHE MISS)</td><td>OFF-PEAK</td><td>$0.22</td><td>$0.66</td><td>$0.22</td></tr>
+<tr><td>PEAK</td><td>$0.44</td><td>$1.32</td><td>$0.44</td></tr>
+<tr><td>1M OUTPUT TOKENS</td><td>OFF-PEAK</td><td>$0.66</td><td>$1.98</td><td>$0.66</td></tr>
+<tr><td>PEAK</td><td>$1.32</td><td>$3.96</td><td>$1.32</td></tr>
+<tr><td>Concurrency Limit</td><td>2500</td><td>500</td><td>2500</td></tr></table>
 """
         rows = [row("deepseek", "deepseek-v4-pro", "DeepSeek V4 Pro")]
         self.assertEqual(parse_deepseek(source, rows, NOW), {"deepseek-v4-pro": (1.32, 3.96)})

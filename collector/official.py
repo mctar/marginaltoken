@@ -304,7 +304,7 @@ def parse_deepseek(source: str, rows: list[dict[str, Any]], now: datetime) -> di
         raise OfficialSourceError("DeepSeek V4 pricing table not found")
 
     input_section = re.search(
-        r"1M INPUT TOKENS\s*\(CACHE MISS\)(?P<body>.*?)1M OUTPUT TOKENS",
+        r"1M INPUT TOKENS(?:\s*\|\s*)?\s*\(CACHE MISS\)(?P<body>.*?)1M OUTPUT TOKENS",
         text,
         re.I,
     )

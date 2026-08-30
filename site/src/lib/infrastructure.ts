@@ -135,7 +135,12 @@ export function calculateInfrastructure(
   }
 }
 
-export function infrastructurePath(model: string, basis: ApiBasis, assumptions: InfrastructureAssumptions): string {
+export function infrastructurePath(
+  model: string,
+  basis: ApiBasis,
+  assumptions: InfrastructureAssumptions,
+  deployment?: { hardware: string; profile: string },
+): string {
   const params = new URLSearchParams()
   params.set('model', model)
   params.set('basis', basis)
@@ -146,5 +151,7 @@ export function infrastructurePath(model: string, basis: ApiBasis, assumptions: 
   params.set('throughput', String(assumptions.outputTokensPerSecond))
   params.set('utilization', String(assumptions.utilizationPct))
   params.set('license', String(assumptions.licensePerGpuYear))
+  if (deployment?.hardware) params.set('hardware', deployment.hardware)
+  if (deployment?.profile) params.set('profile', deployment.profile)
   return `/infrastructure/?${params.toString()}`
 }

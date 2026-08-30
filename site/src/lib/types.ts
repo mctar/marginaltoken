@@ -218,6 +218,15 @@ export type OffersFeed = {
 
 export type DeploymentLifecycle = 'nim' | 'certified-feature' | 'certified-production'
 
+export type DeploymentProfile = {
+  id: string
+  tensorParallelism: number
+  precision: string
+  lora: boolean
+  verifiedGpus: string[]
+  optimization?: string
+}
+
 export type DeploymentModel = {
   key: string
   display: string
@@ -225,8 +234,13 @@ export type DeploymentModel = {
   lifecycle: DeploymentLifecycle
   sourceUrl: string
   catalogUrl: string
+  profileSourceUrl: string
+  profileModel: string
   verifiedAt: string
   status: 'fresh' | 'last_good' | 'stale'
+  profilesVerifiedAt: string
+  profilesStatus: 'fresh' | 'last_good' | 'stale'
+  profiles: DeploymentProfile[]
 }
 
 export type DeploymentFeed = {
@@ -235,6 +249,7 @@ export type DeploymentFeed = {
   source: 'nvidia-nim'
   status: 'fresh' | 'attention' | 'stale'
   modelCount: number
+  profileCount: number
   sources: Array<{
     label: string
     sourceUrl: string

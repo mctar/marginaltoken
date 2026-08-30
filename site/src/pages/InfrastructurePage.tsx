@@ -12,7 +12,7 @@ import {
 } from '../lib/infrastructure'
 import { createInfrastructureShareImage } from '../lib/share-image'
 import { shareImageFilename } from '../lib/share'
-import type { DeploymentFeed, DeploymentModel, MetaFeed, OffersFeed, PriceModel, PricesFeed } from '../lib/types'
+import type { DeploymentFeed, DeploymentModel, DeploymentProfile, MetaFeed, OffersFeed, PriceModel, PricesFeed } from '../lib/types'
 
 function parameter(params: URLSearchParams, name: string, fallback: number): string {
   const raw = params.get(name)
@@ -35,6 +35,63 @@ function lifecycleLabel(model: DeploymentModel): string {
   if (model.lifecycle === 'certified-production') return 'NIM Certified · Production'
   if (model.lifecycle === 'certified-feature') return 'NIM Certified · Feature'
   return 'NIM available'
+}
+
+function hardwareLabel(value: string): string {
+  return value
+    .replace(/^NVIDIA-/, '')
+    .replaceAll('-', ' ')
+    .replace(/\bSXM4\b/, 'SXM')
+}
+
+function hardwareOptions(model?: DeploymentModel): string[] {
+  if (!model) return []
+  return [...new Set(model.profiles.flatMap((profile) => profile.verifiedGpus))]
+    .sort((left, right) => hardwareLabel(left).localeCompare(hardwareLabel(right), undefined, { numeric: true }))
+}
+
+function preferredHardware(model?: DeploymentModel, requested?: string | null): string {
+  const available = hardwareOptions(model)
+  if (requested && available.includes(requested)) return requested
+  const preferences = [
+    'NVIDIA-H100-80GB-HBM3',
+    'H100 SXM',
+    'H100',
+    'NVIDIA-H200',
+    'H200 SXM',
+    'H200',
+    'NVIDIA-B200',
+    'B200',
+    'NVIDIA-L40S',
+    'NVIDIA-GB10',
+  ]
+  return preferences.find((candidate) => available.includes(candidate)) ?? available[0] ?? ''
+}
+
+function profilesForHardware(model: DeploymentModel | undefined, hardware: string): DeploymentProfile[] {
+  if (!model) return []
+  return model.profiles
+    .filter((profile) => profile.verifiedGpus.includes(hardware))
+    .sort((left, right) => (
+      Number(left.lora) - Number(right.lora)
+      || left.tensorParallelism - right.tensorParallelism
+      || left.precision.localeCompare(right.precision)
+      || (left.optimization ?? '').localeCompare(right.optimization ?? '')
+    ))
+}
+
+function preferredProfile(model: DeploymentModel | undefined, hardware: string, requested?: string | null): DeploymentProfile | undefined {
+  const available = profilesForHardware(model, hardware)
+  return available.find((profile) => profile.id === requested) ?? available[0]
+}
+
+function profileLabel(profile: DeploymentProfile): string {
+  return [
+    `TP${profile.tensorParallelism}`,
+    profile.precision,
+    profile.optimization,
+    profile.lora ? 'LoRA' : null,
+  ].filter(Boolean).join(' · ')
 }
 
 function copyText(value: string): Promise<void> {
@@ -120,37 +177,49 @@ export default function InfrastructurePage({
   const defaultKey = available.find((entry) => entry.model.key === 'nvidia/nemotron-3-super-120b-a12b')?.model.key
     ?? available[0]?.model.key
     ?? ''
-  const [modelKey, setModelKey] = useState(() => available.some((entry) => entry.model.key === requestedKey) ? requestedKey! : defaultKey)
+  const initialKey = available.some((entry) => entry.model.key === requestedKey) ? requestedKey! : defaultKey
+  const [modelKey, setModelKey] = useState(initialKey)
+  const initialSelected = available.find((entry) => entry.model.key === initialKey) ?? available[0]
+  const [hardware, setHardware] = useState(() => preferredHardware(initialSelected?.record, params.get('hardware')))
+  const [profileId, setProfileId] = useState(() => preferredProfile(initialSelected?.record, preferredHardware(initialSelected?.record, params.get('hardware')), params.get('profile'))?.id ?? '')
   const basisParam = params.get('basis')
   const [basis, setBasis] = useState<ApiBasis>(() => basisParam === 'cheapest' || basisParam === 'tape' ? basisParam : 'median')
   const [inputMillions, setInputMillions] = useState(() => parameter(params, 'input', defaultInfrastructureAssumptions.inputMillions))
   const [outputMillions, setOutputMillions] = useState(() => parameter(params, 'output', defaultInfrastructureAssumptions.outputMillions))
   const [gpuHourly, setGpuHourly] = useState(() => parameter(params, 'gpu', defaultInfrastructureAssumptions.gpuHourly))
-  const [gpusPerReplica, setGpusPerReplica] = useState(() => parameter(params, 'count', defaultInfrastructureAssumptions.gpusPerReplica))
   const [throughput, setThroughput] = useState(() => parameter(params, 'throughput', defaultInfrastructureAssumptions.outputTokensPerSecond))
   const [utilization, setUtilization] = useState(() => parameter(params, 'utilization', defaultInfrastructureAssumptions.utilizationPct))
   const [license, setLicense] = useState(() => parameter(params, 'license', defaultInfrastructureAssumptions.licensePerGpuYear))
   const [shareStatus, setShareStatus] = useState('')
 
+  const selected = available.find((entry) => entry.model.key === modelKey) ?? available[0]
+  const selectedHardware = hardwareOptions(selected?.record).includes(hardware)
+    ? hardware
+    : preferredHardware(selected?.record)
+  const profileChoices = profilesForHardware(selected?.record, selectedHardware)
+  const selectedProfile = profileChoices.find((profile) => profile.id === profileId) ?? profileChoices[0]
   const assumptions: InfrastructureAssumptions = {
     inputMillions: nonNegative(inputMillions),
     outputMillions: nonNegative(outputMillions),
     gpuHourly: nonNegative(gpuHourly),
-    gpusPerReplica: Math.max(1, nonNegative(gpusPerReplica, 1)),
+    gpusPerReplica: selectedProfile?.tensorParallelism
+      ?? Math.max(1, nonNegative(parameter(params, 'count', defaultInfrastructureAssumptions.gpusPerReplica), 1)),
     outputTokensPerSecond: nonNegative(throughput),
     utilizationPct: Math.min(100, nonNegative(utilization)),
     licensePerGpuYear: nonNegative(license),
   }
-  const selected = available.find((entry) => entry.model.key === modelKey) ?? available[0]
   const offerModel = offers?.models.find((candidate) => candidate.key === selected?.model.key || candidate.canonicalKey === selected?.model.key) ?? null
   const quotes = selected ? apiQuotes(selected.model, offerModel, assumptions) : []
   const result = selected ? calculateInfrastructure(selected.model, offerModel, basis, assumptions) : null
 
   useEffect(() => {
     if (!modelKey) return
-    window.history.replaceState(null, '', infrastructurePath(modelKey, basis, assumptions))
+    window.history.replaceState(null, '', infrastructurePath(modelKey, basis, assumptions, {
+      hardware: selectedHardware,
+      profile: selectedProfile?.id ?? '',
+    }))
     setShareStatus('')
-  }, [modelKey, basis, inputMillions, outputMillions, gpuHourly, gpusPerReplica, throughput, utilization, license])
+  }, [modelKey, basis, inputMillions, outputMillions, gpuHourly, hardware, profileId, throughput, utilization, license])
 
   if (!deployment || !selected || !result) {
     return (
@@ -164,7 +233,20 @@ export default function InfrastructurePage({
   const totalMillions = assumptions.inputMillions + assumptions.outputMillions
   const apiWins = result.saving < 0
   const delta = Math.abs(result.saving)
-  const sourceText = `NVIDIA NIM support matrix + ${quotes.length} posted API ${quotes.length === 1 ? 'quote' : 'quotes'} · user-supplied operating assumptions`
+  const sourceText = `NVIDIA NIM hardware profile (${hardwareLabel(selectedHardware)} · ${selectedProfile ? profileLabel(selectedProfile) : 'profile unavailable'}) + ${quotes.length} posted API ${quotes.length === 1 ? 'quote' : 'quotes'} · user-supplied operating assumptions`
+
+  const changeModel = (key: string) => {
+    const next = available.find((entry) => entry.model.key === key)
+    const nextHardware = preferredHardware(next?.record)
+    setModelKey(key)
+    setHardware(nextHardware)
+    setProfileId(preferredProfile(next?.record, nextHardware)?.id ?? '')
+  }
+
+  const changeHardware = (value: string) => {
+    setHardware(value)
+    setProfileId(preferredProfile(selected.record, value)?.id ?? '')
+  }
 
   const shareLink = async () => {
     try {
@@ -195,15 +277,30 @@ export default function InfrastructurePage({
           <div className="compare-panel-heading"><span>01</span><div><p className="section-kicker">Deployment candidate</p><h2>Choose a NIM</h2></div></div>
           <label className="infrastructure-select">
             <span>Model</span>
-            <select value={selected.model.key} onChange={(event) => setModelKey(event.target.value)}>
+            <select value={selected.model.key} onChange={(event) => changeModel(event.target.value)}>
               {available.map((entry) => <option value={entry.model.key} key={entry.model.key}>{entry.model.display} · {lifecycleLabel(entry.record)}</option>)}
             </select>
           </label>
           <div className="nim-record">
             <span className={`nim-status ${selected.record.lifecycle}`}>{lifecycleLabel(selected.record)}</span>
             <strong>{selected.record.nvidiaModelId}</strong>
-            <small>{selected.record.status === 'fresh' ? 'Verified' : selected.record.status.replace('_', ' ')} {selected.record.verifiedAt} · <a href={selected.record.sourceUrl}>official source</a> · <a href={selected.record.catalogUrl}>NVIDIA catalog</a></small>
+            <small>{selected.record.status === 'fresh' ? 'Verified' : selected.record.status.replace('_', ' ')} {selected.record.verifiedAt} · {selected.record.profiles.length} hardware profiles · <a href={selected.record.sourceUrl}>official source</a> · <a href={selected.record.catalogUrl}>NVIDIA catalog</a></small>
           </div>
+          <div className="nim-profile-fields">
+            <label className="infrastructure-select">
+              <span>Verified GPU</span>
+              <select value={selectedHardware} onChange={(event) => changeHardware(event.target.value)}>
+                {hardwareOptions(selected.record).map((gpu) => <option value={gpu} key={gpu}>{hardwareLabel(gpu)}</option>)}
+              </select>
+            </label>
+            <label className="infrastructure-select">
+              <span>Verified NIM profile</span>
+              <select value={selectedProfile?.id ?? ''} onChange={(event) => setProfileId(event.target.value)}>
+                {profileChoices.map((profile) => <option value={profile.id} key={profile.id}>{profileLabel(profile)}</option>)}
+              </select>
+            </label>
+          </div>
+          <p className="profile-source-note">Compatibility verified {selected.record.profilesVerifiedAt} · <a href={selected.record.profileSourceUrl}>NVIDIA hardware matrix</a>. Profile availability is not a throughput benchmark.</p>
           <label className="infrastructure-select">
             <span>API comparison basis</span>
             <select value={basis} onChange={(event) => setBasis(event.target.value as ApiBasis)}>
@@ -221,7 +318,7 @@ export default function InfrastructurePage({
             <label><span>Input tokens / month (millions)</span><input type="number" min="0" step="100" value={inputMillions} onChange={(event) => setInputMillions(event.target.value)} /></label>
             <label><span>Output tokens / month (millions)</span><input type="number" min="0" step="100" value={outputMillions} onChange={(event) => setOutputMillions(event.target.value)} /></label>
             <label><span>GPU cost / hour</span><input type="number" min="0" step="0.1" value={gpuHourly} onChange={(event) => setGpuHourly(event.target.value)} /></label>
-            <label><span>GPUs / deployment</span><input type="number" min="1" step="1" value={gpusPerReplica} onChange={(event) => setGpusPerReplica(event.target.value)} /></label>
+            <label><span>GPUs / deployment (from TP)</span><input className="verified-input" type="number" value={assumptions.gpusPerReplica} readOnly /></label>
             <label><span>Aggregate output tok/s</span><input type="number" min="0" step="50" value={throughput} onChange={(event) => setThroughput(event.target.value)} /></label>
             <label><span>Usable utilization</span><span className="input-suffix"><input type="number" min="0" max="100" step="5" value={utilization} onChange={(event) => setUtilization(event.target.value)} /><i>%</i></span></label>
             <label><span>Software / GPU / year</span><span className="input-suffix"><i>$</i><input type="number" min="0" step="500" value={license} onChange={(event) => setLicense(event.target.value)} /></span></label>
@@ -232,11 +329,11 @@ export default function InfrastructurePage({
 
       <section className="infrastructure-results" aria-labelledby="rent-run-result">
         <div className="infrastructure-results-heading">
-          <div><p className="section-kicker">The modeled mark</p><h2 id="rent-run-result">{apiWins ? 'Rent is cheaper here.' : 'Run is cheaper here.'}</h2><p>{tokenVolume(totalMillions)} tokens per month · {result.replicas} modeled {result.replicas === 1 ? 'deployment' : 'deployments'} · {tokenVolume(result.outputCapacityPerReplica)} output-token capacity each.</p></div>
+          <div><p className="section-kicker">The modeled mark</p><h2 id="rent-run-result">{apiWins ? 'Rent is cheaper here.' : 'Run is cheaper here.'}</h2><p>{hardwareLabel(selectedHardware)} · {selectedProfile ? profileLabel(selectedProfile) : 'profile unavailable'} · {tokenVolume(totalMillions)} tokens per month · {result.replicas} modeled {result.replicas === 1 ? 'deployment' : 'deployments'}.</p></div>
           <div className="compare-share">
             <div className="compare-share-actions">
               <ShareImageButton
-                createImage={() => createInfrastructureShareImage({ model: selected.model, deployment: selected.record, result, assumptions, asOf: meta.asOf })}
+                createImage={() => createInfrastructureShareImage({ model: selected.model, deployment: selected.record, profile: selectedProfile, hardware: selectedHardware, result, assumptions, asOf: meta.asOf })}
                 filename={shareImageFilename(`rent-vs-run-${selected.model.display}`)}
                 shareTitle={`${selected.model.display}: rent vs run — The Marginal Token`}
                 shareText="A sourced API-versus-NIM planning scenario with visible assumptions."

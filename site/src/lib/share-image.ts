@@ -4,7 +4,7 @@ import { comparableOfferGroups, widestOutputSpread, type SpreadConfidence, type 
 import { shareSourceLabel } from './share'
 import { logPricePosition, selectShortlist, shortlistProviderColor } from './shortlist'
 import type { InfrastructureAssumptions, InfrastructureResult } from './infrastructure'
-import type { DeploymentModel, IndexPoint, OfferModel, PriceModel } from './types'
+import type { DeploymentModel, DeploymentProfile, IndexPoint, OfferModel, PriceModel } from './types'
 
 export const SHARE_IMAGE_WIDTH = 1200
 export const SHARE_IMAGE_HEIGHT = 630
@@ -744,6 +744,8 @@ export async function createSpreadsShareImage(options: {
 export async function createInfrastructureShareImage(options: {
   model: PriceModel
   deployment: DeploymentModel
+  profile?: DeploymentProfile
+  hardware: string
   result: InfrastructureResult
   assumptions: InfrastructureAssumptions
   asOf: string
@@ -754,11 +756,15 @@ export async function createInfrastructureShareImage(options: {
     : options.deployment.lifecycle === 'certified-feature'
       ? 'NIM CERTIFIED · FEATURE'
       : 'NIM AVAILABLE'
+  const hardware = options.hardware.replace(/^NVIDIA-/, '').replaceAll('-', ' ')
+  const profile = options.profile
+    ? `TP${options.profile.tensorParallelism} · ${options.profile.precision}${options.profile.optimization ? ` · ${options.profile.optimization}` : ''}${options.profile.lora ? ' · LoRA' : ''}`
+    : 'PROFILE UNAVAILABLE'
   drawTitle(
     context,
     'Inference economics · NVIDIA NIM first',
     'Rent vs Run',
-    `${options.model.display} · ${lifecycle}`,
+    `${options.model.display} · ${lifecycle} · ${hardware} · ${profile}`,
   )
 
   const columns = [
@@ -821,13 +827,14 @@ export async function createInfrastructureShareImage(options: {
     ? `${(totalMillions / 1_000_000).toFixed(2)}T`
     : `${(totalMillions / 1_000).toFixed(2)}B`
   context.fillText(`${volume} tokens / month`, 80, 443)
-  context.fillText(`${options.assumptions.gpusPerReplica} GPUs / deployment`, 370, 443)
-  context.fillText(`${shareMoney(options.assumptions.gpuHourly)} / GPU-hour`, 650, 443)
+  fitAndFillText(context, hardware, 350, 443, 250)
+  fitAndFillText(context, profile, 650, 443, 220)
   context.fillText(`${options.assumptions.outputTokensPerSecond.toLocaleString('en-US')} output tok/s`, 890, 443)
   context.fillStyle = MUTED
   context.font = `600 11px ${SANS}`
-  context.fillText(`${options.assumptions.utilizationPct}% usable utilization`, 80, 476)
-  context.fillText(`${shareMoney(options.assumptions.licensePerGpuYear)} software / GPU-year`, 370, 476)
+  context.fillText(`${shareMoney(options.assumptions.gpuHourly)} / GPU-hour`, 80, 476)
+  context.fillText(`${options.assumptions.utilizationPct}% usable utilization`, 350, 476)
+  context.fillText(`${shareMoney(options.assumptions.licensePerGpuYear)} software / GPU-year`, 650, 476)
   context.fillText('USER-SUPPLIED · NOT A BENCHMARK', 890, 476)
 
   context.fillStyle = MUTED

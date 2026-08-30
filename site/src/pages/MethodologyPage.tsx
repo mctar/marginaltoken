@@ -88,7 +88,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">11</span>
           <h2>Rent vs Run</h2>
           <p>
-            The infrastructure view keeps deployment metadata separate from the API price tape. NVIDIA NIM availability and certification come from NVIDIA support matrices; free hosted development endpoints are not treated as zero-cost production quotes. API spend uses the selected posted route basis. Self-hosted cost is a planning model driven entirely by visible assumptions for GPU-hours, GPUs per deployment, usable utilization, aggregate output throughput, and annual software cost. Throughput is not inferred from model size or generalized from another benchmark. The first-deployment break-even is shown only when it occurs before the modeled output capacity is exhausted. Hardware, power, staffing, storage, networking, input-prefill pressure, reliability and negotiated terms remain outside the estimate.
+            The infrastructure view keeps deployment metadata separate from the API price tape. NVIDIA NIM availability, lifecycle, and supported hardware profiles come from NVIDIA documentation; free hosted development endpoints are not treated as zero-cost production quotes. A selected profile records the published GPU family, tensor parallelism, precision, and optimization mode, and its tensor-parallel value sets GPUs per deployment. It is a compatibility record, not a performance benchmark. API spend uses the selected posted route basis. Self-hosted cost remains a planning model driven by visible assumptions for GPU-hours, usable utilization, aggregate output throughput, and annual software cost. Throughput is not inferred from model size or generalized from another benchmark. The first-deployment break-even is shown only when it occurs before the modeled output capacity is exhausted. Hardware, power, staffing, storage, networking, input-prefill pressure, reliability and negotiated terms remain outside the estimate. If verification fails, the last-good profile register remains visible with a stale source status rather than silently disappearing.
           </p>
         </section>
       </article>
@@ -127,6 +127,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <a href="https://api-docs.deepseek.com/quick_start/pricing/">DeepSeek pricing</a>
           <a href="https://docs.x.ai/developers/models">xAI pricing</a>
           <a href="https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html">NVIDIA NIM support matrix</a>
+          <a href="https://docs.nvidia.com/nim/large-language-models/1.15.0/supported-models.html">NVIDIA NIM optimized profiles</a>
           <a href="https://docs.nvidia.com/ai-enterprise/lifecycle/latest/application-software.html">NVIDIA AI Enterprise lifecycle catalog</a>
           <a href="https://docs.nvidia.com/nim/large-language-models/2.0.4-pb6/reference/support-matrix.html">NVIDIA NIM production branch</a>
         </div>

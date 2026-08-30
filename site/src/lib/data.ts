@@ -53,7 +53,17 @@ export async function loadFeed(includeOffers = false, includeDeployment = false)
   const deployment = candidateDeployment
     && candidateDeployment.source === 'nvidia-nim'
     && Array.isArray(candidateDeployment.models)
-    && candidateDeployment.models.every((model) => typeof model.key === 'string' && typeof model.sourceUrl === 'string')
+    && candidateDeployment.models.every((model) => (
+      typeof model.key === 'string'
+      && typeof model.sourceUrl === 'string'
+      && Array.isArray(model.profiles)
+      && model.profiles.every((profile) => (
+        typeof profile.id === 'string'
+        && Number.isInteger(profile.tensorParallelism)
+        && profile.tensorParallelism > 0
+        && Array.isArray(profile.verifiedGpus)
+      ))
+    ))
     ? candidateDeployment
     : null
   return { prices, history, changes, meta, brief, provenance, offers, deployment }

@@ -61,11 +61,16 @@ test('calculates deployment capacity and rejects a break-even beyond capacity', 
 })
 
 test('serializes every planning assumption into a shareable URL', () => {
-  const path = infrastructurePath(model.key, 'median', assumptions)
+  const path = infrastructurePath(model.key, 'median', assumptions, {
+    hardware: 'NVIDIA-H100-80GB-HBM3',
+    profile: 'tp2-mxfp4-base',
+  })
   const url = new URL(path, 'https://marginaltoken.com')
   assert.equal(url.pathname, '/infrastructure/')
   assert.equal(url.searchParams.get('model'), model.key)
   assert.equal(url.searchParams.get('basis'), 'median')
   assert.equal(url.searchParams.get('throughput'), '100')
   assert.equal(url.searchParams.get('license'), '1200')
+  assert.equal(url.searchParams.get('hardware'), 'NVIDIA-H100-80GB-HBM3')
+  assert.equal(url.searchParams.get('profile'), 'tp2-mxfp4-base')
 })

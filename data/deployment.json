@@ -1,9 +1,10 @@
 {
-  "generatedAt": "2026-08-30T03:27:49Z",
+  "generatedAt": "2026-08-30T06:43:53Z",
   "asOf": "2026-08-30",
   "source": "nvidia-nim",
   "status": "fresh",
   "modelCount": 10,
+  "profileCount": 77,
   "sources": [
     {
       "label": "NVIDIA NIM support matrix",
@@ -27,8 +28,174 @@
       "lifecycle": "certified-production",
       "sourceUrl": "https://docs.nvidia.com/ai-enterprise/lifecycle/latest/application-software.html",
       "catalogUrl": "https://build.nvidia.com/openai/gpt-oss-120b",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/2.0.4-pb6/reference/support-matrix.html",
+      "profileModel": "gpt-oss-120b-pb6",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp1-mxfp4-base",
+          "tensorParallelism": 1,
+          "precision": "MXFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-mxfp4-base",
+          "tensorParallelism": 2,
+          "precision": "MXFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-mxfp4-base",
+          "tensorParallelism": 4,
+          "precision": "MXFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-mxfp4-base",
+          "tensorParallelism": 8,
+          "precision": "MXFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp1-mxfp4-lora",
+          "tensorParallelism": 1,
+          "precision": "MXFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-mxfp4-lora",
+          "tensorParallelism": 2,
+          "precision": "MXFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-mxfp4-lora",
+          "tensorParallelism": 4,
+          "precision": "MXFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-mxfp4-lora",
+          "tensorParallelism": 8,
+          "precision": "MXFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "openai/gpt-oss-20b",
@@ -38,8 +205,195 @@
       "lifecycle": "nim",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/openai/gpt-oss-20b",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
+      "profileModel": "gpt-oss-20b",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp1-mxfp4-base",
+          "tensorParallelism": 1,
+          "precision": "MXFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GB300-WS",
+            "NVIDIA-GH200-144G-HBM3e",
+            "NVIDIA-GH200-480GB",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-mxfp4-base",
+          "tensorParallelism": 2,
+          "precision": "MXFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GH200-144G-HBM3e",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-mxfp4-base",
+          "tensorParallelism": 4,
+          "precision": "MXFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-mxfp4-base",
+          "tensorParallelism": 8,
+          "precision": "MXFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp1-mxfp4-lora",
+          "tensorParallelism": 1,
+          "precision": "MXFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GB300-WS",
+            "NVIDIA-GH200-144G-HBM3e",
+            "NVIDIA-GH200-480GB",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-mxfp4-lora",
+          "tensorParallelism": 2,
+          "precision": "MXFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GH200-144G-HBM3e",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-mxfp4-lora",
+          "tensorParallelism": 4,
+          "precision": "MXFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-mxfp4-lora",
+          "tensorParallelism": 8,
+          "precision": "MXFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "meta-llama/llama-3.3-70b-instruct",
@@ -48,8 +402,518 @@
       "lifecycle": "certified-production",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/2.0.4-pb6/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/meta/llama-3_3-70b-instruct",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/2.0.4-pb6/reference/support-matrix.html",
+      "profileModel": "llama-3.3-70b-instruct-pb6",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp1-bf16-base",
+          "tensorParallelism": 1,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp1-fp8-base",
+          "tensorParallelism": 1,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp1-nvfp4-base",
+          "tensorParallelism": 1,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-bf16-base",
+          "tensorParallelism": 2,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-fp8-base",
+          "tensorParallelism": 2,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-nvfp4-base",
+          "tensorParallelism": 2,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-bf16-base",
+          "tensorParallelism": 4,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-fp8-base",
+          "tensorParallelism": 4,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-nvfp4-base",
+          "tensorParallelism": 4,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-bf16-base",
+          "tensorParallelism": 8,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-fp8-base",
+          "tensorParallelism": 8,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-nvfp4-base",
+          "tensorParallelism": 8,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp1-bf16-lora",
+          "tensorParallelism": 1,
+          "precision": "BF16",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp1-fp8-lora",
+          "tensorParallelism": 1,
+          "precision": "FP8",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp1-nvfp4-lora",
+          "tensorParallelism": 1,
+          "precision": "NVFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-bf16-lora",
+          "tensorParallelism": 2,
+          "precision": "BF16",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-fp8-lora",
+          "tensorParallelism": 2,
+          "precision": "FP8",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-nvfp4-lora",
+          "tensorParallelism": 2,
+          "precision": "NVFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-bf16-lora",
+          "tensorParallelism": 4,
+          "precision": "BF16",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-fp8-lora",
+          "tensorParallelism": 4,
+          "precision": "FP8",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-nvfp4-lora",
+          "tensorParallelism": 4,
+          "precision": "NVFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-bf16-lora",
+          "tensorParallelism": 8,
+          "precision": "BF16",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-fp8-lora",
+          "tensorParallelism": 8,
+          "precision": "FP8",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-nvfp4-lora",
+          "tensorParallelism": 8,
+          "precision": "NVFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-A10G",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB10",
+            "NVIDIA-GB200",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "deepseek/deepseek-v3.1-terminus",
@@ -58,8 +922,66 @@
       "lifecycle": "nim",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/deepseek-ai/deepseek-v3_1-terminus",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/1.15.0/supported-models.html",
+      "profileModel": "deepseek-v3-1-terminus",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp8-fp8-throughput",
+          "tensorParallelism": 8,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "H20 141GB",
+            "H200 SXM"
+          ],
+          "optimization": "Throughput"
+        },
+        {
+          "id": "tp8-fp8-latency",
+          "tensorParallelism": 8,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "H20 141GB",
+            "H200 SXM"
+          ],
+          "optimization": "Latency"
+        },
+        {
+          "id": "tp8-nvfp4-throughput",
+          "tensorParallelism": 8,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "B200"
+          ],
+          "optimization": "Throughput"
+        },
+        {
+          "id": "tp8-nvfp4-latency",
+          "tensorParallelism": 8,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "B200"
+          ],
+          "optimization": "Latency"
+        },
+        {
+          "id": "tp8-w4a8-latency",
+          "tensorParallelism": 8,
+          "precision": "W4A8",
+          "lora": false,
+          "verifiedGpus": [
+            "H20 96GB"
+          ],
+          "optimization": "Latency"
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "deepseek/deepseek-v3.2-exp",
@@ -68,8 +990,38 @@
       "lifecycle": "nim",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/deepseek-ai/deepseek-v3_2-exp",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/1.15.0/supported-models.html",
+      "profileModel": "deepseek-v3-2-exp",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp8-fp8-throughput",
+          "tensorParallelism": 8,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "B200",
+            "H20 141GB",
+            "H200 SXM"
+          ],
+          "optimization": "Throughput"
+        },
+        {
+          "id": "tp8-fp8-latency",
+          "tensorParallelism": 8,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "B200",
+            "H20 141GB",
+            "H200 SXM"
+          ],
+          "optimization": "Latency"
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "nvidia/nemotron-3-super-120b-a12b",
@@ -78,8 +1030,268 @@
       "lifecycle": "nim",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/nvidia/nemotron-3-super-120b-a12b",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
+      "profileModel": "nemotron-3-super-120b-a12b",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp1-bf16-base",
+          "tensorParallelism": 1,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB300"
+          ]
+        },
+        {
+          "id": "tp1-fp8-base",
+          "tensorParallelism": 1,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GB300-WS",
+            "NVIDIA-GH200-144G-HBM3e",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL"
+          ]
+        },
+        {
+          "id": "tp1-nvfp4-base",
+          "tensorParallelism": 1,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GB300-WS",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-bf16-base",
+          "tensorParallelism": 2,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GH200-144G-HBM3e",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL"
+          ]
+        },
+        {
+          "id": "tp2-fp8-base",
+          "tensorParallelism": 2,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GH200-144G-HBM3e",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp2-nvfp4-base",
+          "tensorParallelism": 2,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-bf16-base",
+          "tensorParallelism": 4,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-fp8-base",
+          "tensorParallelism": 4,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-nvfp4-base",
+          "tensorParallelism": 4,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-bf16-base",
+          "tensorParallelism": 8,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-40GB",
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-fp8-base",
+          "tensorParallelism": 8,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-L40S",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-nvfp4-base",
+          "tensorParallelism": 8,
+          "precision": "NVFP4",
+          "lora": false,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-RTX-PRO-4500-Blackwell-Server-Edition",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp1-nvfp4-lora",
+          "tensorParallelism": 1,
+          "precision": "NVFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-GB300-WS"
+          ]
+        },
+        {
+          "id": "tp2-bf16-lora",
+          "tensorParallelism": 2,
+          "precision": "BF16",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300"
+          ]
+        },
+        {
+          "id": "tp2-nvfp4-lora",
+          "tensorParallelism": 2,
+          "precision": "NVFP4",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp4-bf16-lora",
+          "tensorParallelism": 4,
+          "precision": "BF16",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-GB200",
+            "NVIDIA-GB300",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        },
+        {
+          "id": "tp8-bf16-lora",
+          "tensorParallelism": 8,
+          "precision": "BF16",
+          "lora": true,
+          "verifiedGpus": [
+            "NVIDIA-A100-SXM4-80GB",
+            "NVIDIA-B200",
+            "NVIDIA-B300-SXM6-AC",
+            "NVIDIA-H100-80GB-HBM3",
+            "NVIDIA-H100-NVL",
+            "NVIDIA-H200",
+            "NVIDIA-H200-NVL",
+            "NVIDIA-RTX-PRO-6000-Blackwell-Server-Edition"
+          ]
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "qwen/qwen3-coder-next",
@@ -88,8 +1300,58 @@
       "lifecycle": "nim",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/qwen/qwen3-coder-next",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/1.15.0/supported-models.html",
+      "profileModel": "qwen3-coder-next",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp2-bf16-base",
+          "tensorParallelism": 2,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "H20",
+            "H200"
+          ]
+        },
+        {
+          "id": "tp2-fp8-base",
+          "tensorParallelism": 2,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "B200",
+            "H20",
+            "H200"
+          ]
+        },
+        {
+          "id": "tp4-bf16-base",
+          "tensorParallelism": 4,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "B200",
+            "H100",
+            "H20",
+            "H200"
+          ]
+        },
+        {
+          "id": "tp4-fp8-base",
+          "tensorParallelism": 4,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "H100",
+            "H20",
+            "H200"
+          ]
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "qwen/qwen3-next-80b-a3b-instruct",
@@ -98,8 +1360,72 @@
       "lifecycle": "nim",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/qwen/qwen3-next-80b-a3b-instruct",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/1.15.0/supported-models.html",
+      "profileModel": "qwen3-next-80b-a3b-instruct",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp2-bf16-throughput",
+          "tensorParallelism": 2,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "B200",
+            "H20 141GB",
+            "H200 SXM"
+          ],
+          "optimization": "Throughput"
+        },
+        {
+          "id": "tp2-fp8-throughput",
+          "tensorParallelism": 2,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "H100 SXM",
+            "H20 96GB"
+          ],
+          "optimization": "Throughput"
+        },
+        {
+          "id": "tp2-fp8-latency",
+          "tensorParallelism": 2,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "H100 SXM",
+            "H20 96GB"
+          ],
+          "optimization": "Latency"
+        },
+        {
+          "id": "tp4-bf16-throughput",
+          "tensorParallelism": 4,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "B200",
+            "H100 SXM",
+            "H20 141GB",
+            "H20 96GB",
+            "H200 SXM"
+          ],
+          "optimization": "Throughput"
+        },
+        {
+          "id": "tp4-bf16-balanced",
+          "tensorParallelism": 4,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "H20 96GB"
+          ],
+          "optimization": "Balanced"
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "qwen/qwen3-next-80b-a3b-thinking",
@@ -108,8 +1434,38 @@
       "lifecycle": "nim",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/qwen/qwen3-next-80b-a3b-thinking",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/1.15.0/supported-models.html",
+      "profileModel": "qwen3-next-80b-a3b-thinking",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp2-bf16-throughput",
+          "tensorParallelism": 2,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "H20 141GB",
+            "H200"
+          ],
+          "optimization": "Throughput"
+        },
+        {
+          "id": "tp4-bf16-throughput",
+          "tensorParallelism": 4,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "H100 SXM",
+            "H20 141GB",
+            "H20 96GB",
+            "H200"
+          ],
+          "optimization": "Throughput"
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     },
     {
       "key": "qwen/qwen3-32b",
@@ -118,8 +1474,35 @@
       "lifecycle": "nim",
       "sourceUrl": "https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html",
       "catalogUrl": "https://build.nvidia.com/qwen/qwen3-32b",
+      "profileSourceUrl": "https://docs.nvidia.com/nim/large-language-models/1.15.0/supported-models.html",
+      "profileModel": "qwen3-32b",
       "verifiedAt": "2026-08-30",
-      "status": "fresh"
+      "status": "fresh",
+      "profiles": [
+        {
+          "id": "tp1-bf16-throughput",
+          "tensorParallelism": 1,
+          "precision": "BF16",
+          "lora": false,
+          "verifiedGpus": [
+            "H100 SXM",
+            "H20 96GB"
+          ],
+          "optimization": "Throughput"
+        },
+        {
+          "id": "tp1-fp8-throughput",
+          "tensorParallelism": 1,
+          "precision": "FP8",
+          "lora": false,
+          "verifiedGpus": [
+            "H20 96GB"
+          ],
+          "optimization": "Throughput"
+        }
+      ],
+      "profilesStatus": "fresh",
+      "profilesVerifiedAt": "2026-08-30"
     }
   ]
 }

@@ -3,7 +3,8 @@ import { capabilityTags } from './models'
 import { comparableOfferGroups, widestOutputSpread, type SpreadConfidence, type SpreadRow } from './offers'
 import { shareSourceLabel } from './share'
 import { logPricePosition, selectShortlist, shortlistProviderColor } from './shortlist'
-import type { IndexPoint, OfferModel, PriceModel } from './types'
+import type { InfrastructureAssumptions, InfrastructureResult } from './infrastructure'
+import type { DeploymentModel, IndexPoint, OfferModel, PriceModel } from './types'
 
 export const SHARE_IMAGE_WIDTH = 1200
 export const SHARE_IMAGE_HEIGHT = 630
@@ -736,6 +737,109 @@ export async function createSpreadsShareImage(options: {
     source: 'OpenRouter endpoints + direct venue catalogs · reported configurations',
     asOf: options.asOf,
     path: options.path,
+  })
+  return canvasToBlob(canvas)
+}
+
+export async function createInfrastructureShareImage(options: {
+  model: PriceModel
+  deployment: DeploymentModel
+  result: InfrastructureResult
+  assumptions: InfrastructureAssumptions
+  asOf: string
+}): Promise<Blob> {
+  const { canvas, context } = await prepareCanvas()
+  const lifecycle = options.deployment.lifecycle === 'certified-production'
+    ? 'NIM CERTIFIED · PRODUCTION'
+    : options.deployment.lifecycle === 'certified-feature'
+      ? 'NIM CERTIFIED · FEATURE'
+      : 'NIM AVAILABLE'
+  drawTitle(
+    context,
+    'Inference economics · NVIDIA NIM first',
+    'Rent vs Run',
+    `${options.model.display} · ${lifecycle}`,
+  )
+
+  const columns = [
+    {
+      x: 60,
+      label: `RENT · ${options.result.selectedQuote.label}`,
+      value: shareMoney(options.result.apiMonthly),
+      note: 'ESTIMATED API / MONTH',
+      color: BLUE,
+    },
+    {
+      x: 420,
+      label: 'RUN · MODELED NIM CAPACITY',
+      value: shareMoney(options.result.runMonthly),
+      note: `${options.result.replicas} DEPLOYMENT${options.result.replicas === 1 ? '' : 'S'} / MONTH`,
+      color: TEAL,
+    },
+    {
+      x: 780,
+      label: 'DIFFERENCE',
+      value: shareMoney(Math.abs(options.result.saving)),
+      note: options.result.saving >= 0 ? 'MODELED RUN ADVANTAGE' : 'API ADVANTAGE',
+      color: options.result.saving >= 0 ? TEAL : CLARET,
+    },
+  ]
+  columns.forEach((column, index) => {
+    if (index > 0) {
+      context.strokeStyle = RULE
+      context.beginPath()
+      context.moveTo(column.x - 28, 225)
+      context.lineTo(column.x - 28, 355)
+      context.stroke()
+    }
+    context.fillStyle = MUTED
+    context.font = `700 9px ${SANS}`
+    context.letterSpacing = '1px'
+    fitAndFillText(context, column.label, column.x, 245, 320)
+    context.letterSpacing = '0px'
+    context.fillStyle = column.color
+    context.font = `600 48px ${SERIF}`
+    context.fillText(column.value, column.x, 305)
+    context.fillStyle = MUTED
+    context.font = `700 9px ${SANS}`
+    context.letterSpacing = '1px'
+    context.fillText(column.note, column.x, 334)
+    context.letterSpacing = '0px'
+  })
+
+  context.fillStyle = PAPER_DEEP
+  context.fillRect(60, 382, 1080, 126)
+  context.fillStyle = MUTED
+  context.font = `700 10px ${SANS}`
+  context.letterSpacing = '1.2px'
+  context.fillText('VISIBLE PLANNING ASSUMPTIONS', 80, 407)
+  context.letterSpacing = '0px'
+  context.fillStyle = INK
+  context.font = `600 19px ${SERIF}`
+  const totalMillions = options.assumptions.inputMillions + options.assumptions.outputMillions
+  const volume = totalMillions >= 1_000_000
+    ? `${(totalMillions / 1_000_000).toFixed(2)}T`
+    : `${(totalMillions / 1_000).toFixed(2)}B`
+  context.fillText(`${volume} tokens / month`, 80, 443)
+  context.fillText(`${options.assumptions.gpusPerReplica} GPUs / deployment`, 370, 443)
+  context.fillText(`${shareMoney(options.assumptions.gpuHourly)} / GPU-hour`, 650, 443)
+  context.fillText(`${options.assumptions.outputTokensPerSecond.toLocaleString('en-US')} output tok/s`, 890, 443)
+  context.fillStyle = MUTED
+  context.font = `600 11px ${SANS}`
+  context.fillText(`${options.assumptions.utilizationPct}% usable utilization`, 80, 476)
+  context.fillText(`${shareMoney(options.assumptions.licensePerGpuYear)} software / GPU-year`, 370, 476)
+  context.fillText('USER-SUPPLIED · NOT A BENCHMARK', 890, 476)
+
+  context.fillStyle = MUTED
+  context.font = `400 14px ${SERIF}`
+  const verdict = options.result.breakEvenWithinCapacity && options.result.breakEvenMillions !== null
+    ? `First-deployment break-even: ${(options.result.breakEvenMillions / 1_000).toLocaleString('en-US', { maximumFractionDigits: 2 })}B total tokens / month.`
+    : 'No crossover before one modeled deployment exhausts its output capacity.'
+  context.fillText(verdict, 60, 540)
+  drawFooter(context, {
+    source: 'NVIDIA NIM support matrix + posted API routes · visible user assumptions',
+    asOf: options.asOf,
+    path: '/infrastructure/',
   })
   return canvasToBlob(canvas)
 }

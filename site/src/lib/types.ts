@@ -216,6 +216,32 @@ export type OffersFeed = {
   models: OfferModel[]
 }
 
+export type DeploymentLifecycle = 'nim' | 'certified-feature' | 'certified-production'
+
+export type DeploymentModel = {
+  key: string
+  display: string
+  nvidiaModelId: string
+  lifecycle: DeploymentLifecycle
+  sourceUrl: string
+  catalogUrl: string
+  verifiedAt: string
+  status: 'fresh' | 'last_good' | 'stale'
+}
+
+export type DeploymentFeed = {
+  generatedAt: string
+  asOf: string
+  source: 'nvidia-nim'
+  status: 'fresh' | 'attention' | 'stale'
+  modelCount: number
+  sources: Array<{
+    label: string
+    sourceUrl: string
+  }>
+  models: DeploymentModel[]
+}
+
 export type FeedData = {
   prices: PricesFeed
   history: HistoryFeed
@@ -224,4 +250,5 @@ export type FeedData = {
   brief: BriefFeed | null
   provenance: ProvenanceFeed | null
   offers: OffersFeed | null
+  deployment: DeploymentFeed | null
 }

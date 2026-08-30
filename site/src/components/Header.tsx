@@ -10,6 +10,7 @@ const navigation = [
   { href: '/tape/', label: 'The Tape' },
   { href: '/spreads/', label: 'Spreads' },
   { href: '/compare/', label: 'Compare' },
+  { href: '/infrastructure/', label: 'Rent vs Run' },
   { href: '/methodology/', label: 'Methodology' },
 ]
 

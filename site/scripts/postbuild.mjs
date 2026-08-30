@@ -19,6 +19,23 @@ for (const route of ['tape', 'methodology', 'model']) {
   await copyFile(path.join(distDir, 'index.html'), path.join(routeDir, 'index.html'))
 }
 
+const infrastructureTitle = 'Rent vs Run AI inference — The Marginal Token'
+const infrastructureDescription = 'Compare posted AI API prices with a transparent NVIDIA NIM capacity plan and find whether a modeled break-even exists.'
+const infrastructureUrl = 'https://marginaltoken.com/infrastructure/'
+let infrastructureHtml = shell
+  .replace('<title>The Marginal Token</title>', `<title>${infrastructureTitle}</title>`)
+  .replaceAll(
+    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    `content="${infrastructureDescription}"`,
+  )
+  .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${infrastructureUrl}" />`)
+  .replace('<meta property="og:title" content="The Marginal Token" />', `<meta property="og:title" content="${infrastructureTitle}" />`)
+  .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${infrastructureUrl}" />`)
+  .replace('<meta name="twitter:title" content="The Marginal Token" />', `<meta name="twitter:title" content="${infrastructureTitle}" />`)
+const infrastructureDir = path.join(distDir, 'infrastructure')
+await mkdir(infrastructureDir, { recursive: true })
+await writeFile(path.join(infrastructureDir, 'index.html'), infrastructureHtml)
+
 const compareTitle = 'AI model cost comparison — The Marginal Token'
 const compareDescription = 'Compare current AI model API prices against your workload, from cost per request to estimated monthly spend.'
 const compareUrl = 'https://marginaltoken.com/compare/'

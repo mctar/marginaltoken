@@ -84,6 +84,13 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
             Model cards and The Spreads combine OpenRouter route records with direct Standard pricing from Together AI and Fireworks AI. Priority, Fast, US-only, batch, and size-banded marketplace rates are excluded. Direct sources override only the fields they explicitly publish; configuration fields retained from a route record carry separate provenance, while unreported limits remain unknown. A spread is calculated only when canonical model, reported precision, context window, maximum output, reasoning, tool, and structured-output support match. The market ranking excludes configurations whose posted prices are identical. Disclosed precision is labelled declared; undisclosed precision is nominal. Missing limits are never treated as comparable. These groups do not establish equal quality, throughput, residency, reliability, or contractual terms.
           </p>
         </section>
+        <section>
+          <span className="method-number">11</span>
+          <h2>Rent vs Run</h2>
+          <p>
+            The infrastructure view keeps deployment metadata separate from the API price tape. NVIDIA NIM availability and certification come from NVIDIA support matrices; free hosted development endpoints are not treated as zero-cost production quotes. API spend uses the selected posted route basis. Self-hosted cost is a planning model driven entirely by visible assumptions for GPU-hours, GPUs per deployment, usable utilization, aggregate output throughput, and annual software cost. Throughput is not inferred from model size or generalized from another benchmark. The first-deployment break-even is shown only when it occurs before the modeled output capacity is exhausted. Hardware, power, staffing, storage, networking, input-prefill pressure, reliability and negotiated terms remain outside the estimate.
+          </p>
+        </section>
       </article>
 
       {provenance && (
@@ -119,6 +126,9 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <a href="https://www.kimi.com/resources/kimi-k3-pricing">Kimi pricing</a>
           <a href="https://api-docs.deepseek.com/quick_start/pricing/">DeepSeek pricing</a>
           <a href="https://docs.x.ai/developers/models">xAI pricing</a>
+          <a href="https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html">NVIDIA NIM support matrix</a>
+          <a href="https://docs.nvidia.com/ai-enterprise/lifecycle/latest/application-software.html">NVIDIA AI Enterprise lifecycle catalog</a>
+          <a href="https://docs.nvidia.com/nim/large-language-models/2.0.4-pb6/reference/support-matrix.html">NVIDIA NIM production branch</a>
         </div>
       </section>
     </main>

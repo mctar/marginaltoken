@@ -6,6 +6,7 @@ import { loadFeed } from './lib/data'
 import type { FeedData } from './lib/types'
 import FrontPage from './pages/FrontPage'
 import ComparePage from './pages/ComparePage'
+import InfrastructurePage from './pages/InfrastructurePage'
 import MethodologyPage from './pages/MethodologyPage'
 import ModelPage, { MissingModelPage } from './pages/ModelPage'
 import SpreadsPage from './pages/SpreadsPage'
@@ -16,13 +17,14 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ready'; data: FeedData }
 
-type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/methodology/' | '/model/'
+type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/'
 
 function routeFor(pathname: string): Route {
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
   if (normalized === '/tape/') return '/tape/'
   if (normalized === '/spreads/') return '/spreads/'
   if (normalized === '/compare/') return '/compare/'
+  if (normalized === '/infrastructure/') return '/infrastructure/'
   if (normalized === '/methodology/') return '/methodology/'
   if (normalized.startsWith('/model/')) return '/model/'
   return '/'
@@ -44,7 +46,10 @@ export default function App() {
   const modelKey = route === '/model/' ? modelKeyFor(window.location.pathname) : null
 
   useEffect(() => {
-    loadFeed(route === '/model/' || route === '/spreads/')
+    loadFeed(
+      route === '/model/' || route === '/spreads/' || route === '/infrastructure/',
+      route === '/infrastructure/',
+    )
       .then((data) => setState({ status: 'ready', data }))
       .catch((error: unknown) => setState({ status: 'error', message: error instanceof Error ? error.message : String(error) }))
   }, [route])
@@ -72,6 +77,9 @@ export default function App() {
       {route === '/tape/' && <TapePage prices={data.prices} />}
       {route === '/spreads/' && <SpreadsPage prices={data.prices} offers={data.offers} />}
       {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} />}
+      {route === '/infrastructure/' && (
+        <InfrastructurePage prices={data.prices} offers={data.offers} deployment={data.deployment} meta={data.meta} />
+      )}
       {route === '/methodology/' && <MethodologyPage meta={data.meta} provenance={data.provenance} />}
       {route === '/model/' && (model ? (
         <ModelPage

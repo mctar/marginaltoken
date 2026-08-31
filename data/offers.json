@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T11:01:37Z",
+  "generatedAt": "2026-08-31T12:03:34Z",
   "asOf": "2026-08-31",
   "source": "multi-source",
   "sources": [
@@ -8,7 +8,7 @@
       "label": "OpenRouter endpoints",
       "sourceUrl": "https://openrouter.ai/api/v1/models",
       "modelCount": 317,
-      "offerCount": 1158
+      "offerCount": 1159
     },
     {
       "key": "together-catalog",
@@ -33,7 +33,7 @@
   ],
   "targetModelCount": 317,
   "modelCount": 317,
-  "offerCount": 1169,
+  "offerCount": 1170,
   "venueCount": 73,
   "comparableModelCount": 120,
   "comparableGroupCount": 170,
@@ -10133,9 +10133,32 @@
           "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-flash-vision-exp-20260821/endpoints"
         }
       ],
-      "configurationCount": 1,
+      "configurationCount": 2,
       "comparableGroupCount": 0,
       "comparisonGroups": [
+        {
+          "key": "cfg-3f5b95ca5dc46dcf",
+          "confidence": "nominal",
+          "comparable": false,
+          "offerCount": 1,
+          "venueCount": 1,
+          "quantization": "undisclosed",
+          "context": 1048576,
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "input_mtok": {
+            "min": 0.44,
+            "max": 0.44,
+            "spreadPct": 0.0
+          },
+          "output_mtok": {
+            "min": 1.32,
+            "max": 1.32,
+            "spreadPct": 0.0
+          },
+          "maxOutputTokens": 393216
+        },
         {
           "key": "cfg-5b837dea52175aef",
           "confidence": "nominal",
@@ -10192,6 +10215,41 @@
           "quantization": "unknown",
           "maxOutputTokens": 384000,
           "configurationKey": "cfg-5b837dea52175aef"
+        },
+        {
+          "venue": "Novita",
+          "tag": "novita",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-flash-vision-exp-20260821/endpoints",
+          "input_mtok": 0.44,
+          "output_mtok": 1.32,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.028,
+          "quantization": "unknown",
+          "maxOutputTokens": 393216,
+          "configurationKey": "cfg-3f5b95ca5dc46dcf"
         }
       ]
     },

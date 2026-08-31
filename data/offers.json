@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T07:02:34Z",
+  "generatedAt": "2026-08-31T08:01:33Z",
   "asOf": "2026-08-31",
   "source": "multi-source",
   "sources": [
@@ -47932,6 +47932,29 @@
           "maxOutputTokens": 131072
         },
         {
+          "key": "cfg-85db8f5984322539",
+          "confidence": "declared",
+          "comparable": false,
+          "offerCount": 1,
+          "venueCount": 1,
+          "quantization": "fp8",
+          "context": 65536,
+          "supportsReasoning": true,
+          "supportsTools": false,
+          "supportsStructuredOutput": true,
+          "input_mtok": {
+            "min": 0.48,
+            "max": 0.48,
+            "spreadPct": 0.0
+          },
+          "output_mtok": {
+            "min": 3.4,
+            "max": 3.4,
+            "spreadPct": 0.0
+          },
+          "maxOutputTokens": 58982
+        },
+        {
           "key": "cfg-888ada4315644e35",
           "confidence": "declared",
           "comparable": true,
@@ -47953,29 +47976,6 @@
             "spreadPct": 6.67
           },
           "maxOutputTokens": 235929
-        },
-        {
-          "key": "cfg-903281d775439b8e",
-          "confidence": "declared",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
-          "quantization": "fp8",
-          "context": 65500,
-          "supportsReasoning": true,
-          "supportsTools": false,
-          "supportsStructuredOutput": true,
-          "input_mtok": {
-            "min": 0.48,
-            "max": 0.48,
-            "spreadPct": 0.0
-          },
-          "output_mtok": {
-            "min": 3.4,
-            "max": 3.4,
-            "spreadPct": 0.0
-          },
-          "maxOutputTokens": 58950
         },
         {
           "key": "cfg-9181002218b285b6",
@@ -48384,7 +48384,7 @@
           "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-27b-20260814/endpoints",
           "input_mtok": 0.48,
           "output_mtok": 3.4,
-          "context": 65500,
+          "context": 65536,
           "supportedParameters": [
             "frequency_penalty",
             "include_reasoning",
@@ -48407,8 +48407,8 @@
           "supportsStructuredOutput": true,
           "cached_input_mtok": 0.25,
           "quantization": "fp8",
-          "maxOutputTokens": 58950,
-          "configurationKey": "cfg-903281d775439b8e"
+          "maxOutputTokens": 58982,
+          "configurationKey": "cfg-85db8f5984322539"
         }
       ]
     },
@@ -55978,13 +55978,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.56,
-            "max": 0.56,
+            "min": 0.735,
+            "max": 0.735,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 1.76,
-            "max": 1.76,
+            "min": 2.31,
+            "max": 2.31,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 128000
@@ -56052,9 +56052,9 @@
             "spreadPct": 362.0
           },
           "output_mtok": {
-            "min": 1.7556,
+            "min": 2.332,
             "max": 7.26,
-            "spreadPct": 313.53
+            "spreadPct": 211.32
           },
           "maxOutputTokens": 131072
         },
@@ -56339,70 +56339,6 @@
           "configurationKey": "cfg-864a0e3a497cab7d"
         },
         {
-          "venue": "Novita",
-          "tag": "novita/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.2-20260616/endpoints",
-          "input_mtok": 0.5586,
-          "output_mtok": 1.7556,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "max_tokens",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.1037,
-          "quantization": "fp8",
-          "maxOutputTokens": 131072,
-          "configurationKey": "cfg-864a0e3a497cab7d"
-        },
-        {
-          "venue": "StreamLake",
-          "tag": "streamlake/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.2-20260616/endpoints",
-          "input_mtok": 0.56,
-          "output_mtok": 1.76,
-          "context": 1024000,
-          "supportedParameters": [
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.104,
-          "quantization": "fp8",
-          "maxOutputTokens": 128000,
-          "configurationKey": "cfg-5212efd354ed7d95"
-        },
-        {
           "venue": "Ambient",
           "tag": "ambient/fp8",
           "source": "openrouter-endpoints",
@@ -56573,6 +56509,70 @@
           "quantization": "fp4",
           "maxOutputTokens": 128000,
           "configurationKey": "cfg-a850ed7e1b38495d"
+        },
+        {
+          "venue": "StreamLake",
+          "tag": "streamlake/fp8",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.2-20260616/endpoints",
+          "input_mtok": 0.735,
+          "output_mtok": 2.31,
+          "context": 1024000,
+          "supportedParameters": [
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.1365,
+          "quantization": "fp8",
+          "maxOutputTokens": 128000,
+          "configurationKey": "cfg-5212efd354ed7d95"
+        },
+        {
+          "venue": "Novita",
+          "tag": "novita/fp8",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.2-20260616/endpoints",
+          "input_mtok": 0.742,
+          "output_mtok": 2.332,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.1378,
+          "quantization": "fp8",
+          "maxOutputTokens": 131072,
+          "configurationKey": "cfg-864a0e3a497cab7d"
         },
         {
           "venue": "CoreWeave",

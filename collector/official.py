@@ -32,7 +32,7 @@ PROVIDER_URLS = {
     "openai": "https://developers.openai.com/api/docs/pricing.md",
     "google": "https://ai.google.dev/gemini-api/docs/pricing",
     "mistralai": "https://docs.mistral.ai/inference/pricing",
-    "moonshotai": "https://www.kimi.com/resources/kimi-k3-pricing",
+    "moonshotai": "https://platform.kimi.ai/",
     "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
     "x-ai": "https://docs.x.ai/developers/models",
 }
@@ -300,11 +300,18 @@ def parse_mistral(source: str, rows: list[dict[str, Any]], now: datetime) -> dic
 
 def parse_moonshot(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
     del now
+    text = visible_text(source)
     match = re.search(
-        r"Kimi K3 API pricing.*?Input tokens are billed at \$([0-9.]+).*?Output tokens are billed at \$([0-9.]+)",
-        source,
+        r"K3\s*\|\s*Kimi K3 is.*?Cache Hit\s*\|\s*\$[0-9.]+\s*/\s*MTok\s*\|\s*Input\s*\|\s*\$([0-9.]+)\s*/\s*MTok\s*\|\s*Output\s*\|\s*\$([0-9.]+)\s*/\s*MTok",
+        text,
         re.I | re.S,
     )
+    if not match:
+        match = re.search(
+            r"Kimi K3 API pricing.*?Input tokens are billed at \$([0-9.]+).*?Output tokens are billed at \$([0-9.]+)",
+            source,
+            re.I | re.S,
+        )
     if not match:
         raise OfficialSourceError("Kimi K3 API pricing statement not found")
     values = (price(match.group(1), "Kimi K3 input"), price(match.group(2), "Kimi K3 output"))

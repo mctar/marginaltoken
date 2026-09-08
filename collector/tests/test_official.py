@@ -151,6 +151,18 @@ Batch
         rows = [row("moonshotai", "kimi-k3", "Kimi K3")]
         self.assertEqual(parse_moonshot(source, rows, NOW), {"kimi-k3": (3.0, 15.0)})
 
+    def test_moonshot_international_homepage(self) -> None:
+        source = """
+<h2>Latest Models</h2><h3>K3</h3>
+<p>Kimi K3 is Kimi's most capable flagship model to date.</p>
+<span>Cache Hit</span><span>$0.30 / MTok</span>
+<span>Input</span><span>$3.00 / MTok</span>
+<span>Output</span><span>$15.00 / MTok</span>
+<h3>K2.7 Code</h3>
+"""
+        rows = [row("moonshotai", "kimi-k3", "Kimi K3")]
+        self.assertEqual(parse_moonshot(source, rows, NOW), {"kimi-k3": (3.0, 15.0)})
+
     def test_deepseek_table(self) -> None:
         source = """
 <table><tr><td>MODEL</td><td>deepseek-v4-flash</td><td>deepseek-v4-pro</td></tr>

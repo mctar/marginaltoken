@@ -144,7 +144,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a>
           <a href="https://ai.google.dev/gemini-api/docs/pricing">Google pricing</a>
           <a href="https://docs.mistral.ai/inference/pricing">Mistral pricing</a>
-          <a href="https://www.kimi.com/resources/kimi-k3-pricing">Kimi pricing</a>
+          <a href="https://platform.kimi.ai/">Kimi pricing</a>
           <a href="https://api-docs.deepseek.com/quick_start/pricing/">DeepSeek pricing</a>
           <a href="https://docs.x.ai/developers/models">xAI pricing</a>
           <a href="https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html">NVIDIA NIM support matrix</a>

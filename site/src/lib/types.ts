@@ -108,7 +108,18 @@ export type ProviderSourceStatus = {
   sourceUrl: string
   lastVerified: string | null
   modelCount: number
+  reviewCandidateCount?: number
   detail?: string
+}
+
+export type FirstPartyReviewCandidate = {
+  key: string
+  display: string
+  provider: string
+  discoveredAt: string
+  input_mtok: number
+  output_mtok: number
+  context: number
 }
 
 export type SourceConflict = {
@@ -124,8 +135,10 @@ export type ProvenanceFeed = {
   status: 'healthy' | 'attention' | 'degraded'
   degradedProviderCount: number
   conflictCount: number
+  reviewCandidateCount?: number
   providers: ProviderSourceStatus[]
   conflicts: SourceConflict[]
+  reviewCandidates?: FirstPartyReviewCandidate[]
 }
 
 export type OfferPriceRange = {

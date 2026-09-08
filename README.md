@@ -13,7 +13,7 @@ site/        Static three-route publication
 deploy/      GitHub Pages publisher and systemd units
 ```
 
-OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows. A separate venue scan preserves OpenRouter's route-level offers and verifies supported fields against direct Standard pricing from Together AI and Fireworks AI without changing the single-quote Tape.
+OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative; the Anthropic, OpenAI, and Google registers also track additional current model tiers. Verified first-party rows replace matching OpenRouter rows. New paid OpenRouter listings from those providers act as discovery signals and remain in a persistent review queue until verified into the register, explicitly dismissed in `collector/firstparty-reviewed.json`, or delisted. A separate venue scan preserves OpenRouter's route-level offers and verifies supported fields against direct Standard pricing from Together AI and Fireworks AI without changing the single-quote Tape.
 
 ## Feed contract
 
@@ -23,7 +23,7 @@ The five core deterministic files carry the same `generatedAt` revision timestam
 - `data/history.json`: the inception snapshot plus one point per model for each detected price change.
 - `data/changes.json`: up to 500 typed `price`, `listed`, `delisted`, and `basket` events, newest first.
 - `data/meta.json`: the current index, persisted base, current basket, and chart-ready index history.
-- `data/provenance.json`: provider freshness plus matching-key differences between verified first-party and OpenRouter prices.
+- `data/provenance.json`: provider freshness, matching-key price differences, and unresolved OpenRouter discovery signals for tracked first-party providers.
 - `data/brief.json`: an optional, revision-matched headline and two-sentence note generated locally from verified events.
 - `data/offers.json`: per-model marketplace offers with field-level source links, standard input/output rates, cache rates, context, quantization, maximum output, supported API parameters, and conservative like-for-like comparison groups.
 - `data/deployment.json`: a separate reviewed NVIDIA NIM deployment register with lifecycle status and verified GPU, tensor-parallel, precision, and optimization profiles; it never enters the API price tape.
@@ -56,7 +56,7 @@ The collector refuses to replace the feed when:
 
 Failures return a non-zero exit status and leave `data/` untouched. This makes the systemd unit visibly fail and prevents it from publishing after a bad collection. Operational status is written to the ignored `collector/state/heartbeat.json` file. A successful feed change creates `collector/state/publish-pending`. That marker remains until publication succeeds, which makes a failed build or push retryable on the next timer run.
 
-Official sources have independent last-good snapshots in `collector/state/firstparty-last-good.json`. One unavailable or changed provider page therefore cannot erase another provider's verified data. A source is marked stale after 48 hours without successful verification, and the public source-health feed distinguishes fresh, last-good, stale, and manual fallback data. Matching OpenRouter prices are compared field by field and disagreements are published while the verified first-party rate remains authoritative.
+Official sources have independent last-good snapshots in `collector/state/firstparty-last-good.json`. One unavailable or changed provider page therefore cannot erase another provider's verified data. If the reviewed register gains a row while a provider returns HTTP 304, the collector retries that source without cache validators instead of remaining trapped on an incomplete snapshot. A source is marked stale after 48 hours without successful verification, and the public source-health feed distinguishes fresh, last-good, stale, and manual fallback data. Matching OpenRouter prices are compared field by field and disagreements are published while the verified first-party rate remains authoritative.
 
 When a first party publishes multiple time-banded standard rates, the Tape uses the highest applicable standard rate as its deterministic quote rather than changing with the clock. DeepSeek's V4 peak weekday rate is therefore recorded, with its 50%-lower off-peak schedule stated in the model note.
 
@@ -169,6 +169,8 @@ the same validated feed revisions as GitHub Pages.
 ## Updating first-party prices
 
 Add the model metadata and a reviewed fallback rate to `collector/firstparty.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Add or extend that provider's strict parser in `collector/official.py` and a compact source fixture in `collector/tests/test_official.py`. Standard uncached, non-batch, global rates are used. For context tiers, record the lowest standard tier; for time-banded prices, record the highest standard rate. Explain either choice in `rate_note`.
+
+The first OpenRouter appearance of a paid model from a registered provider is written to `collector/state/firstparty-review-pending.json` and published in source health. Verification adds it to `collector/firstparty.json`; an intentionally excluded variant is added to `collector/firstparty-reviewed.json` with a review date and reason. The queue is persistent, so an hourly rerun cannot silently clear an unresolved signal.
 
 ## Updating The Shortlist
 

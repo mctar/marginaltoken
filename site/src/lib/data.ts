@@ -41,6 +41,7 @@ export async function loadFeed(includeOffers = false, includeDeployment = false)
     && ['healthy', 'attention', 'degraded'].includes(candidateProvenance.status)
     && Array.isArray(candidateProvenance.providers)
     && Array.isArray(candidateProvenance.conflicts)
+    && (candidateProvenance.reviewCandidates === undefined || Array.isArray(candidateProvenance.reviewCandidates))
     ? candidateProvenance
     : null
   const offers = candidateOffers

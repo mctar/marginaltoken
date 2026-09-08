@@ -1,8 +1,11 @@
 import { longDate } from '../lib/format'
 import { providerName } from '../lib/format'
+import { modelPath } from '../lib/models'
 import type { MetaFeed, ProvenanceFeed } from '../lib/types'
 
 export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; provenance: ProvenanceFeed | null }) {
+  const reviewCandidates = provenance?.reviewCandidates ?? []
+
   return (
     <main id="main" className="mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
       <header className="page-heading methodology-heading">
@@ -25,7 +28,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">02</span>
           <h2>Where prices come from</h2>
           <p>
-            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. The collector also scans official pricing pages from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI every hour. Each provider is parsed and cached independently. A verified first-party row replaces the matching OpenRouter row; failed scans retain that provider's last-good snapshot and surface a source warning.
+            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. The collector also scans official pricing pages from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI every hour. Each provider is parsed and cached independently. A verified first-party row replaces the matching OpenRouter row; failed scans retain that provider's last-good snapshot and surface a source warning. A new paid OpenRouter listing from one of these providers enters a persistent review queue, but remains a routed quote until its official rate and production status are verified.
           </p>
         </section>
         <section>
@@ -53,7 +56,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">06</span>
           <h2>Detection and publication</h2>
           <p>
-            The collector checks OpenRouter and every supported official source hourly. A price move must exceed $0.0001 per million tokens after rounding to four decimals. DeepSeek now publishes time-banded standard rates, so the Tape records its peak weekday rate as the deterministic quote and labels the 50%-lower off-peak schedule. A valid change produces one feed revision. Failed, empty, or materially incomplete responses leave last-good data in place. Provider freshness and matching-key disagreements are published in the source-health feed. The site republishes only when prices or source status change.
+            The collector checks OpenRouter and every supported official source hourly. A price move must exceed $0.0001 per million tokens after rounding to four decimals. DeepSeek now publishes time-banded standard rates, so the Tape records its peak weekday rate as the deterministic quote and labels the 50%-lower off-peak schedule. A valid change produces one feed revision. Failed, empty, or materially incomplete responses leave last-good data in place. Provider freshness, matching-key disagreements, and unresolved first-party discovery signals are published in the source-health feed. A signal remains visible until the model is verified into the register, explicitly reviewed as out of scope, or removed from OpenRouter. The site republishes only when prices or source status change.
           </p>
         </section>
         <section>
@@ -98,7 +101,9 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <p className="section-kicker">Operational provenance</p>
           <div className="source-health-heading">
             <h2 id="source-health-title" className="section-title">Source health</h2>
-            <p>{provenance.conflictCount} cross-source {provenance.conflictCount === 1 ? 'difference' : 'differences'} recorded.</p>
+            <p>
+              {provenance.conflictCount} cross-source {provenance.conflictCount === 1 ? 'difference' : 'differences'} · {provenance.reviewCandidateCount ?? reviewCandidates.length} discovery {(provenance.reviewCandidateCount ?? reviewCandidates.length) === 1 ? 'signal' : 'signals'} awaiting review.
+            </p>
           </div>
           <div className="source-health-grid">
             {provenance.providers.map((source) => (
@@ -106,9 +111,25 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
                 <span>{providerName(source.provider)}</span>
                 <strong>{source.status.replace('_', ' ')}</strong>
                 <small>{source.lastVerified ? `Verified ${source.lastVerified}` : 'No automated verification yet'}</small>
+                {(source.reviewCandidateCount ?? 0) > 0 && <small>{source.reviewCandidateCount} new model {source.reviewCandidateCount === 1 ? 'signal' : 'signals'}</small>}
+                {source.detail && <small>{source.detail}</small>}
               </a>
             ))}
           </div>
+          {reviewCandidates.length > 0 && (
+            <div className="source-review-queue">
+              <p className="section-kicker">OpenRouter discovery signals</p>
+              <div className="source-health-grid">
+                {reviewCandidates.map((candidate) => (
+                  <a href={modelPath(candidate.key)} key={candidate.key}>
+                    <span>{providerName(candidate.provider)}</span>
+                    <strong>{candidate.display}</strong>
+                    <small>First seen {candidate.discoveredAt.slice(0, 10)} · ${candidate.input_mtok}/M input · ${candidate.output_mtok}/M output</small>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       )}
 

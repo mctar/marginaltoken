@@ -32,6 +32,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = ROOT / "data"
 DEFAULT_STATE_DIR = Path(__file__).resolve().parent / "state"
 DEFAULT_FIRSTPARTY = Path(__file__).resolve().parent / "firstparty.json"
+DEFAULT_FIRSTPARTY_REVIEWED = Path(__file__).resolve().parent / "firstparty-reviewed.json"
 OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models"
 
 PRICE_QUANTUM = Decimal("0.0001")
@@ -40,6 +41,7 @@ DEFAULT_MIN_MODELS = 100
 DEFAULT_RETENTION_RATIO = Decimal("0.80")
 MAX_RESPONSE_BYTES = 20 * 1024 * 1024
 CHANGE_LIMIT = 500
+FIRSTPARTY_REVIEW_FILE = "firstparty-review-pending.json"
 
 
 class CollectorError(RuntimeError):
@@ -300,6 +302,38 @@ def load_firstparty(path: Path) -> list[dict[str, Any]]:
     return normalize_firstparty(load_json(path))
 
 
+def load_reviewed_firstparty(path: Path) -> set[str]:
+    """Load OpenRouter rows reviewed as intentionally outside first-party scope."""
+
+    if not path.exists():
+        return set()
+    payload = load_json(path)
+    if not isinstance(payload, list):
+        raise CollectorError("firstparty-reviewed.json must be an array")
+    reviewed: set[str] = set()
+    for index, raw in enumerate(payload):
+        if not isinstance(raw, dict):
+            raise CollectorError(f"reviewed first-party entry {index} must be an object")
+        key = raw.get("key")
+        reviewed_at = raw.get("reviewed")
+        reason = raw.get("reason")
+        if not isinstance(key, str) or "/" not in key or not key.strip():
+            raise CollectorError(f"reviewed first-party entry {index} has invalid key")
+        key = key.strip()
+        if key in reviewed:
+            raise CollectorError(f"duplicate reviewed first-party model: {key}")
+        if not isinstance(reviewed_at, str):
+            raise CollectorError(f"{key} has invalid reviewed date")
+        try:
+            datetime.strptime(reviewed_at, "%Y-%m-%d")
+        except ValueError as error:
+            raise CollectorError(f"{key} reviewed must be YYYY-MM-DD") from error
+        if not isinstance(reason, str) or not reason.strip():
+            raise CollectorError(f"{key} must explain why it is not tracked")
+        reviewed.add(key)
+    return reviewed
+
+
 def merge_models(
     openrouter: list[dict[str, Any]], firstparty: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -348,6 +382,77 @@ def read_feed(path: Path, default: Any) -> Any:
         return load_json(path)
     except (OSError, json.JSONDecodeError) as error:
         raise CollectorError(f"cannot read previous feed file {path.name}") from error
+
+
+def update_firstparty_review_queue(
+    openrouter: list[dict[str, Any]],
+    curated: list[dict[str, Any]],
+    previous_models: list[dict[str, Any]],
+    *,
+    reviewed_keys: set[str],
+    state_dir: Path,
+    discovered_at: str,
+) -> list[dict[str, Any]]:
+    """Persist newly listed OpenRouter models from providers with official adapters."""
+
+    state_path = state_dir / FIRSTPARTY_REVIEW_FILE
+    state = read_feed(state_path, {"version": 1, "candidates": []})
+    if not isinstance(state, dict) or not isinstance(state.get("candidates"), list):
+        raise CollectorError(f"{FIRSTPARTY_REVIEW_FILE} is invalid")
+
+    current_by_key = {str(model["key"]): model for model in openrouter}
+    catalog_keys = {str(model["key"]) for model in curated}
+    tracked_providers = {str(model["provider"]) for model in curated}
+    previous_keys = {
+        str(model.get("key"))
+        for model in previous_models
+        if isinstance(model, dict) and isinstance(model.get("key"), str)
+    }
+
+    def candidate(model: dict[str, Any], first_seen: str) -> dict[str, Any]:
+        return {
+            "key": model["key"],
+            "display": model["display"],
+            "provider": model["provider"],
+            "discoveredAt": first_seen,
+            "input_mtok": model["input_mtok"],
+            "output_mtok": model["output_mtok"],
+            "context": model["context"],
+        }
+
+    pending: dict[str, dict[str, Any]] = {}
+    for raw in state["candidates"]:
+        if not isinstance(raw, dict) or not isinstance(raw.get("key"), str):
+            continue
+        key = str(raw["key"])
+        model = current_by_key.get(key)
+        if (
+            model is None
+            or model["provider"] not in tracked_providers
+            or key in catalog_keys
+            or key in reviewed_keys
+        ):
+            continue
+        first_seen = raw.get("discoveredAt")
+        pending[key] = candidate(
+            model,
+            str(first_seen) if isinstance(first_seen, str) and first_seen else discovered_at,
+        )
+
+    # An empty previous feed is an initial baseline, not hundreds of discoveries.
+    if previous_models:
+        for key, model in current_by_key.items():
+            if (
+                model["provider"] in tracked_providers
+                and key not in previous_keys
+                and key not in catalog_keys
+                and key not in reviewed_keys
+            ):
+                pending.setdefault(key, candidate(model, discovered_at))
+
+    candidates = sorted(pending.values(), key=lambda item: (item["provider"], item["key"]))
+    atomic_write_json(state_path, {"version": 1, "candidates": candidates})
+    return candidates
 
 
 def price_decimal(model: dict[str, Any], field: str) -> Decimal:
@@ -484,6 +589,7 @@ def collect_once(
     data_dir: Path,
     state_dir: Path,
     firstparty_path: Path,
+    firstparty_reviewed_path: Path = DEFAULT_FIRSTPARTY_REVIEWED,
     source_file: Path | None = None,
     url: str = OPENROUTER_MODELS_URL,
     now: datetime | None = None,
@@ -499,6 +605,7 @@ def collect_once(
 
     baseline_catalog = load_json(firstparty_path)
     normalize_firstparty(baseline_catalog)
+    reviewed_keys = load_reviewed_firstparty(firstparty_reviewed_path)
     if refresh_official is None:
         refresh_official = source_file is None
     if refresh_official:
@@ -530,6 +637,31 @@ def collect_once(
 
     raw_payload = fetch_openrouter(url, source_file)
     openrouter = normalize_openrouter(raw_payload)
+    previous_prices = read_feed(data_dir / "prices.json", {})
+    previous_models = previous_prices.get("models", []) if isinstance(previous_prices, dict) else []
+    if not isinstance(previous_models, list):
+        raise CollectorError("previous prices.json has an invalid models field")
+    models = merge_models(openrouter, curated)
+    if len(models) < min_models:
+        raise CollectorError(f"only {len(models)} normalized models, minimum is {min_models}")
+    if previous_models and Decimal(len(models)) / Decimal(len(previous_models)) < retention_ratio:
+        raise CollectorError(
+            f"normalized model count fell from {len(previous_models)} to {len(models)}, "
+            f"below the {retention_ratio:.0%} retention threshold"
+        )
+
+    review_candidates = update_firstparty_review_queue(
+        openrouter,
+        curated,
+        previous_models,
+        reviewed_keys=reviewed_keys,
+        state_dir=state_dir,
+        discovered_at=generated_at,
+    )
+    reviews_by_provider: dict[str, int] = {}
+    for candidate in review_candidates:
+        provider = str(candidate["provider"])
+        reviews_by_provider[provider] = reviews_by_provider.get(provider, 0) + 1
     conflicts = firstparty_conflicts(openrouter, curated)
     public_providers = [
         {
@@ -540,40 +672,36 @@ def collect_once(
                 str(report.get("verifiedAt"))[:10] if report.get("verifiedAt") else None
             ),
             "modelCount": report["modelCount"],
+            "reviewCandidateCount": reviews_by_provider.get(report["provider"], 0),
+            **({"detail": report["detail"]} if report.get("detail") else {}),
         }
         for report in firstparty_report["providers"]
     ]
     source_status = (
         "degraded"
         if firstparty_report["status"] == "degraded"
-        else "attention" if conflicts else "healthy"
+        else "attention" if conflicts or review_candidates else "healthy"
     )
     provenance_core = {
         "asOf": date,
         "status": source_status,
         "degradedProviderCount": firstparty_report["degradedProviderCount"],
         "conflictCount": len(conflicts),
+        "reviewCandidateCount": len(review_candidates),
         "providers": public_providers,
         "conflicts": conflicts,
+        "reviewCandidates": review_candidates,
     }
     atomic_write_json(
         state_dir / "firstparty-heartbeat.json",
-        {**firstparty_report, "conflictCount": len(conflicts), "conflicts": conflicts},
+        {
+            **firstparty_report,
+            "conflictCount": len(conflicts),
+            "conflicts": conflicts,
+            "reviewCandidateCount": len(review_candidates),
+            "reviewCandidates": review_candidates,
+        },
     )
-    models = merge_models(openrouter, curated)
-    if len(models) < min_models:
-        raise CollectorError(f"only {len(models)} normalized models, minimum is {min_models}")
-
-    previous_prices = read_feed(data_dir / "prices.json", {})
-    previous_models = previous_prices.get("models", []) if isinstance(previous_prices, dict) else []
-    if not isinstance(previous_models, list):
-        raise CollectorError("previous prices.json has an invalid models field")
-    if previous_models and Decimal(len(models)) / Decimal(len(previous_models)) < retention_ratio:
-        raise CollectorError(
-            f"normalized model count fell from {len(previous_models)} to {len(models)}, "
-            f"below the {retention_ratio:.0%} retention threshold"
-        )
-
     previous_history = read_feed(data_dir / "history.json", {"points": []})
     history_points = list(previous_history.get("points", []))
     previous_changes = read_feed(data_dir / "changes.json", {"changes": []})
@@ -718,6 +846,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--state-dir", type=Path, default=DEFAULT_STATE_DIR)
     parser.add_argument("--firstparty", type=Path, default=DEFAULT_FIRSTPARTY)
+    parser.add_argument(
+        "--firstparty-reviewed",
+        type=Path,
+        default=DEFAULT_FIRSTPARTY_REVIEWED,
+        help="reviewed OpenRouter models intentionally excluded from first-party tracking",
+    )
     parser.add_argument("--url", default=os.environ.get("MARGINALTOKEN_MODELS_URL", OPENROUTER_MODELS_URL))
     parser.add_argument(
         "--min-models",
@@ -760,6 +894,7 @@ def main(argv: list[str] | None = None) -> int:
             data_dir=args.data_dir,
             state_dir=args.state_dir,
             firstparty_path=args.firstparty,
+            firstparty_reviewed_path=args.firstparty_reviewed,
             source_file=args.source_file,
             url=args.url,
             now=now,

@@ -28,7 +28,7 @@ export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = [
     id: 'anthropic',
     title: 'Anthropic',
     slots: [
-      { id: 'anthropic-fable', tier: 'Fable', provider: 'anthropic', candidates: ['anthropic/claude-fable-5'] },
+      { id: 'anthropic-fable', tier: 'Fable', provider: 'anthropic', candidates: ['anthropic/claude-fable-5.1', 'anthropic/claude-fable-5'] },
       { id: 'anthropic-opus', tier: 'Opus', provider: 'anthropic', candidates: ['anthropic/claude-opus-5'] },
       { id: 'anthropic-sonnet', tier: 'Sonnet', provider: 'anthropic', candidates: ['anthropic/claude-sonnet-5'] },
       { id: 'anthropic-haiku', tier: 'Haiku', provider: 'anthropic', candidates: ['anthropic/claude-haiku-4.5'] },
@@ -38,7 +38,7 @@ export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = [
     id: 'openai',
     title: 'OpenAI',
     slots: [
-      { id: 'openai-sol', tier: 'Sol', provider: 'openai', candidates: ['openai/gpt-5.6-sol'] },
+      { id: 'openai-frontier', tier: 'Astra', provider: 'openai', candidates: ['openai/gpt-6-astra', 'openai/gpt-5.6-sol'] },
       { id: 'openai-terra', tier: 'Terra', provider: 'openai', candidates: ['openai/gpt-5.6-terra'] },
       { id: 'openai-luna', tier: 'Luna', provider: 'openai', candidates: ['openai/gpt-5.6-luna'] },
     ],
@@ -57,7 +57,7 @@ export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = [
         id: 'google-flash',
         tier: 'Flash',
         provider: 'google',
-        candidates: ['google/gemini-3.6-flash', 'google/gemini-3.5-flash'],
+        candidates: ['google/gemini-3.8-flash', 'google/gemini-3.6-flash', 'google/gemini-3.5-flash'],
       },
       {
         id: 'google-flash-lite',

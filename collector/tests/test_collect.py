@@ -50,12 +50,17 @@ class FirstPartyCatalogTests(unittest.TestCase):
     def test_new_first_party_tiers_have_expected_rates(self) -> None:
         by_key = {model["key"]: model for model in self.models}
         expected = {
+            "anthropic/claude-fable-5.1": (10.0, 50.0, 1000000),
             "anthropic/claude-fable-5": (10.0, 50.0, 1000000),
             "anthropic/claude-opus-5": (5.0, 25.0, 1000000),
             "anthropic/claude-haiku-4.5": (1.0, 5.0, 200000),
             "moonshotai/kimi-k3": (3.0, 15.0, 1048576),
+            "openai/gpt-6-astra": (10.0, 50.0, 1050000),
+            "openai/gpt-5.6-sol": (4.0, 20.0, 1050000),
             "openai/gpt-5.6-terra": (2.0, 12.0, 1050000),
             "openai/gpt-5.6-luna": (0.2, 1.2, 1050000),
+            "google/gemini-3.8-flash": (0.75, 3.75, 1048576),
+            "google/gemini-3.6-flash": (0.75, 3.75, 1048576),
             "google/gemini-3.5-flash": (1.5, 9.0, 1048576),
             "google/gemini-3.5-flash-lite": (0.3, 2.5, 1048576),
         }
@@ -69,6 +74,10 @@ class FirstPartyCatalogTests(unittest.TestCase):
         self.assertTrue(by_key["moonshotai/kimi-k3"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-sonnet-5"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-haiku-4.5"]["indexEligible"])
+        self.assertTrue(by_key["openai/gpt-6-astra"]["indexEligible"])
+        self.assertFalse(by_key["openai/gpt-5.6-sol"]["indexEligible"])
+        self.assertTrue(by_key["google/gemini-3.8-flash"]["indexEligible"])
+        self.assertFalse(by_key["google/gemini-3.6-flash"]["indexEligible"])
 
 
 class CollectorTests(unittest.TestCase):
@@ -79,6 +88,8 @@ class CollectorTests(unittest.TestCase):
         self.state = self.root / "state"
         self.source = self.root / "source.json"
         self.firstparty = self.root / "firstparty.json"
+        self.reviewed = self.root / "firstparty-reviewed.json"
+        self.reviewed.write_text("[]", encoding="utf-8")
         self.write_source(
             [
                 raw_model("lab/flagship", "0.000002", "0.000010", "Lab: Flagship"),
@@ -118,6 +129,7 @@ class CollectorTests(unittest.TestCase):
             data_dir=self.data,
             state_dir=self.state,
             firstparty_path=self.firstparty,
+            firstparty_reviewed_path=self.reviewed,
             source_file=self.source,
             now=datetime(2026, 7, day, 10, tzinfo=timezone.utc),
             min_models=1,
@@ -237,6 +249,54 @@ class CollectorTests(unittest.TestCase):
         provenance = json.loads((self.data / "provenance.json").read_text())
         self.assertEqual(provenance["status"], "healthy")
         self.assertEqual(provenance["conflictCount"], 0)
+        self.assertEqual(provenance["reviewCandidateCount"], 0)
+
+    def test_new_first_party_provider_listing_stays_in_review_queue(self) -> None:
+        self.collect()
+        self.write_source(
+            [
+                raw_model("lab/flagship", "0.000002", "0.000010", "Lab: Flagship"),
+                raw_model("lab/new-frontier", "0.000003", "0.000015", "Lab: New Frontier"),
+                raw_model("router/value", "0.000001", "0.000004", "Router: Value"),
+            ]
+        )
+        self.assertEqual(self.collect(day=30), "changed")
+        provenance = json.loads((self.data / "provenance.json").read_text())
+        self.assertEqual(provenance["status"], "attention")
+        self.assertEqual(provenance["reviewCandidateCount"], 1)
+        self.assertEqual(provenance["reviewCandidates"][0]["key"], "lab/new-frontier")
+        self.assertEqual(provenance["providers"][0]["reviewCandidateCount"], 1)
+
+        self.assertEqual(self.collect(day=31), "unchanged")
+        pending = json.loads((self.state / "firstparty-review-pending.json").read_text())
+        self.assertEqual(pending["candidates"][0]["discoveredAt"], "2026-07-30T10:00:00Z")
+
+    def test_reviewed_listing_clears_persistent_signal(self) -> None:
+        self.collect()
+        self.write_source(
+            [
+                raw_model("lab/flagship", "0.000002", "0.000010"),
+                raw_model("lab/new-frontier", "0.000003", "0.000015"),
+                raw_model("router/value", "0.000001", "0.000004"),
+            ]
+        )
+        self.collect(day=30)
+        self.reviewed.write_text(
+            json.dumps(
+                [
+                    {
+                        "key": "lab/new-frontier",
+                        "reviewed": "2026-07-31",
+                        "reason": "Specialized route outside the official standard-rate register",
+                    }
+                ]
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(self.collect(day=31), "changed")
+        provenance = json.loads((self.data / "provenance.json").read_text())
+        self.assertEqual(provenance["status"], "healthy")
+        self.assertEqual(provenance["reviewCandidateCount"], 0)
 
     def test_price_change_appends_event_and_history(self) -> None:
         self.collect()

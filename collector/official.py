@@ -188,6 +188,7 @@ def parse_openai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict
 
 
 def parse_anthropic(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
+    del now
     text = visible_text(source)
     marker = "The following table shows pricing for all Claude models:"
     start = text.find(marker)
@@ -198,18 +199,11 @@ def parse_anthropic(source: str, rows: list[dict[str, Any]], now: datetime) -> d
     result: dict[str, tuple[float, float]] = {}
     for row in rows:
         display = str(row["display"])
-        label = display
-        if row["model"] == "claude-sonnet-5":
-            cutoff = datetime(2026, 9, 1, tzinfo=timezone.utc)
-            label = (
-                display
-                if now.astimezone(timezone.utc) < cutoff
-                else f"{display} | starting September 1, 2026"
-            )
-        row_start = table.find(label)
-        if row_start < 0:
+        row_match = re.search(rf"(?:^|\|\s*){re.escape(display)}\s*\|", table)
+        if not row_match:
             raise OfficialSourceError(f"Anthropic row missing: {display}")
-        next_row = table.find(" | Claude ", row_start + len(label))
+        row_start = row_match.start()
+        next_row = table.find(" | Claude ", row_match.end())
         segment = table[row_start : next_row if next_row >= 0 else len(table)]
         values = _money_values(segment)
         if len(values) < 5:
@@ -222,8 +216,22 @@ def parse_anthropic(source: str, rows: list[dict[str, Any]], now: datetime) -> d
 
 
 def parse_google(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
-    del now
     text = visible_text(source)
+
+    def active_price(section: str, label: str) -> float:
+        values = re.findall(r"\$\s*([0-9.]+)", section)
+        if not values:
+            raise OfficialSourceError(f"Google {label} price missing")
+        selected = values[0]
+        for value, effective in re.findall(
+            r"\$\s*([0-9.]+)\s+starting\s+([A-Z][a-z]+\s+\d{1,2},\s+\d{4})",
+            section,
+        ):
+            effective_at = datetime.strptime(effective, "%B %d, %Y").replace(tzinfo=timezone.utc)
+            if now.astimezone(timezone.utc) >= effective_at:
+                selected = value
+        return price(selected, label)
+
     result: dict[str, tuple[float, float]] = {}
     for row in rows:
         marker = f"{row['display']} | {row['model']}"
@@ -231,16 +239,23 @@ def parse_google(source: str, rows: list[dict[str, Any]], now: datetime) -> dict
         if start < 0:
             raise OfficialSourceError(f"Google row missing: {row['model']}")
         segment = text[start : start + 1800]
-        match = re.search(
-            r"Input price.*?\$\s*([0-9.]+).*?Output price(?: \(including thinking tokens\))?.*?\$\s*([0-9.]+)",
-            segment,
+        input_start = segment.find("Input price")
+        output_match = re.search(r"Output price(?: \(including thinking tokens\))?", segment, re.I)
+        if input_start < 0 or not output_match:
+            raise OfficialSourceError(f"Google prices missing: {row['model']}")
+        next_section = re.search(
+            r"Context caching price|Grounding with Google Search|Used to improve our products|Batch",
+            segment[output_match.end() :],
             re.I,
         )
-        if not match:
-            raise OfficialSourceError(f"Google prices missing: {row['model']}")
+        output_end = (
+            output_match.end() + next_section.start()
+            if next_section
+            else len(segment)
+        )
         result[str(row["model"])] = (
-            price(match.group(1), f"{row['model']} input"),
-            price(match.group(2), f"{row['model']} output"),
+            active_price(segment[input_start : output_match.start()], f"{row['model']} input"),
+            active_price(segment[output_match.end() : output_end], f"{row['model']} output"),
         )
     return result
 
@@ -474,9 +489,15 @@ def refresh_firstparty(
                 if fetched.not_modified:
                     values = _last_good_prices(cached, rows)
                     if values is None:
-                        raise OfficialSourceError("304 response without a complete last-good snapshot")
-                    content_hash = cached.get("contentHash")
-                else:
+                        # The reviewed register may have gained a model while the
+                        # provider page retained its ETag. Retry without
+                        # validators so the new row can be verified immediately.
+                        fetched = fetcher(url, None)
+                        if fetched.not_modified:
+                            raise OfficialSourceError("unconditional refresh returned 304")
+                    else:
+                        content_hash = cached.get("contentHash")
+                if not fetched.not_modified:
                     if fetched.text is None:
                         raise OfficialSourceError("official source returned no content")
                     try:

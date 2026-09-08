@@ -40,13 +40,15 @@ class OfficialParserTests(unittest.TestCase):
 ### Standard pricing data
 | Model | Short context input | Cached | Writes | Short context output | Long input | Long cached | Long writes | Long output |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| gpt-5.6-sol | $5.00 | $0.50 | $6.25 | $30.00 | $10 | $1 | $12.5 | $45 |
+| gpt-6-astra | $10.00 | $1.00 | $12.50 | $50.00 | $20 | $2 | $25 | $75 |
+| gpt-5.6-sol | $4.00 | $0.40 | $5.00 | $20.00 | $8 | $0.8 | $10 | $30 |
 | gpt-5.6-terra | $2.00 | $0.20 | $2.50 | $12.00 | $4 | $0.4 | $5 | $18 |
 | gpt-5.6-luna | $0.20 | $0.02 | $0.25 | $1.20 | $0.4 | $0.04 | $0.5 | $1.8 |
 
 Batch
 """
         rows = [
+            row("openai", "gpt-6-astra", "GPT-6 Astra"),
             row("openai", "gpt-5.6-sol", "GPT-5.6 Sol"),
             row("openai", "gpt-5.6-terra", "GPT-5.6 Terra"),
             row("openai", "gpt-5.6-luna", "GPT-5.6 Luna"),
@@ -54,7 +56,8 @@ Batch
         self.assertEqual(
             parse_openai(source, rows, NOW),
             {
-                "gpt-5.6-sol": (5.0, 30.0),
+                "gpt-6-astra": (10.0, 50.0),
+                "gpt-5.6-sol": (4.0, 20.0),
                 "gpt-5.6-terra": (2.0, 12.0),
                 "gpt-5.6-luna": (0.2, 1.2),
             },
@@ -77,6 +80,29 @@ Batch
             {"claude-opus-5": (5.0, 25.0), "claude-sonnet-5": (2.0, 10.0)},
         )
 
+    def test_anthropic_current_table_does_not_expect_cancelled_scheduled_row(self) -> None:
+        source = """
+<p>The following table shows pricing for all Claude models:</p>
+<table><tr><td>Claude Fable 5.1</td><td>$10 / MTok</td><td>$12.50 / MTok</td><td>$20 / MTok</td><td>$1 / MTok</td><td>$50 / MTok</td></tr>
+<tr><td>Claude Fable 5</td><td>$8 / MTok</td><td>$10 / MTok</td><td>$16 / MTok</td><td>$0.80 / MTok</td><td>$40 / MTok</td></tr>
+<tr><td>Claude Sonnet 5</td><td>$2 / MTok</td><td>$2.50 / MTok</td><td>$4 / MTok</td><td>$0.20 / MTok</td><td>$10 / MTok</td></tr></table>
+<h2>Batch processing</h2>
+"""
+        rows = [
+            row("anthropic", "claude-fable-5.1", "Claude Fable 5.1"),
+            row("anthropic", "claude-fable-5", "Claude Fable 5"),
+            row("anthropic", "claude-sonnet-5", "Claude Sonnet 5"),
+        ]
+        september = datetime(2026, 9, 8, 10, tzinfo=timezone.utc)
+        self.assertEqual(
+            parse_anthropic(source, rows, september),
+            {
+                "claude-fable-5.1": (10.0, 50.0),
+                "claude-fable-5": (8.0, 40.0),
+                "claude-sonnet-5": (2.0, 10.0),
+            },
+        )
+
     def test_google_paid_tier(self) -> None:
         source = """
 <h2>Gemini 3.6 Flash</h2><code>gemini-3.6-flash</code>
@@ -85,6 +111,23 @@ Batch
 """
         rows = [row("google", "gemini-3.6-flash", "Gemini 3.6 Flash")]
         self.assertEqual(parse_google(source, rows, NOW), {"gemini-3.6-flash": (1.5, 7.5)})
+
+    def test_google_selects_rate_for_scheduled_effective_date(self) -> None:
+        source = """
+<h2>Gemini 3.8 Flash</h2><code>gemini-3.8-flash</code>
+<div>Input price</div><div>Free of charge</div><div>$0.75 through December 31, 2026.</div><div>$1.50 starting January 1, 2027.</div>
+<div>Output price (including thinking tokens)</div><div>Free of charge</div><div>$3.75 through December 31, 2026.</div><div>$7.50 starting January 1, 2027.</div>
+<div>Context caching price</div><div>$0.075</div>
+"""
+        rows = [row("google", "gemini-3.8-flash", "Gemini 3.8 Flash")]
+        self.assertEqual(
+            parse_google(source, rows, datetime(2026, 9, 8, tzinfo=timezone.utc)),
+            {"gemini-3.8-flash": (0.75, 3.75)},
+        )
+        self.assertEqual(
+            parse_google(source, rows, datetime(2027, 1, 1, tzinfo=timezone.utc)),
+            {"gemini-3.8-flash": (1.5, 7.5)},
+        )
 
     def test_mistral_model_card(self) -> None:
         source = """
@@ -198,6 +241,41 @@ Batch
         self.assertEqual((refreshed[0]["input_mtok"], refreshed[0]["output_mtok"]), (0.2, 1.2))
         self.assertEqual(report["status"], "degraded")
         self.assertEqual(report["providers"][0]["status"], "last_good")
+
+    def test_incomplete_304_cache_is_refetched_without_validators(self) -> None:
+        refresh_firstparty(
+            self.catalog,
+            state_dir=self.state,
+            now=NOW,
+            fetcher=lambda url, cached: FetchResult(self.source("0.20", "1.20"), etag="v1"),
+        )
+        expanded = [
+            row("openai", "gpt-5.6-luna", "GPT-5.6 Luna"),
+            row("openai", "gpt-6-astra", "GPT-6 Astra"),
+        ]
+        full_source = self.source("0.20", "1.20").replace(
+            "| gpt-5.6-luna",
+            "| gpt-6-astra | $10.00 | $1.00 | $12.50 | $50.00 | $20 | $2 | $25 | $75 |\n| gpt-5.6-luna",
+        )
+        calls: list[bool] = []
+
+        def fetcher(url: str, cached: dict | None) -> FetchResult:
+            calls.append(cached is None)
+            return FetchResult(full_source, etag="v2") if cached is None else FetchResult(None, not_modified=True)
+
+        refreshed, report = refresh_firstparty(
+            expanded,
+            state_dir=self.state,
+            now=datetime(2026, 9, 8, 10, tzinfo=timezone.utc),
+            fetcher=fetcher,
+        )
+        self.assertEqual(calls, [False, True])
+        self.assertEqual(report["status"], "healthy")
+        by_model = {entry["model"]: entry for entry in refreshed}
+        self.assertEqual(
+            (by_model["gpt-6-astra"]["input_mtok"], by_model["gpt-6-astra"]["output_mtok"]),
+            (10.0, 50.0),
+        )
 
 
 if __name__ == "__main__":

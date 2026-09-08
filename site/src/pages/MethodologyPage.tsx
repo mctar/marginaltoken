@@ -40,16 +40,16 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
         </section>
         <section>
           <span className="method-number">04</span>
-          <h2>The index</h2>
+          <h2>The basket and deflator</h2>
           <p>
-            The Deflator uses output prices only. The basket holds one current, production, general-purpose frontier representative per independent model provider. A model must have public first-party API access and a posted standard global rate. Each provider has equal weight. The mean current output price is divided by the basket mean on {longDate(meta.indexBaseDate)}, then multiplied by 100.
+            The Frontier Basket and Token Price Deflator use output prices only. The basket holds one current, production, general-purpose frontier representative per independent model provider. A model must have public first-party API access and a posted standard global rate. The basket statistic is the simple mean of those current quotes. The deflator begins at 100 on {longDate(meta.indexBaseDate)} and chain-links each verified observation to the one before it.
           </p>
         </section>
         <section>
           <span className="method-number">05</span>
           <h2>Rebalancing</h2>
           <p>
-            Basket eligibility is explicit in the curated file, which permits exactly one representative per provider. A successor enters when its provider positions it as the current production frontier model and publishes direct API pricing. Genuine successor substitutions are part of the index result. Provider additions and corrections are treated as methodology changes and rebased at inception so they do not appear as price moves. Every ordinary basket change is recorded in the public change feed.
+            Basket eligibility is explicit in the curated file, which permits exactly one representative per provider. A successor enters when its provider positions it as the current production frontier model and publishes direct API pricing. At that link, a new constituent is valued at its current price in both the current and reference baskets, so the substitution itself cannot move the deflator. Price changes to continuing constituents still do. Provider additions use the same neutral bridge; methodology corrections require an explicit rebase. Every basket change is recorded in the public change feed.
           </p>
         </section>
         <section>

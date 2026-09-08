@@ -826,7 +826,7 @@ a {
 }
 
 .index-inception {
-  display: grid;
+  display: block;
   margin-top: 1.5rem;
   border-bottom: 1px solid var(--ink);
   border-top: 1px solid var(--ink);
@@ -853,6 +853,33 @@ a {
 }
 
 .inception-copy > p:last-child {
+  max-width: 34rem;
+  margin: 0.65rem 0 0;
+  color: var(--ink-muted);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.index-basket-register {
+  display: grid;
+  margin-top: 1.5rem;
+  border-bottom: 1px solid var(--ink);
+  border-top: 1px solid var(--ink);
+}
+
+.index-basket-copy {
+  padding: 1.5rem 0;
+}
+
+.index-basket-copy h3 {
+  margin: 0.75rem 0 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.index-basket-copy > p:last-child {
   max-width: 34rem;
   margin: 0.65rem 0 0;
   color: var(--ink-muted);
@@ -3146,16 +3173,16 @@ a {
     align-items: end;
   }
 
-  .index-inception {
+  .index-basket-register {
     grid-template-columns: minmax(18rem, 0.7fr) minmax(0, 1.3fr);
   }
 
-  .inception-copy {
+  .index-basket-copy {
     border-right: 1px solid var(--rule);
     padding-right: 2rem;
   }
 
-  .basket-snapshot {
+  .index-basket-register .basket-snapshot {
     padding-left: 2rem;
   }
 

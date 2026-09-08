@@ -12,7 +12,7 @@ import type { FeedData, PriceChange, PriceModel } from '../lib/types'
 function direction(value: number): string {
   const difference = value - 100
   if (Math.abs(difference) < 0.005) return 'unchanged since inception'
-  return `${Math.abs(difference).toFixed(2)} points ${difference < 0 ? 'below' : 'above'} 100 at inception`
+  return `${Math.abs(difference).toFixed(2)} points ${difference < 0 ? 'below' : 'above'} inception`
 }
 
 function isModel(model: PriceModel | undefined): model is PriceModel {
@@ -34,7 +34,7 @@ function moveSummary(event: PriceChange): string {
 
 export default function FrontPage({ data }: { data: FeedData }) {
   const { meta, changes } = data
-  const basketMean = meta.indexBaseMean * (meta.indexValue / meta.indexBase)
+  const basketMean = meta.basketMean ?? meta.indexBaseMean * (meta.indexValue / meta.indexBase)
   const basketModels = meta.basket
     .map((key) => data.prices.models.find((model) => model.key === key))
     .filter(isModel)
@@ -45,7 +45,7 @@ export default function FrontPage({ data }: { data: FeedData }) {
     <main id="main" className="mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
       <section className="front-lead" aria-labelledby="front-title">
         <div>
-          <p className="section-kicker">The deflator</p>
+          <p className="section-kicker">Frontier basket + token deflator</p>
           <h1 id="front-title" className="front-title">
             The price of intelligence, marked to market.
           </h1>
@@ -55,13 +55,13 @@ export default function FrontPage({ data }: { data: FeedData }) {
         </div>
         <aside
           className={`basket-brief ${meta.indexValue < 100 ? 'down' : meta.indexValue > 100 ? 'up' : 'flat'}`}
-          aria-label="Current flagship basket price and Deflator reading"
+          aria-label="Current frontier basket price and chain-linked Token Price Deflator reading"
         >
-          <span>Flagship basket</span>
+          <span>Frontier basket</span>
           <strong>{price(basketMean)}</strong>
           <small>Mean output price / Mtok</small>
           <div className="deflator-brief">
-            <span>Deflator</span>
+            <span>Token price deflator</span>
             <b>{meta.indexValue.toFixed(2)}</b>
             <small>{direction(meta.indexValue)}</small>
           </div>
@@ -82,24 +82,25 @@ export default function FrontPage({ data }: { data: FeedData }) {
       <section className="mt-12 border-t border-ink pt-5" aria-labelledby="chart-title">
         <div className="chart-heading">
           <div>
-            <p className="section-kicker">Output price index</p>
+            <p className="section-kicker">Chain-linked output price index</p>
             <h2 id="chart-title" className="section-title">
-              The Deflator
+              The Token Price Deflator
             </h2>
           </div>
           <div className="chart-heading-aside">
             <p>
-              {countWord(meta.basket.length, true)} providers. Equal weight. Standard output rates for one current frontier representative per provider.
+              Tracks posted price changes in the current {countWord(meta.basket.length)}-provider basket. A successor enters at a neutral link value, so changing the model does not move the index by itself.
             </p>
             <ShareImageButton
               createImage={() => createDeflatorShareImage({
                 points: meta.indexHistory,
                 asOf: meta.asOf,
                 basketCount: meta.basket.length,
+                basketLabels: basketModels.map((model) => model.display),
               })}
               filename={shareImageFilename('the-deflator')}
-              shareTitle="The Deflator — The Marginal Token"
-              shareText="The equal-weight index of current frontier AI output API prices."
+              shareTitle="The Token Price Deflator — The Marginal Token"
+              shareText="The chain-linked index of posted frontier AI output API prices."
             />
           </div>
         </div>
@@ -112,25 +113,32 @@ export default function FrontPage({ data }: { data: FeedData }) {
               <strong>{meta.indexValue.toFixed(2)}</strong>
               <h3>Inception is the observation.</h3>
               <p>
-                The line will begin when a verified basket price changes. Until then, these are the {countWord(meta.basket.length)} models setting the benchmark.
+                The line will begin when a verified constituent price changes. Successor substitutions are bridged and do not move the index by themselves.
               </p>
             </div>
-            <ol className="basket-snapshot" aria-label="Current Deflator basket">
-              {basketModels.map((model) => (
-                <li key={model.key}>
-                  <a href={modelPath(model.key)}>
-                    <span>{providerName(model.provider)}</span>
-                    <strong>{model.display}</strong>
-                    <small>{price(model.output_mtok)} output / Mtok</small>
-                  </a>
-                </li>
-              ))}
-            </ol>
           </div>
         )}
+        <div className="index-basket-register">
+          <div className="index-basket-copy">
+            <p className="section-kicker">Current constituents</p>
+            <h3>{countWord(meta.basket.length, true)} models setting today&apos;s frontier basket.</h3>
+            <p>The basket mean is {price(basketMean)} per million output tokens. Replacing a predecessor changes this list, while the deflator continues from the prior reading.</p>
+          </div>
+          <ol className="basket-snapshot" aria-label="Current Token Price Deflator basket">
+            {basketModels.map((model) => (
+              <li key={model.key}>
+                <a href={modelPath(model.key)}>
+                  <span>{providerName(model.provider)}</span>
+                  <strong>{model.display}</strong>
+                  <small>{price(model.output_mtok)} output / Mtok</small>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
         <div className="chart-caption">
           <span>Inception: {longDate(meta.indexBaseDate)}</span>
-          <span>{meta.basket.length} models in the current basket</span>
+          <span>Chain-linked · {meta.basket.length} current constituents</span>
         </div>
       </section>
 

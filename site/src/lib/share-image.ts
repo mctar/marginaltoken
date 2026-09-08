@@ -179,15 +179,16 @@ export async function createDeflatorShareImage(options: {
   points: IndexPoint[]
   asOf: string
   basketCount: number
+  basketLabels: string[]
 }): Promise<Blob> {
   const { canvas, context } = await prepareCanvas()
   const points = options.points.length > 0 ? options.points : [{ date: options.asOf, value: 100 }]
   const current = points.at(-1)!.value
   drawTitle(
     context,
-    'Output price index',
-    'The Deflator',
-    `${options.basketCount} providers · equal weight · standard output API rates`,
+    'Chain-linked output price index',
+    'The Token Price Deflator',
+    `${options.basketCount} providers · successor substitutions enter at a neutral link`,
   )
 
   context.textAlign = 'right'
@@ -274,16 +275,27 @@ export async function createDeflatorShareImage(options: {
   context.font = `600 11px ${SANS}`
   if (points.length === 1) {
     context.textAlign = 'center'
-    context.fillText(shortDate(points[0].date), x + width / 2, 528)
+    context.fillText(shortDate(points[0].date), x + width / 2, 516)
   } else {
     context.textAlign = 'left'
-    context.fillText(shortDate(points[0].date), x, 528)
+    context.fillText(shortDate(points[0].date), x, 516)
     context.textAlign = 'right'
-    context.fillText(shortDate(points.at(-1)!.date), x + width, 528)
+    context.fillText(shortDate(points.at(-1)!.date), x + width, 516)
   }
   context.textAlign = 'left'
+  context.fillStyle = MUTED
+  context.font = `700 9px ${SANS}`
+  context.letterSpacing = '0.6px'
+  fitAndFillText(
+    context,
+    `CURRENT BASKET · ${options.basketLabels.join(' · ')}`,
+    60,
+    546,
+    1080,
+  )
+  context.letterSpacing = '0px'
   drawFooter(context, {
-    source: 'Official provider price pages · one current frontier model per provider',
+    source: 'Official provider price pages · chain-linked current-basket method',
     asOf: options.asOf,
   })
   return canvasToBlob(canvas)

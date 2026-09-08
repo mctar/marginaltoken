@@ -42,6 +42,7 @@ DEFAULT_RETENTION_RATIO = Decimal("0.80")
 MAX_RESPONSE_BYTES = 20 * 1024 * 1024
 CHANGE_LIMIT = 500
 FIRSTPARTY_REVIEW_FILE = "firstparty-review-pending.json"
+INDEX_METHOD = "chain-linked-current-basket-v1"
 
 
 class CollectorError(RuntimeError):
@@ -563,10 +564,100 @@ def basket_mean(models: list[dict[str, Any]], basket: list[str]) -> Decimal:
     return sum(values) / Decimal(len(values))
 
 
-def index_value(current_mean: Decimal, base_mean: Decimal) -> float:
-    if base_mean <= 0:
-        raise CollectorError("index base mean must be positive")
-    return float(((current_mean / base_mean) * 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+def chain_linked_index_value(
+    previous_index: Decimal,
+    current_mean: Decimal,
+    reference_mean: Decimal,
+) -> float:
+    if previous_index <= 0 or reference_mean <= 0:
+        raise CollectorError("cannot calculate the chain-linked index from a non-positive basis")
+    return float(
+        (previous_index * current_mean / reference_mean).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+    )
+
+
+def basket_reference_mean(
+    models: list[dict[str, Any]],
+    previous_models: list[dict[str, Any]],
+    basket: list[str],
+    previous_basket: list[str],
+) -> Decimal:
+    """Price the current basket on the prior observation, bridging new constituents."""
+
+    current_by_key = {model["key"]: model for model in models}
+    previous_by_key = {model["key"]: model for model in previous_models}
+    previous_keys = set(previous_basket)
+    values: list[Decimal] = []
+    for key in basket:
+        current = current_by_key.get(key)
+        if current is None:
+            raise CollectorError(f"basket model missing from current tape: {key}")
+        reference = previous_by_key.get(key) if key in previous_keys else None
+        values.append(Decimal(str((reference or current)["output_mtok"])))
+    if not values:
+        raise CollectorError("cannot calculate an empty basket reference")
+    return sum(values) / Decimal(len(values))
+
+
+def migrate_legacy_index(
+    previous_meta: dict[str, Any],
+    models: list[dict[str, Any]],
+    basket: list[str],
+    history_points: list[dict[str, Any]],
+    old_events: list[dict[str, Any]],
+) -> tuple[float, list[dict[str, Any]]]:
+    """Remove a legacy same-revision basket jump while retaining real price moves."""
+
+    index_history = list(previous_meta.get("indexHistory", []))
+    previous_value = float(previous_meta.get("indexValue", 100.0))
+    previous_as_of = str(previous_meta.get("asOf", ""))
+    transition = next(
+        (
+            event
+            for event in old_events
+            if event.get("type") == "basket"
+            and event.get("date") == previous_as_of
+            and event.get("to") == basket
+            and isinstance(event.get("from"), list)
+        ),
+        None,
+    )
+    if transition is None:
+        return previous_value, index_history
+
+    transition_date = str(transition["date"])
+    prior_index_points = sorted(
+        (
+            point
+            for point in index_history
+            if isinstance(point, dict) and str(point.get("date", "")) < transition_date
+        ),
+        key=lambda point: str(point["date"]),
+    )
+    prior_index = Decimal(
+        str(prior_index_points[-1]["value"] if prior_index_points else previous_meta.get("indexBase", 100))
+    )
+    prior_basket = set(str(key) for key in transition["from"])
+    current_by_key = {model["key"]: model for model in models}
+    reference_values: list[Decimal] = []
+    for key in basket:
+        current = current_by_key[key]
+        prior_points = [
+            point
+            for point in history_points
+            if point.get("key") == key and str(point.get("date", "")) < transition_date
+        ]
+        if key in prior_basket and prior_points:
+            prior_point = max(prior_points, key=lambda point: str(point["date"]))
+            reference_values.append(Decimal(str(prior_point["output_mtok"])))
+        else:
+            # A successor or newly added provider enters at a neutral link value.
+            reference_values.append(Decimal(str(current["output_mtok"])))
+    reference_mean = sum(reference_values) / Decimal(len(reference_values))
+    migrated = chain_linked_index_value(prior_index, basket_mean(models, basket), reference_mean)
+    return migrated, prior_index_points
 
 
 def replace_daily_index_point(
@@ -707,6 +798,10 @@ def collect_once(
     previous_changes = read_feed(data_dir / "changes.json", {"changes": []})
     old_events = list(previous_changes.get("changes", []))
     repair_applied = repair_openai_july_30(previous_models, history_points, old_events)
+    previous_meta = read_feed(data_dir / "meta.json", {})
+    if not isinstance(previous_meta, dict):
+        raise CollectorError("previous meta.json is invalid")
+    index_migration_needed = bool(previous_meta) and previous_meta.get("indexMethod") != INDEX_METHOD
 
     previous_provenance = read_feed(data_dir / "provenance.json", {})
     previous_provenance_core = {
@@ -730,6 +825,7 @@ def collect_once(
         and not rebase_index
         and not repair_applied
         and not provenance_changed
+        and not index_migration_needed
     ):
         state_dir.mkdir(parents=True, exist_ok=True)
         atomic_write_json(state_dir / "last-good-openrouter.json", raw_payload)
@@ -760,40 +856,68 @@ def collect_once(
                 }
             )
 
-    previous_meta = read_feed(data_dir / "meta.json", {})
     basket = basket_for(models)
     current_mean = basket_mean(models, basket)
+    previous_index = previous_meta.get("indexValue")
+    previous_basket = previous_meta.get("basket", [])
+    if not isinstance(previous_basket, list):
+        raise CollectorError("previous meta.json has an invalid basket")
     if rebase_index:
         base_mean = current_mean
         base_date = str(previous_meta.get("indexBaseDate") or date)
         index_history = [{"date": base_date, "value": 100.0}]
+        current_index = 100.0
     elif is_initial or not previous_meta:
         base_mean = current_mean
         base_date = date
         index_history: list[dict[str, Any]] = []
+        current_index = 100.0
     else:
         try:
             base_mean = Decimal(str(previous_meta["indexBaseMean"]))
             base_date = str(previous_meta["indexBaseDate"])
+            previous_index_decimal = Decimal(str(previous_meta["indexValue"]))
         except (KeyError, InvalidOperation) as error:
             raise CollectorError("previous meta.json lacks a valid index base") from error
-        index_history = list(previous_meta.get("indexHistory", []))
-    current_index = index_value(current_mean, base_mean)
-    previous_index = previous_meta.get("indexValue")
-    previous_basket = previous_meta.get("basket", [])
+        if index_migration_needed:
+            current_index, index_history = migrate_legacy_index(
+                previous_meta,
+                models,
+                basket,
+                history_points,
+                old_events,
+            )
+        else:
+            index_history = list(previous_meta.get("indexHistory", []))
+            reference_mean = basket_reference_mean(
+                models,
+                previous_models,
+                basket,
+                previous_basket,
+            )
+            current_index = chain_linked_index_value(
+                previous_index_decimal,
+                current_mean,
+                reference_mean,
+            )
     if previous_meta and previous_basket != basket and not rebase_index:
         events.append(
             {
                 "type": "basket",
                 "date": date,
                 "key": "index",
-                "display": "Index basket",
+                "display": "Frontier basket",
                 "field": "basket",
                 "from": previous_basket,
                 "to": basket,
             }
         )
-    if not rebase_index and (is_initial or previous_index != current_index or previous_basket != basket):
+    if not rebase_index and (
+        is_initial
+        or previous_index != current_index
+        or previous_basket != basket
+        or index_migration_needed
+    ):
         index_history = replace_daily_index_point(index_history, date, current_index)
 
     all_events = (events + old_events)[:CHANGE_LIMIT]
@@ -810,6 +934,8 @@ def collect_once(
         "indexBase": 100,
         "indexBaseDate": base_date,
         "indexBaseMean": float(base_mean.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)),
+        "indexMethod": INDEX_METHOD,
+        "basketMean": float(current_mean.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)),
         "basket": basket,
         "indexHistory": index_history,
     }

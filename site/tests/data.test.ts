@@ -14,6 +14,8 @@ const coreFeeds: Record<string, object> = {
     indexBase: 100,
     indexBaseDate: '2026-08-28',
     indexBaseMean: 1,
+    indexMethod: 'chain-linked-current-basket-v1',
+    basketMean: 1,
     basket: [],
     indexHistory: [],
   },

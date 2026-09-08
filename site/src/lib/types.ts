@@ -89,6 +89,8 @@ export type MetaFeed = {
   indexBase: number
   indexBaseDate: string
   indexBaseMean: number
+  indexMethod?: 'chain-linked-current-basket-v1'
+  basketMean?: number
   basket: string[]
   indexHistory: IndexPoint[]
 }

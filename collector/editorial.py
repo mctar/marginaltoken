@@ -122,7 +122,10 @@ def event_fact(event: dict[str, Any]) -> str | None:
     if event_type == "basket":
         before = [clean_text(item, 100) for item in event.get("from", []) if clean_text(item, 100)]
         after = [clean_text(item, 100) for item in event.get("to", []) if clean_text(item, 100)]
-        return f"{date}: the index basket changed from {before} to {after}."
+        return (
+            f"{date}: the frontier basket changed from {before} to {after}; "
+            "the composition change does not move the chain-linked deflator."
+        )
     return None
 
 

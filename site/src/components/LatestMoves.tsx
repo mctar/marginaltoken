@@ -15,7 +15,7 @@ function eventText(event: ChangeEvent): string {
   }
   if (event.type === 'listed') return `${event.display} entered the tape.`
   if (event.type === 'delisted') return `${event.display} left the tape.`
-  return 'The index basket was rebalanced.'
+  return 'The frontier basket changed; the deflator was chain-linked through the substitution.'
 }
 
 export default function LatestMoves({ events, baseDate }: { events: ChangeEvent[]; baseDate: string }) {

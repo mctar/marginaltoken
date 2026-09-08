@@ -464,7 +464,7 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
                 ))}
               </fieldset>
               <div className="facet-options facet-options-separated">
-                <FilterOption checked={basketOnly} label="Deflator basket" onChange={() => setBasketOnly((current) => !current)} />
+                <FilterOption checked={basketOnly} label="Frontier basket" onChange={() => setBasketOnly((current) => !current)} />
                 <FilterOption checked={expiringOnly} label="Has expiration date" onChange={() => setExpiringOnly((current) => !current)} />
                 <FilterOption checked={huggingFaceOnly} label="Hugging Face-linked" onChange={() => setHuggingFaceOnly((current) => !current)} />
               </div>
@@ -493,7 +493,7 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
             {selectedReleaseStages.map((value) => (
               <FilterChip key={value} label={releaseStages.find((stage) => stage.value === value)?.label ?? value} onRemove={() => setSelectedReleaseStages((current) => current.filter((stage) => stage !== value))} />
             ))}
-            {basketOnly && <FilterChip label="Deflator basket" onRemove={() => setBasketOnly(false)} />}
+            {basketOnly && <FilterChip label="Frontier basket" onRemove={() => setBasketOnly(false)} />}
             {expiringOnly && <FilterChip label="Has expiration date" onRemove={() => setExpiringOnly(false)} />}
             {huggingFaceOnly && <FilterChip label="Hugging Face-linked" onRemove={() => setHuggingFaceOnly(false)} />}
             <button type="button" className="clear-filters" onClick={clearFilters}>Clear all</button>

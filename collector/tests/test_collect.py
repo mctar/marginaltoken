@@ -245,6 +245,8 @@ class CollectorTests(unittest.TestCase):
         self.assertTrue((self.state / "publish-pending").exists())
         meta = json.loads((self.data / "meta.json").read_text())
         self.assertEqual(meta["indexValue"], 100.0)
+        self.assertEqual(meta["indexMethod"], "chain-linked-current-basket-v1")
+        self.assertEqual(meta["basketMean"], 10.0)
         self.assertEqual(meta["basket"], ["lab/flagship"])
         provenance = json.loads((self.data / "provenance.json").read_text())
         self.assertEqual(provenance["status"], "healthy")
@@ -324,7 +326,55 @@ class CollectorTests(unittest.TestCase):
         self.collect(day=30)
         meta = json.loads((self.data / "meta.json").read_text())
         self.assertEqual(meta["indexValue"], 50.0)
+        self.assertEqual(meta["basketMean"], 5.0)
         self.assertEqual(meta["indexHistory"][-1], {"date": "2026-07-30", "value": 50.0})
+
+    def test_successor_swap_changes_basket_without_moving_deflator(self) -> None:
+        self.write_firstparty_pair("flagship")
+        self.collect()
+        self.write_firstparty_pair("opus")
+        self.assertEqual(self.collect(day=30), "changed")
+
+        meta = json.loads((self.data / "meta.json").read_text())
+        self.assertEqual(meta["basket"], ["lab/opus"])
+        self.assertEqual(meta["basketMean"], 25.0)
+        self.assertEqual(meta["indexValue"], 100.0)
+        self.assertEqual(meta["indexHistory"][-1], {"date": "2026-07-30", "value": 100.0})
+
+        changes = json.loads((self.data / "changes.json").read_text())["changes"]
+        basket_event = next(event for event in changes if event["type"] == "basket")
+        self.assertEqual(basket_event["from"], ["lab/flagship"])
+        self.assertEqual(basket_event["to"], ["lab/opus"])
+
+    def test_legacy_same_revision_basket_jump_is_migrated(self) -> None:
+        self.write_firstparty_pair("flagship")
+        self.collect()
+        self.write_firstparty_pair("opus")
+        self.collect(day=30)
+
+        meta_path = self.data / "meta.json"
+        legacy_meta = json.loads(meta_path.read_text())
+        legacy_meta.pop("indexMethod")
+        legacy_meta.pop("basketMean")
+        legacy_meta["indexValue"] = 250.0
+        legacy_meta["indexHistory"] = [
+            {"date": "2026-07-29", "value": 100.0},
+            {"date": "2026-07-30", "value": 250.0},
+        ]
+        meta_path.write_text(json.dumps(legacy_meta), encoding="utf-8")
+
+        self.assertEqual(self.collect(day=31), "changed")
+        meta = json.loads(meta_path.read_text())
+        self.assertEqual(meta["indexMethod"], "chain-linked-current-basket-v1")
+        self.assertEqual(meta["basketMean"], 25.0)
+        self.assertEqual(meta["indexValue"], 100.0)
+        self.assertEqual(
+            meta["indexHistory"],
+            [
+                {"date": "2026-07-29", "value": 100.0},
+                {"date": "2026-07-31", "value": 100.0},
+            ],
+        )
 
     def test_explicit_rebase_corrects_inception_basket_without_false_move(self) -> None:
         self.write_firstparty_pair("flagship")
@@ -336,6 +386,7 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(meta["basket"], ["lab/opus"])
         self.assertEqual(meta["indexValue"], 100.0)
         self.assertEqual(meta["indexBaseMean"], 25.0)
+        self.assertEqual(meta["basketMean"], 25.0)
         self.assertEqual(meta["indexBaseDate"], "2026-07-29")
         self.assertEqual(meta["indexHistory"], [{"date": "2026-07-29", "value": 100.0}])
 

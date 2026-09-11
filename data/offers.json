@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T02:01:34Z",
+  "generatedAt": "2026-09-11T03:02:33Z",
   "asOf": "2026-09-11",
   "source": "multi-source",
   "sources": [
@@ -8,7 +8,7 @@
       "label": "OpenRouter endpoints",
       "sourceUrl": "https://openrouter.ai/api/v1/models",
       "modelCount": 320,
-      "offerCount": 1177
+      "offerCount": 1176
     },
     {
       "key": "together-catalog",
@@ -33,7 +33,7 @@
   ],
   "targetModelCount": 320,
   "modelCount": 320,
-  "offerCount": 1186,
+  "offerCount": 1185,
   "venueCount": 72,
   "comparableModelCount": 125,
   "comparableGroupCount": 178,
@@ -19709,7 +19709,7 @@
           "sourceUrl": "https://docs.together.ai/docs/serverless/models.md"
         }
       ],
-      "configurationCount": 13,
+      "configurationCount": 12,
       "comparableGroupCount": 0,
       "comparisonGroups": [
         {
@@ -19731,29 +19731,6 @@
           "output_mtok": {
             "min": 0.75,
             "max": 0.75,
-            "spreadPct": 0.0
-          },
-          "maxOutputTokens": 117964
-        },
-        {
-          "key": "cfg-3877f530d468023c",
-          "confidence": "declared",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
-          "quantization": "fp8",
-          "context": 131072,
-          "supportsReasoning": false,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "input_mtok": {
-            "min": 0.13,
-            "max": 0.13,
-            "spreadPct": 0.0
-          },
-          "output_mtok": {
-            "min": 0.4,
-            "max": 0.4,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 117964
@@ -20044,37 +20021,6 @@
           "quantization": "fp8",
           "maxOutputTokens": 16384,
           "configurationKey": "cfg-bfe6b0ddd8353f66"
-        },
-        {
-          "venue": "Nebius",
-          "tag": "nebius/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/meta-llama/llama-3.3-70b-instruct/endpoints",
-          "input_mtok": 0.13,
-          "output_mtok": 0.4,
-          "context": 131072,
-          "supportedParameters": [
-            "frequency_penalty",
-            "logit_bias",
-            "max_tokens",
-            "presence_penalty",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_p"
-          ],
-          "supportsReasoning": false,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "quantization": "fp8",
-          "maxOutputTokens": 117964,
-          "configurationKey": "cfg-3877f530d468023c"
         },
         {
           "venue": "Novita",
@@ -28450,14 +28396,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 2.4,
+            "min": 2.34,
             "max": 3.0,
-            "spreadPct": 25.0
+            "spreadPct": 28.21
           },
           "output_mtok": {
-            "min": 12.0,
+            "min": 11.7,
             "max": 15.0,
-            "spreadPct": 25.0
+            "spreadPct": 28.21
           },
           "maxOutputTokens": 943718
         },
@@ -28578,6 +28524,39 @@
         }
       ],
       "offers": [
+        {
+          "venue": "Sail Research",
+          "tag": "sail-research/fp4",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k3-20260715/endpoints",
+          "input_mtok": 2.34,
+          "output_mtok": 11.7,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.261,
+          "quantization": "fp4",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-35314448eac2e5b7"
+        },
         {
           "venue": "Relace",
           "tag": "relace/fp4",
@@ -28713,39 +28692,6 @@
           "quantization": "unknown",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-0077cbed90792344"
-        },
-        {
-          "venue": "Sail Research",
-          "tag": "sail-research/fp4",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k3-20260715/endpoints",
-          "input_mtok": 2.6,
-          "output_mtok": 13.0,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "max_tokens",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.29,
-          "quantization": "fp4",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-35314448eac2e5b7"
         },
         {
           "venue": "DeepInfra",

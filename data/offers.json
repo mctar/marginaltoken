@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T10:03:33Z",
+  "generatedAt": "2026-09-11T11:01:33Z",
   "asOf": "2026-09-11",
   "source": "multi-source",
   "sources": [
@@ -8,7 +8,7 @@
       "label": "OpenRouter endpoints",
       "sourceUrl": "https://openrouter.ai/api/v1/models",
       "modelCount": 322,
-      "offerCount": 1187
+      "offerCount": 1188
     },
     {
       "key": "together-catalog",
@@ -33,7 +33,7 @@
   ],
   "targetModelCount": 322,
   "modelCount": 322,
-  "offerCount": 1196,
+  "offerCount": 1197,
   "venueCount": 73,
   "comparableModelCount": 126,
   "comparableGroupCount": 182,
@@ -30352,9 +30352,32 @@
           "sourceUrl": "https://docs.fireworks.ai/serverless/pricing"
         }
       ],
-      "configurationCount": 3,
+      "configurationCount": 4,
       "comparableGroupCount": 0,
       "comparisonGroups": [
+        {
+          "key": "cfg-27b76e64fa2d45fc",
+          "confidence": "nominal",
+          "comparable": false,
+          "offerCount": 1,
+          "venueCount": 1,
+          "quantization": "undisclosed",
+          "context": 262144,
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "input_mtok": {
+            "min": 0.08,
+            "max": 0.08,
+            "spreadPct": 0.0
+          },
+          "output_mtok": {
+            "min": 0.2,
+            "max": 0.2,
+            "spreadPct": 0.0
+          },
+          "maxOutputTokens": 235929
+        },
         {
           "key": "cfg-b0a52813d4aa23b1",
           "confidence": "declared",
@@ -30481,6 +30504,39 @@
           "quantization": "bf16",
           "maxOutputTokens": 131072,
           "configurationKey": "cfg-b0a52813d4aa23b1"
+        },
+        {
+          "venue": "Phala",
+          "tag": "phala",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/nvidia/nemotron-3.5-lightning-20260807/endpoints",
+          "input_mtok": 0.08,
+          "output_mtok": 0.2,
+          "context": 262144,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "repetition_penalty",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.04,
+          "quantization": "unknown",
+          "maxOutputTokens": 235929,
+          "configurationKey": "cfg-27b76e64fa2d45fc"
         },
         {
           "venue": "CoreWeave",

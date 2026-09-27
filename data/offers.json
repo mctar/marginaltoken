@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T05:01:33Z",
+  "generatedAt": "2026-09-27T06:02:34Z",
   "asOf": "2026-09-27",
   "source": "multi-source",
   "sources": [
@@ -12272,14 +12272,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.285,
+            "min": 0.195,
             "max": 0.3,
-            "spreadPct": 5.26
+            "spreadPct": 53.85
           },
           "output_mtok": {
-            "min": 1.14,
+            "min": 0.78,
             "max": 1.2,
-            "spreadPct": 5.26
+            "spreadPct": 53.85
           },
           "maxOutputTokens": 393216
         },
@@ -12913,6 +12913,41 @@
           "configurationKey": "cfg-4eac5c0830863f8e"
         },
         {
+          "venue": "Novita",
+          "tag": "novita/fp8",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-20260910/endpoints",
+          "input_mtok": 0.195,
+          "output_mtok": 0.78,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.0039,
+          "quantization": "fp8",
+          "maxOutputTokens": 393216,
+          "configurationKey": "cfg-5a4cfab545077956"
+        },
+        {
           "venue": "CoreWeave",
           "tag": "coreweave/fp8",
           "source": "openrouter-endpoints",
@@ -13053,41 +13088,6 @@
           "quantization": "unknown",
           "maxOutputTokens": 393216,
           "configurationKey": "cfg-72f45ec768fae614"
-        },
-        {
-          "venue": "Novita",
-          "tag": "novita/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-20260910/endpoints",
-          "input_mtok": 0.285,
-          "output_mtok": 1.14,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0057,
-          "quantization": "fp8",
-          "maxOutputTokens": 393216,
-          "configurationKey": "cfg-5a4cfab545077956"
         },
         {
           "venue": "Alibaba",
@@ -31738,8 +31738,8 @@
           "supportsTools": false,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.065,
-            "max": 0.065,
+            "min": 0.039,
+            "max": 0.039,
             "spreadPct": 0.0
           },
           "output_mtok": {
@@ -31843,33 +31843,11 @@
       ],
       "offers": [
         {
-          "venue": "Fireworks AI",
-          "tag": "accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b",
-          "source": "fireworks-pricing",
-          "sourceUrl": "https://docs.fireworks.ai/serverless/pricing",
-          "input_mtok": 0.05,
-          "output_mtok": 0.2,
-          "context": 0,
-          "supportedParameters": [],
-          "supportsReasoning": false,
-          "supportsTools": false,
-          "supportsStructuredOutput": false,
-          "reportedUnknowns": [
-            "context",
-            "maxOutputTokens",
-            "supportsReasoning",
-            "supportsStructuredOutput",
-            "supportsTools"
-          ],
-          "cached_input_mtok": 0.01,
-          "configurationKey": "cfg-f52465827bf00469"
-        },
-        {
           "venue": "Darkbloom",
           "tag": "darkbloom/int4",
           "source": "openrouter-endpoints",
           "sourceUrl": "https://openrouter.ai/api/v1/models/nvidia/nemotron-3.5-lightning-20260807/endpoints",
-          "input_mtok": 0.065,
+          "input_mtok": 0.039,
           "output_mtok": 0.18,
           "context": 262144,
           "supportedParameters": [
@@ -31895,6 +31873,28 @@
           "quantization": "int4",
           "maxOutputTokens": 32768,
           "configurationKey": "cfg-3e43d6e3fec283fb"
+        },
+        {
+          "venue": "Fireworks AI",
+          "tag": "accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b",
+          "source": "fireworks-pricing",
+          "sourceUrl": "https://docs.fireworks.ai/serverless/pricing",
+          "input_mtok": 0.05,
+          "output_mtok": 0.2,
+          "context": 0,
+          "supportedParameters": [],
+          "supportsReasoning": false,
+          "supportsTools": false,
+          "supportsStructuredOutput": false,
+          "reportedUnknowns": [
+            "context",
+            "maxOutputTokens",
+            "supportsReasoning",
+            "supportsStructuredOutput",
+            "supportsTools"
+          ],
+          "cached_input_mtok": 0.01,
+          "configurationKey": "cfg-f52465827bf00469"
         },
         {
           "venue": "Io Net",
@@ -50886,13 +50886,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.0813,
-            "max": 0.0813,
+            "min": 0.0802,
+            "max": 0.0802,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 4.4,
-            "max": 4.4,
+            "min": 2.5,
+            "max": 2.5,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 131072
@@ -50981,6 +50981,41 @@
           "configurationKey": "cfg-d0fc98342b74e36c"
         },
         {
+          "venue": "Reka",
+          "tag": "reka",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-27b-20260814/endpoints",
+          "input_mtok": 0.0802,
+          "output_mtok": 2.5,
+          "context": 262144,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.0802,
+          "quantization": "unknown",
+          "maxOutputTokens": 131072,
+          "configurationKey": "cfg-c61cef258ffcbae4"
+        },
+        {
           "venue": "Wafer",
           "tag": "wafer",
           "source": "openrouter-endpoints",
@@ -51017,41 +51052,6 @@
           "quantization": "unknown",
           "maxOutputTokens": 235929,
           "configurationKey": "cfg-9181002218b285b6"
-        },
-        {
-          "venue": "Reka",
-          "tag": "reka",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-27b-20260814/endpoints",
-          "input_mtok": 0.0813,
-          "output_mtok": 4.4,
-          "context": 262144,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0813,
-          "quantization": "unknown",
-          "maxOutputTokens": 131072,
-          "configurationKey": "cfg-c61cef258ffcbae4"
         },
         {
           "venue": "DekaLLM",
@@ -60929,14 +60929,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.4403,
+            "min": 0.2737,
             "max": 1.4,
-            "spreadPct": 217.97
+            "spreadPct": 411.51
           },
           "output_mtok": {
-            "min": 1.3838,
+            "min": 0.8602,
             "max": 4.4,
-            "spreadPct": 217.97
+            "spreadPct": 411.51
           },
           "maxOutputTokens": 943718
         },
@@ -61067,14 +61067,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.378,
+            "min": 0.2737,
             "max": 1.4,
-            "spreadPct": 270.37
+            "spreadPct": 411.51
           },
           "output_mtok": {
-            "min": 1.4256,
+            "min": 1.0322,
             "max": 4.4,
-            "spreadPct": 208.64
+            "spreadPct": 326.27
           },
           "maxOutputTokens": 943718
         },
@@ -61311,6 +61311,79 @@
       ],
       "offers": [
         {
+          "venue": "Morph",
+          "tag": "morph/fp8",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-20260816/endpoints",
+          "input_mtok": 0.2737,
+          "output_mtok": 0.8602,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "logprobs",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.045,
+          "quantization": "fp8",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-1b4b5c9058d3ad6f"
+        },
+        {
+          "venue": "Inceptron",
+          "tag": "inceptron/fp4",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-20260816/endpoints",
+          "input_mtok": 0.2737,
+          "output_mtok": 1.0322,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "logprobs",
+            "max_tokens",
+            "parallel_tool_calls",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "seed",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.0562,
+          "quantization": "fp4",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-4f5ec6a9fb523316"
+        },
+        {
           "venue": "Baidu",
           "tag": "baidu/fp8",
           "source": "openrouter-endpoints",
@@ -61341,79 +61414,6 @@
           "quantization": "fp8",
           "maxOutputTokens": 131072,
           "configurationKey": "cfg-309c62961c11d3b5"
-        },
-        {
-          "venue": "Inceptron",
-          "tag": "inceptron/fp4",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-20260816/endpoints",
-          "input_mtok": 0.378,
-          "output_mtok": 1.4256,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "logprobs",
-            "max_tokens",
-            "parallel_tool_calls",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "seed",
-            "stop",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0878,
-          "quantization": "fp4",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-4f5ec6a9fb523316"
-        },
-        {
-          "venue": "Morph",
-          "tag": "morph/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-20260816/endpoints",
-          "input_mtok": 0.4403,
-          "output_mtok": 1.3838,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "logprobs",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0723,
-          "quantization": "fp8",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-1b4b5c9058d3ad6f"
         },
         {
           "venue": "Relace",

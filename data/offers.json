@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T17:03:34Z",
+  "generatedAt": "2026-10-03T18:02:33Z",
   "asOf": "2026-10-03",
   "source": "multi-source",
   "sources": [
@@ -29226,9 +29226,9 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 1.73,
+            "min": 1.44,
             "max": 4.5,
-            "spreadPct": 160.12
+            "spreadPct": 212.5
           },
           "output_mtok": {
             "min": 11.25,
@@ -29387,13 +29387,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 3.85,
-            "max": 3.85,
+            "min": 3.0,
+            "max": 3.0,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 19.0,
-            "max": 19.0,
+            "min": 15.0,
+            "max": 15.0,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 225000
@@ -29410,8 +29410,8 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 1.5,
-            "max": 1.5,
+            "min": 0.75,
+            "max": 0.75,
             "spreadPct": 0.0
           },
           "output_mtok": {
@@ -29493,6 +29493,44 @@
       ],
       "offers": [
         {
+          "venue": "Morph",
+          "tag": "morph/fp8",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k3-20260715/endpoints",
+          "input_mtok": 0.75,
+          "output_mtok": 11.357,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "logprobs",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.29,
+          "quantization": "fp8",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-a3fc9e9fbd510aa6"
+        },
+        {
           "venue": "Relace",
           "tag": "relace/fp4",
           "source": "openrouter-endpoints",
@@ -29560,49 +29598,11 @@
           "configurationKey": "cfg-35314448eac2e5b7"
         },
         {
-          "venue": "Morph",
-          "tag": "morph/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k3-20260715/endpoints",
-          "input_mtok": 1.5,
-          "output_mtok": 11.357,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "logprobs",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.29,
-          "quantization": "fp8",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-a3fc9e9fbd510aa6"
-        },
-        {
           "venue": "Wafer",
           "tag": "wafer",
           "source": "openrouter-endpoints",
           "sourceUrl": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k3-20260715/endpoints",
-          "input_mtok": 1.73,
+          "input_mtok": 1.44,
           "output_mtok": 14.0,
           "context": 1048576,
           "supportedParameters": [
@@ -30044,6 +30044,42 @@
           ]
         },
         {
+          "venue": "InferenceNet",
+          "tag": "inference-net/fast",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k3-20260715/endpoints",
+          "input_mtok": 3.0,
+          "output_mtok": 15.0,
+          "context": 250000,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.9,
+          "quantization": "fp4",
+          "maxOutputTokens": 225000,
+          "configurationKey": "cfg-8b19fd79714825c4"
+        },
+        {
           "venue": "Modal",
           "tag": "modal/mxfp4",
           "source": "openrouter-endpoints",
@@ -30210,42 +30246,6 @@
           "quantization": "unknown",
           "maxOutputTokens": 131072,
           "configurationKey": "cfg-25f2035966a9fd71"
-        },
-        {
-          "venue": "InferenceNet",
-          "tag": "inference-net/fast",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k3-20260715/endpoints",
-          "input_mtok": 3.85,
-          "output_mtok": 19.0,
-          "context": 250000,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.9,
-          "quantization": "fp4",
-          "maxOutputTokens": 225000,
-          "configurationKey": "cfg-8b19fd79714825c4"
         },
         {
           "venue": "Fireworks",
@@ -50981,8 +50981,8 @@
           },
           "output_mtok": {
             "min": 3.0,
-            "max": 5.2,
-            "spreadPct": 73.33
+            "max": 4.35,
+            "spreadPct": 45.0
           },
           "maxOutputTokens": 235929
         },
@@ -51086,7 +51086,7 @@
           "source": "openrouter-endpoints",
           "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-27b-20260814/endpoints",
           "input_mtok": 0.0248,
-          "output_mtok": 4.4,
+          "output_mtok": 4.35,
           "context": 262144,
           "supportedParameters": [
             "frequency_penalty",
@@ -51121,7 +51121,7 @@
           "source": "openrouter-endpoints",
           "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-27b-20260814/endpoints",
           "input_mtok": 0.0248,
-          "output_mtok": 5.2,
+          "output_mtok": 4.35,
           "context": 262144,
           "supportedParameters": [
             "frequency_penalty",
@@ -61432,7 +61432,7 @@
           "sourceUrl": "https://docs.together.ai/docs/serverless/models.md"
         }
       ],
-      "configurationCount": 17,
+      "configurationCount": 16,
       "comparableGroupCount": 7,
       "comparisonGroups": [
         {
@@ -61600,17 +61600,17 @@
           "key": "cfg-541d8e965ea20a60",
           "confidence": "nominal",
           "comparable": true,
-          "offerCount": 7,
-          "venueCount": 6,
+          "offerCount": 8,
+          "venueCount": 7,
           "quantization": "undisclosed",
           "context": 1048576,
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.22,
+            "min": 0.12,
             "max": 1.4,
-            "spreadPct": 536.36
+            "spreadPct": 1066.67
           },
           "output_mtok": {
             "min": 2.64,
@@ -61758,29 +61758,6 @@
           "maxOutputTokens": 131072
         },
         {
-          "key": "cfg-d809bcaaa8b1930a",
-          "confidence": "nominal",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
-          "quantization": "undisclosed",
-          "context": 1048576,
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "input_mtok": {
-            "min": 0.12,
-            "max": 0.12,
-            "spreadPct": 0.0
-          },
-          "output_mtok": {
-            "min": 4.0,
-            "max": 4.0,
-            "spreadPct": 0.0
-          },
-          "maxOutputTokens": 262144
-        },
-        {
           "key": "cfg-dd8348ced4417936",
           "confidence": "declared",
           "comparable": true,
@@ -61861,8 +61838,8 @@
           "supportsStructuredOutput": true,
           "cached_input_mtok": 0.08,
           "quantization": "unknown",
-          "maxOutputTokens": 262144,
-          "configurationKey": "cfg-d809bcaaa8b1930a"
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-541d8e965ea20a60"
         },
         {
           "venue": "Relace",

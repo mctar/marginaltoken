@@ -64,7 +64,7 @@ class FirstPartyCatalogTests(unittest.TestCase):
             "openai/gpt-5.6-sol": (4.0, 20.0, 1050000),
             "openai/gpt-5.6-terra": (2.0, 12.0, 1050000),
             "openai/gpt-5.6-luna": (0.2, 1.2, 1050000),
-            "google/gemini-3.1-pro-preview": (1.25, 10.0, 1048576),
+            "google/gemini-3.1-pro-preview": (2.0, 12.0, 1048576),
             "google/gemini-3.8-flash": (0.75, 3.75, 1048576),
             "google/gemini-3.7-flash": (0.75, 3.75, 1048576),
             "google/gemini-3.6-flash": (0.75, 3.75, 1048576),

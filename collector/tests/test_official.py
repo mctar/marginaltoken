@@ -164,14 +164,14 @@ Batch
     def test_google_pro_uses_short_context_standard_rate(self) -> None:
         source = """
 <h2>Gemini 3.1 Pro Preview</h2><code>gemini-3.1-pro-preview</code>
-<div>Input price</div><div>Free of charge</div><div>$1.25, prompts &lt;= 200k tokens</div><div>$2.50, prompts &gt; 200k tokens</div>
-<div>Output price (including thinking tokens)</div><div>Free of charge</div><div>$10.00, prompts &lt;= 200k tokens</div><div>$15.00, prompts &gt; 200k tokens</div>
-<div>Context caching price</div><div>$0.125</div>
+<div>Input price</div><div>Free of charge</div><div>$2.00, prompts &lt;= 200k tokens</div><div>$4.00, prompts &gt; 200k tokens</div>
+<div>Output price (including thinking tokens)</div><div>Free of charge</div><div>$12.00, prompts &lt;= 200k tokens</div><div>$18.00, prompts &gt; 200k tokens</div>
+<div>Context caching price</div><div>$0.20</div>
 """
         rows = [row("google", "gemini-3.1-pro-preview", "Gemini 3.1 Pro Preview")]
         self.assertEqual(
             parse_google(source, rows, NOW),
-            {"gemini-3.1-pro-preview": (1.25, 10.0)},
+            {"gemini-3.1-pro-preview": (2.0, 12.0)},
         )
 
     def test_mistral_model_card(self) -> None:

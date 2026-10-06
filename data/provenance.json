@@ -1,34 +1,33 @@
 {
-  "generatedAt": "2026-10-06T09:02:29Z",
+  "generatedAt": "2026-10-06T10:02:29Z",
   "asOf": "2026-10-06",
-  "status": "degraded",
-  "degradedProviderCount": 2,
-  "conflictCount": 6,
-  "reviewCandidateCount": 12,
+  "status": "attention",
+  "degradedProviderCount": 0,
+  "conflictCount": 8,
+  "reviewCandidateCount": 0,
   "providers": [
     {
       "provider": "anthropic",
       "status": "fresh",
       "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
       "lastVerified": "2026-10-06",
-      "modelCount": 5,
-      "reviewCandidateCount": 2
+      "modelCount": 7,
+      "reviewCandidateCount": 0
     },
     {
       "provider": "deepseek",
-      "status": "stale",
+      "status": "fresh",
       "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
-      "lastVerified": "2026-09-11",
-      "modelCount": 1,
-      "reviewCandidateCount": 1,
-      "detail": "DeepSeek V4 pricing table not found"
+      "lastVerified": "2026-10-06",
+      "modelCount": 2,
+      "reviewCandidateCount": 0
     },
     {
       "provider": "google",
       "status": "fresh",
       "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing",
       "lastVerified": "2026-10-06",
-      "modelCount": 4,
+      "modelCount": 6,
       "reviewCandidateCount": 0
     },
     {
@@ -36,33 +35,32 @@
       "status": "fresh",
       "sourceUrl": "https://docs.mistral.ai/inference/pricing",
       "lastVerified": "2026-10-06",
-      "modelCount": 1,
-      "reviewCandidateCount": 2
+      "modelCount": 3,
+      "reviewCandidateCount": 0
     },
     {
       "provider": "moonshotai",
-      "status": "stale",
+      "status": "fresh",
       "sourceUrl": "https://platform.kimi.ai/",
-      "lastVerified": "2026-09-21",
+      "lastVerified": "2026-10-06",
       "modelCount": 1,
-      "reviewCandidateCount": 0,
-      "detail": "Kimi K3 API pricing statement not found"
+      "reviewCandidateCount": 0
     },
     {
       "provider": "openai",
       "status": "fresh",
       "sourceUrl": "https://developers.openai.com/api/docs/pricing",
       "lastVerified": "2026-10-06",
-      "modelCount": 4,
-      "reviewCandidateCount": 6
+      "modelCount": 7,
+      "reviewCandidateCount": 0
     },
     {
       "provider": "x-ai",
       "status": "fresh",
-      "sourceUrl": "https://docs.x.ai/developers/models",
+      "sourceUrl": "https://docs.x.ai/developers/pricing",
       "lastVerified": "2026-10-06",
-      "modelCount": 1,
-      "reviewCandidateCount": 1
+      "modelCount": 4,
+      "reviewCandidateCount": 0
     }
   ],
   "conflicts": [
@@ -91,6 +89,18 @@
       "openrouter": 14.0
     },
     {
+      "key": "deepseek/deepseek-v4.1-flash",
+      "field": "input_mtok",
+      "firstparty": 0.3,
+      "openrouter": 0.0126
+    },
+    {
+      "key": "deepseek/deepseek-v4.1-flash",
+      "field": "output_mtok",
+      "firstparty": 1.2,
+      "openrouter": 1.32
+    },
+    {
       "key": "deepseek/deepseek-v4-pro",
       "field": "input_mtok",
       "firstparty": 1.32,
@@ -103,114 +113,5 @@
       "openrouter": 0.4176
     }
   ],
-  "reviewCandidates": [
-    {
-      "key": "anthropic/claude-opus-5.5",
-      "display": "Claude Opus 5.5",
-      "provider": "anthropic",
-      "discoveredAt": "2026-09-22T17:01:29Z",
-      "input_mtok": 4.0,
-      "output_mtok": 20.0,
-      "context": 1000000
-    },
-    {
-      "key": "anthropic/claude-sonnet-5.5",
-      "display": "Claude Sonnet 5.5",
-      "provider": "anthropic",
-      "discoveredAt": "2026-09-28T19:01:29Z",
-      "input_mtok": 2.0,
-      "output_mtok": 10.0,
-      "context": 1000000
-    },
-    {
-      "key": "deepseek/deepseek-v4.1-flash",
-      "display": "DeepSeek V4.1 Flash",
-      "provider": "deepseek",
-      "discoveredAt": "2026-09-10T07:03:29Z",
-      "input_mtok": 0.0495,
-      "output_mtok": 1.32,
-      "context": 1048576
-    },
-    {
-      "key": "mistralai/devstral-2512",
-      "display": "Devstral 2 2512",
-      "provider": "mistralai",
-      "discoveredAt": "2026-09-24T22:01:29Z",
-      "input_mtok": 0.4,
-      "output_mtok": 2.0,
-      "context": 262144
-    },
-    {
-      "key": "mistralai/mistral-large-2512",
-      "display": "Mistral Large 3 2512",
-      "provider": "mistralai",
-      "discoveredAt": "2026-09-24T22:01:29Z",
-      "input_mtok": 0.5,
-      "output_mtok": 1.5,
-      "context": 262144
-    },
-    {
-      "key": "openai/gpt-6-luna",
-      "display": "GPT-6 Luna",
-      "provider": "openai",
-      "discoveredAt": "2026-09-22T19:02:29Z",
-      "input_mtok": 0.1,
-      "output_mtok": 0.5,
-      "context": 1050000
-    },
-    {
-      "key": "openai/gpt-6-luna-pro",
-      "display": "GPT-6 Luna Pro",
-      "provider": "openai",
-      "discoveredAt": "2026-09-22T19:02:29Z",
-      "input_mtok": 0.1,
-      "output_mtok": 0.5,
-      "context": 1050000
-    },
-    {
-      "key": "openai/gpt-6-sol",
-      "display": "GPT-6 Sol",
-      "provider": "openai",
-      "discoveredAt": "2026-09-22T19:02:29Z",
-      "input_mtok": 2.0,
-      "output_mtok": 10.0,
-      "context": 1050000
-    },
-    {
-      "key": "openai/gpt-6-sol-pro",
-      "display": "GPT-6 Sol Pro",
-      "provider": "openai",
-      "discoveredAt": "2026-09-22T19:02:29Z",
-      "input_mtok": 2.0,
-      "output_mtok": 10.0,
-      "context": 1050000
-    },
-    {
-      "key": "openai/gpt-6.1-sol",
-      "display": "GPT-6.1 Sol",
-      "provider": "openai",
-      "discoveredAt": "2026-09-29T18:00:29Z",
-      "input_mtok": 2.0,
-      "output_mtok": 10.0,
-      "context": 1050000
-    },
-    {
-      "key": "openai/gpt-6.1-sol-pro",
-      "display": "GPT-6.1 Sol Pro",
-      "provider": "openai",
-      "discoveredAt": "2026-09-29T18:00:29Z",
-      "input_mtok": 2.0,
-      "output_mtok": 10.0,
-      "context": 1050000
-    },
-    {
-      "key": "x-ai/grok-4.7",
-      "display": "Grok 4.7",
-      "provider": "x-ai",
-      "discoveredAt": "2026-09-21T17:01:29Z",
-      "input_mtok": 2.0,
-      "output_mtok": 6.0,
-      "context": 500000
-    }
-  ]
+  "reviewCandidates": []
 }

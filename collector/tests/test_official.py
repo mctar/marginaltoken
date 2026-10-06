@@ -41,6 +41,9 @@ class OfficialParserTests(unittest.TestCase):
 | Model | Short context input | Cached | Writes | Short context output | Long input | Long cached | Long writes | Long output |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | gpt-6-astra | $10.00 | $1.00 | $12.50 | $50.00 | $20 | $2 | $25 | $75 |
+| gpt-6.1-sol | $2.00 | $0.20 | $2.50 | $10.00 | $4 | $0.4 | $5 | $15 |
+| gpt-6-sol | $2.00 | $0.20 | $2.50 | $10.00 | $4 | $0.4 | $5 | $15 |
+| gpt-6-luna | $0.10 | $0.01 | $0.125 | $0.50 | $0.2 | $0.02 | $0.25 | $0.75 |
 | gpt-5.6-sol | $4.00 | $0.40 | $5.00 | $20.00 | $8 | $0.8 | $10 | $30 |
 | gpt-5.6-terra | $2.00 | $0.20 | $2.50 | $12.00 | $4 | $0.4 | $5 | $18 |
 | gpt-5.6-luna | $0.20 | $0.02 | $0.25 | $1.20 | $0.4 | $0.04 | $0.5 | $1.8 |
@@ -49,6 +52,9 @@ Batch
 """
         rows = [
             row("openai", "gpt-6-astra", "GPT-6 Astra"),
+            row("openai", "gpt-6.1-sol", "GPT-6.1 Sol"),
+            row("openai", "gpt-6-sol", "GPT-6 Sol"),
+            row("openai", "gpt-6-luna", "GPT-6 Luna"),
             row("openai", "gpt-5.6-sol", "GPT-5.6 Sol"),
             row("openai", "gpt-5.6-terra", "GPT-5.6 Terra"),
             row("openai", "gpt-5.6-luna", "GPT-5.6 Luna"),
@@ -57,6 +63,9 @@ Batch
             parse_openai(source, rows, NOW),
             {
                 "gpt-6-astra": (10.0, 50.0),
+                "gpt-6.1-sol": (2.0, 10.0),
+                "gpt-6-sol": (2.0, 10.0),
+                "gpt-6-luna": (0.1, 0.5),
                 "gpt-5.6-sol": (4.0, 20.0),
                 "gpt-5.6-terra": (2.0, 12.0),
                 "gpt-5.6-luna": (0.2, 1.2),
@@ -66,18 +75,28 @@ Batch
     def test_anthropic_selects_current_standard_prices(self) -> None:
         source = """
 <p>The following table shows pricing for all Claude models:</p>
-<table><tr><td>Claude Opus 5</td><td>$5 / MTok</td><td>$6.25 / MTok</td><td>$10 / MTok</td><td>$0.50 / MTok</td><td>$25 / MTok</td></tr>
-<tr><td>Claude Sonnet 5</td><td>through August 31, 2026</td><td>$2 / MTok</td><td>$2.50 / MTok</td><td>$4 / MTok</td><td>$0.20 / MTok</td><td>$10 / MTok</td></tr>
-<tr><td>Claude Sonnet 5</td><td>starting September 1, 2026</td><td>$3 / MTok</td><td>$3.75 / MTok</td><td>$6 / MTok</td><td>$0.30 / MTok</td><td>$15 / MTok</td></tr></table>
+<table><tr><th>Model</th><th>Base tokens</th><th>Prompt caching</th></tr>
+<tr><th>Name</th><th>Input</th><th>Output</th><th>5m writes</th><th>1h writes</th><th>Hits and refreshes</th></tr>
+<tr><td>Claude Opus 5.5</td><td>$4 / MTok</td><td>$20 / MTok</td><td>$5 / MTok</td><td>$8 / MTok</td><td>$0.20 / MTok</td></tr>
+<tr><td>Claude Sonnet 5.5</td><td>$2 / MTok</td><td>$10 / MTok</td><td>$2.50 / MTok</td><td>$4 / MTok</td><td>$0.20 / MTok</td></tr>
+<tr><td>Claude Opus 5</td><td>$5 / MTok</td><td>$25 / MTok</td><td>$6.25 / MTok</td><td>$10 / MTok</td><td>$0.50 / MTok</td></tr>
+<tr><td>Claude Sonnet 5</td><td>$2 / MTok</td><td>$10 / MTok</td><td>$2.50 / MTok</td><td>$4 / MTok</td><td>$0.20 / MTok</td></tr></table>
 <h2>Batch processing</h2>
 """
         rows = [
+            row("anthropic", "claude-opus-5.5", "Claude Opus 5.5"),
+            row("anthropic", "claude-sonnet-5.5", "Claude Sonnet 5.5"),
             row("anthropic", "claude-opus-5", "Claude Opus 5"),
             row("anthropic", "claude-sonnet-5", "Claude Sonnet 5"),
         ]
         self.assertEqual(
             parse_anthropic(source, rows, NOW),
-            {"claude-opus-5": (5.0, 25.0), "claude-sonnet-5": (2.0, 10.0)},
+            {
+                "claude-opus-5.5": (4.0, 20.0),
+                "claude-sonnet-5.5": (2.0, 10.0),
+                "claude-opus-5": (5.0, 25.0),
+                "claude-sonnet-5": (2.0, 10.0),
+            },
         )
 
     def test_anthropic_current_table_does_not_expect_cancelled_scheduled_row(self) -> None:
@@ -129,6 +148,32 @@ Batch
             {"gemini-3.8-flash": (1.5, 7.5)},
         )
 
+    def test_google_tracks_recent_flash_predecessor(self) -> None:
+        source = """
+<h2>Gemini 3.7 Flash</h2><code>gemini-3.7-flash</code>
+<div>Input price</div><div>Free of charge</div><div>$0.75 through December 31, 2026.</div><div>$1.50 starting January 1, 2027.</div>
+<div>Output price (including thinking tokens)</div><div>Free of charge</div><div>$3.75 through December 31, 2026.</div><div>$7.50 starting January 1, 2027.</div>
+<div>Context caching price</div><div>$0.075</div>
+"""
+        rows = [row("google", "gemini-3.7-flash", "Gemini 3.7 Flash")]
+        self.assertEqual(
+            parse_google(source, rows, datetime(2026, 10, 6, tzinfo=timezone.utc)),
+            {"gemini-3.7-flash": (0.75, 3.75)},
+        )
+
+    def test_google_pro_uses_short_context_standard_rate(self) -> None:
+        source = """
+<h2>Gemini 3.1 Pro Preview</h2><code>gemini-3.1-pro-preview</code>
+<div>Input price</div><div>Free of charge</div><div>$1.25, prompts &lt;= 200k tokens</div><div>$2.50, prompts &gt; 200k tokens</div>
+<div>Output price (including thinking tokens)</div><div>Free of charge</div><div>$10.00, prompts &lt;= 200k tokens</div><div>$15.00, prompts &gt; 200k tokens</div>
+<div>Context caching price</div><div>$0.125</div>
+"""
+        rows = [row("google", "gemini-3.1-pro-preview", "Gemini 3.1 Pro Preview")]
+        self.assertEqual(
+            parse_google(source, rows, NOW),
+            {"gemini-3.1-pro-preview": (1.25, 10.0)},
+        )
+
     def test_mistral_model_card(self) -> None:
         source = """
 <h1>Mistral Medium 3.5</h1><p>Context</p><p>256k</p><p>Price</p><i>i</i>
@@ -141,10 +186,23 @@ Batch
     def test_mistral_consolidated_pricing_table(self) -> None:
         source = """
 <table><tr><th>Model</th><th>Input</th><th>Cached input</th><th>Output</th></tr>
-<tr><td>Mistral Medium 3.5</td><td>↗</td><td>$1.5</td><td>$0.15</td><td>$7.5</td></tr></table>
+<tr><td>Mistral Medium 3.5</td><td>↗</td><td>$1.5</td><td>$0.15</td><td>$7.5</td></tr>
+<tr><td>Mistral Large 3</td><td>↗</td><td>$0.5</td><td>$0.05</td><td>$1.5</td></tr>
+<tr><td>Mistral Small 4</td><td>↗</td><td>$0.15</td><td>$0.015</td><td>$0.6</td></tr></table>
 """
-        rows = [row("mistralai", "mistral-medium-3.5", "Mistral Medium 3.5")]
-        self.assertEqual(parse_mistral(source, rows, NOW), {"mistral-medium-3.5": (1.5, 7.5)})
+        rows = [
+            row("mistralai", "mistral-medium-3.5", "Mistral Medium 3.5"),
+            row("mistralai", "mistral-large-2512", "Mistral Large 3"),
+            row("mistralai", "mistral-small-4", "Mistral Small 4"),
+        ]
+        self.assertEqual(
+            parse_mistral(source, rows, NOW),
+            {
+                "mistral-medium-3.5": (1.5, 7.5),
+                "mistral-large-2512": (0.5, 1.5),
+                "mistral-small-4": (0.15, 0.6),
+            },
+        )
 
     def test_moonshot_json_ld_copy(self) -> None:
         source = "Kimi K3 API pricing is calculated based on token usage. Input tokens are billed at $3.00 per 1M tokens on a cache miss. Output tokens are billed at $15.00 per 1M tokens."
@@ -155,9 +213,10 @@ Batch
         source = """
 <h2>Latest Models</h2><h3>K3</h3>
 <p>Kimi K3 is Kimi's most capable flagship model to date.</p>
-<span>Cache Hit</span><span>$0.30 / MTok</span>
-<span>Input</span><span>$3.00 / MTok</span>
-<span>Output</span><span>$15.00 / MTok</span>
+        <span>Input</span><span>$3.00 / MTok</span>
+        <span>Output</span><span>$15.00 / MTok</span>
+        <span>Cache Write</span><span>$3.00 / MTok</span>
+        <span>Cache Hit</span><span>$0.30 / MTok</span>
 <h3>K2.7 Code</h3>
 """
         rows = [row("moonshotai", "kimi-k3", "Kimi K3")]
@@ -169,23 +228,44 @@ Batch
 <tr><td>1M INPUT TOKENS (CACHE MISS)</td><td>$0.14</td><td>$0.435</td></tr>
 <tr><td>1M OUTPUT TOKENS</td><td>$0.28</td><td>$0.87</td></tr></table>
 """
-        rows = [row("deepseek", "deepseek-v4-pro", "DeepSeek V4 Pro")]
-        self.assertEqual(parse_deepseek(source, rows, NOW), {"deepseek-v4-pro": (0.435, 0.87)})
+        rows = [
+            row("deepseek", "deepseek-v4.1-flash", "DeepSeek V4.1 Flash"),
+            row("deepseek", "deepseek-v4-pro", "DeepSeek V4 Pro"),
+        ]
+        self.assertEqual(
+            parse_deepseek(source, rows, NOW),
+            {
+                "deepseek-v4.1-flash": (0.14, 0.28),
+                "deepseek-v4-pro": (0.435, 0.87),
+            },
+        )
 
     def test_deepseek_uses_peak_rate_from_time_banded_table(self) -> None:
         source = """
-<table><tr><td>MODEL</td><td>deepseek-v4-flash</td><td>deepseek-v4-pro</td><td>deepseek-v4-flash-vision-exp</td></tr>
-<tr><td>1M INPUT TOKENS<br>(CACHE MISS)</td><td>OFF-PEAK</td><td>$0.22</td><td>$0.66</td><td>$0.22</td></tr>
-<tr><td>PEAK</td><td>$0.44</td><td>$1.32</td><td>$0.44</td></tr>
+<table><tr><td>MODEL VERSION</td><td>DeepSeek-V4.1-Flash</td><td>DeepSeek-V4-Pro</td><td>DeepSeek-V4-Flash-Vision-Exp</td></tr>
+<tr><td>1M INPUT TOKENS<br>(CACHE MISS)</td><td>OFF-PEAK</td><td>$0.15</td><td>$0.66</td><td>$0.15</td></tr>
+<tr><td>PEAK</td><td>$0.30</td><td>$1.32</td><td>$0.30</td></tr>
 <tr><td>1M OUTPUT TOKENS</td><td>OFF-PEAK</td><td>$0.66</td><td>$1.98</td><td>$0.66</td></tr>
-<tr><td>PEAK</td><td>$1.32</td><td>$3.96</td><td>$1.32</td></tr>
+<tr><td>PEAK</td><td>$1.20</td><td>$3.96</td><td>$1.20</td></tr>
 <tr><td>Concurrency Limit</td><td>2500</td><td>500</td><td>2500</td></tr></table>
 """
-        rows = [row("deepseek", "deepseek-v4-pro", "DeepSeek V4 Pro")]
-        self.assertEqual(parse_deepseek(source, rows, NOW), {"deepseek-v4-pro": (1.32, 3.96)})
+        rows = [
+            row("deepseek", "deepseek-v4.1-flash", "DeepSeek V4.1 Flash"),
+            row("deepseek", "deepseek-v4-pro", "DeepSeek V4 Pro"),
+        ]
+        self.assertEqual(
+            parse_deepseek(source, rows, NOW),
+            {
+                "deepseek-v4.1-flash": (0.3, 1.2),
+                "deepseek-v4-pro": (1.32, 3.96),
+            },
+        )
 
     def test_xai_embedded_model_data(self) -> None:
-        source = r'{\"name\":\"grok-4.5\",\"promptTextTokenPrice\":\"20000\",\"completionTextTokenPrice\":\"60000\"}'
+        source = (
+            r'{\"name\":\"grok-4.5\",\"promptTextTokenPrice\":\"20000\",\"completionTextTokenPrice\":\"60000\"}'
+            r'{\"name\":\"grok-4.5\",\"promptTextTokenPrice\":\"22000\",\"completionTextTokenPrice\":\"66000\"}'
+        )
         rows = [row("x-ai", "grok-4.5", "Grok 4.5")]
         self.assertEqual(parse_xai(source, rows, NOW), {"grok-4.5": (2.0, 6.0)})
 
@@ -193,11 +273,33 @@ Batch
         source = """
 | Model | Context | Input / 1M tokens | Cached input / 1M tokens | Output / 1M tokens |
 | --- | --- | --- | --- | --- |
-| grok-4.5 (< 200k prompt tokens) | 500k | $2.00 | $0.30 | $6.00 |
-| grok-4.5 (≥ 200k prompt tokens) | 500k | $4.00 | $0.60 | $12.00 |
+| grok-4.7 (< 200k prompt tokens) | 500k | $2.00 | $0.30 | $6.00 |
+| grok-4.7 (≥ 200k prompt tokens) | 500k | $4.00 | $0.60 | $12.00 |
 """
-        rows = [row("x-ai", "grok-4.5", "Grok 4.5")]
-        self.assertEqual(parse_xai(source, rows, NOW), {"grok-4.5": (2.0, 6.0)})
+        rows = [row("x-ai", "grok-4.7", "Grok 4.7")]
+        self.assertEqual(parse_xai(source, rows, NOW), {"grok-4.7": (2.0, 6.0)})
+
+    def test_xai_current_pricing_table(self) -> None:
+        source = """
+Model | Context | Short context | Long context
+Input | Cached | Output | Input | Cached | Output
+grok-4.7 Long context >= 200k tokens | 500k | $2.00 | $0.50 | $6.00 | $4.00 | $1.00 | $12.00 |
+grok-4.6 Long context >= 200k tokens | 500k | $2.00 | $0.50 | $6.00 | $4.00 | $1.00 | $12.00 |
+grok-4.20-0309-reasoning Long context >= 200k tokens | 1M | $1.25 | $0.20 | $2.50 | $2.50 | $0.40 | $5.00 |
+"""
+        rows = [
+            row("x-ai", "grok-4.7", "Grok 4.7"),
+            row("x-ai", "grok-4.6", "Grok 4.6"),
+            row("x-ai", "grok-4.20-0309-reasoning", "Grok 4.20 Reasoning"),
+        ]
+        self.assertEqual(
+            parse_xai(source, rows, NOW),
+            {
+                "grok-4.7": (2.0, 6.0),
+                "grok-4.6": (2.0, 6.0),
+                "grok-4.20-0309-reasoning": (1.25, 2.5),
+            },
+        )
 
 
 class OfficialRefreshTests(unittest.TestCase):

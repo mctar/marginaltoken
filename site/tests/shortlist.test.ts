@@ -32,21 +32,29 @@ test('selects the first available reviewed successor and falls back safely', () 
   const columns = selectShortlist([
     model('anthropic/claude-fable-5'),
     model('anthropic/claude-fable-5.1'),
+    model('anthropic/claude-opus-5'),
+    model('anthropic/claude-opus-5.5'),
     model('openai/gpt-5.6-sol'),
+    model('openai/gpt-6.1-sol'),
     model('openai/gpt-6-astra'),
     model('google/gemini-3.6-flash'),
     model('google/gemini-3.8-flash'),
     model('google/gemini-2.5-pro'),
     model('google/gemini-3.1-pro-preview'),
     model('qwen/qwen3-max'),
+    model('x-ai/grok-4.7'),
+    model('deepseek/deepseek-v4.1-flash'),
   ])
   const selections = columns.flatMap((column) => column.selections)
   assert.equal(selections.find((slot) => slot.id === 'anthropic-fable')?.model?.key, 'anthropic/claude-fable-5.1')
-  assert.equal(selections.find((slot) => slot.id === 'openai-frontier')?.model?.key, 'openai/gpt-6-astra')
+    assert.equal(selections.find((slot) => slot.id === 'openai-frontier')?.model?.key, 'openai/gpt-6-astra')
+    assert.equal(selections.find((slot) => slot.id === 'openai-sol')?.model?.key, 'openai/gpt-6.1-sol')
   assert.equal(selections.find((slot) => slot.id === 'google-flash')?.model?.key, 'google/gemini-3.8-flash')
   assert.equal(selections.find((slot) => slot.id === 'google-pro')?.model?.key, 'google/gemini-3.1-pro-preview')
-  assert.equal(selections.find((slot) => slot.id === 'qwen-frontier')?.model?.key, 'qwen/qwen3-max')
-  assert.equal(selections.find((slot) => slot.id === 'anthropic-opus')?.model, null)
+    assert.equal(selections.find((slot) => slot.id === 'qwen-frontier')?.model?.key, 'qwen/qwen3-max')
+    assert.equal(selections.find((slot) => slot.id === 'anthropic-opus')?.model?.key, 'anthropic/claude-opus-5.5')
+    assert.equal(selections.find((slot) => slot.id === 'xai-frontier')?.model?.key, 'x-ai/grok-4.7')
+    assert.equal(selections.find((slot) => slot.id === 'deepseek-frontier')?.model?.key, 'deepseek/deepseek-v4.1-flash')
 })
 
 test('maps prices consistently onto a base-ten logarithmic axis', () => {

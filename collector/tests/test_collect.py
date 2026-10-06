@@ -50,19 +50,32 @@ class FirstPartyCatalogTests(unittest.TestCase):
     def test_new_first_party_tiers_have_expected_rates(self) -> None:
         by_key = {model["key"]: model for model in self.models}
         expected = {
+            "anthropic/claude-opus-5.5": (4.0, 20.0, 1000000),
+            "anthropic/claude-sonnet-5.5": (2.0, 10.0, 1000000),
             "anthropic/claude-fable-5.1": (10.0, 50.0, 1000000),
             "anthropic/claude-fable-5": (10.0, 50.0, 1000000),
             "anthropic/claude-opus-5": (5.0, 25.0, 1000000),
             "anthropic/claude-haiku-4.5": (1.0, 5.0, 200000),
             "moonshotai/kimi-k3": (3.0, 15.0, 1048576),
             "openai/gpt-6-astra": (10.0, 50.0, 1050000),
+            "openai/gpt-6.1-sol": (2.0, 10.0, 1050000),
+            "openai/gpt-6-sol": (2.0, 10.0, 1050000),
+            "openai/gpt-6-luna": (0.1, 0.5, 1050000),
             "openai/gpt-5.6-sol": (4.0, 20.0, 1050000),
             "openai/gpt-5.6-terra": (2.0, 12.0, 1050000),
             "openai/gpt-5.6-luna": (0.2, 1.2, 1050000),
+            "google/gemini-3.1-pro-preview": (1.25, 10.0, 1048576),
             "google/gemini-3.8-flash": (0.75, 3.75, 1048576),
+            "google/gemini-3.7-flash": (0.75, 3.75, 1048576),
             "google/gemini-3.6-flash": (0.75, 3.75, 1048576),
             "google/gemini-3.5-flash": (1.5, 9.0, 1048576),
             "google/gemini-3.5-flash-lite": (0.3, 2.5, 1048576),
+            "mistralai/mistral-large-2512": (0.5, 1.5, 256000),
+            "mistralai/mistral-small-4": (0.15, 0.6, 256000),
+            "deepseek/deepseek-v4.1-flash": (0.3, 1.2, 1048576),
+            "x-ai/grok-4.7": (2.0, 6.0, 500000),
+            "x-ai/grok-4.6": (2.0, 6.0, 500000),
+            "x-ai/grok-4.20-0309-reasoning": (1.25, 2.5, 1000000),
         }
         for key, (input_price, output_price, context) in expected.items():
             with self.subTest(key=key):
@@ -70,7 +83,8 @@ class FirstPartyCatalogTests(unittest.TestCase):
                 self.assertEqual(by_key[key]["output_mtok"], output_price)
                 self.assertEqual(by_key[key]["context"], context)
         self.assertFalse(by_key["anthropic/claude-fable-5"]["indexEligible"])
-        self.assertTrue(by_key["anthropic/claude-opus-5"]["indexEligible"])
+        self.assertTrue(by_key["anthropic/claude-opus-5.5"]["indexEligible"])
+        self.assertFalse(by_key["anthropic/claude-opus-5"]["indexEligible"])
         self.assertTrue(by_key["moonshotai/kimi-k3"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-sonnet-5"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-haiku-4.5"]["indexEligible"])
@@ -78,6 +92,10 @@ class FirstPartyCatalogTests(unittest.TestCase):
         self.assertFalse(by_key["openai/gpt-5.6-sol"]["indexEligible"])
         self.assertTrue(by_key["google/gemini-3.8-flash"]["indexEligible"])
         self.assertFalse(by_key["google/gemini-3.6-flash"]["indexEligible"])
+        self.assertTrue(by_key["deepseek/deepseek-v4.1-flash"]["indexEligible"])
+        self.assertFalse(by_key["deepseek/deepseek-v4-pro"]["indexEligible"])
+        self.assertTrue(by_key["x-ai/grok-4.7"]["indexEligible"])
+        self.assertFalse(by_key["x-ai/grok-4.5"]["indexEligible"])
 
 
 class CollectorTests(unittest.TestCase):

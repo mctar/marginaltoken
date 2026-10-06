@@ -34,7 +34,7 @@ PROVIDER_URLS = {
     "mistralai": "https://docs.mistral.ai/inference/pricing",
     "moonshotai": "https://platform.kimi.ai/",
     "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
-    "x-ai": "https://docs.x.ai/developers/models",
+    "x-ai": "https://docs.x.ai/developers/pricing",
 }
 
 PROVIDER_PUBLIC_URLS = {
@@ -154,7 +154,11 @@ def fetch_source_with_curl(url: str, cached: dict[str, Any] | None = None) -> Fe
 
 
 def _money_values(segment: str) -> list[str]:
-    return re.findall(r"\$\s*([0-9]+(?:\.[0-9]+)?)\s*/\s*MTok", segment, re.I)
+    return re.findall(
+        r"\$\s*([0-9]+(?:\.[0-9]+)?)\s*(?:\|\s*)*/\s*(?:\|\s*)*MTok",
+        segment,
+        re.I,
+    )
 
 
 def parse_openai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
@@ -196,6 +200,9 @@ def parse_anthropic(source: str, rows: list[dict[str, Any]], now: datetime) -> d
     if start < 0 or end < 0:
         raise OfficialSourceError("Anthropic model pricing table not found")
     table = text[start:end]
+    first_model = table.find(" | Claude ")
+    header = table[: first_model if first_model >= 0 else len(table)]
+    output_index = 1 if re.search(r"Name\s*\|\s*Input\s*\|\s*Output", header, re.I) else 4
     result: dict[str, tuple[float, float]] = {}
     for row in rows:
         display = str(row["display"])
@@ -206,11 +213,11 @@ def parse_anthropic(source: str, rows: list[dict[str, Any]], now: datetime) -> d
         next_row = table.find(" | Claude ", row_match.end())
         segment = table[row_start : next_row if next_row >= 0 else len(table)]
         values = _money_values(segment)
-        if len(values) < 5:
+        if len(values) <= output_index:
             raise OfficialSourceError(f"Anthropic prices missing: {display}")
         result[str(row["model"])] = (
             price(values[0], f"{display} input"),
-            price(values[4], f"{display} output"),
+            price(values[output_index], f"{display} output"),
         )
     return result
 
@@ -301,27 +308,51 @@ def parse_mistral(source: str, rows: list[dict[str, Any]], now: datetime) -> dic
 def parse_moonshot(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
     del now
     text = visible_text(source)
-    match = re.search(
-        r"K3\s*\|\s*Kimi K3 is.*?Cache Hit\s*\|\s*\$[0-9.]+\s*/\s*MTok\s*\|\s*Input\s*\|\s*\$([0-9.]+)\s*/\s*MTok\s*\|\s*Output\s*\|\s*\$([0-9.]+)\s*/\s*MTok",
+    card = re.search(
+        r"(?:^|\|\s*)K3\s*\|\s*Kimi K3\b(?P<body>.*?)(?=\|\s*K2\.7 Code\b|$)",
         text,
         re.I | re.S,
     )
-    if not match:
-        match = re.search(
+    values: tuple[float, float] | None = None
+    if card:
+        input_match = re.search(
+            r"\bInput\s*\|\s*\$([0-9.]+)\s*/\s*MTok",
+            card.group("body"),
+            re.I,
+        )
+        output_match = re.search(
+            r"\bOutput\s*\|\s*\$([0-9.]+)\s*/\s*MTok",
+            card.group("body"),
+            re.I,
+        )
+        if input_match and output_match:
+            values = (
+                price(input_match.group(1), "Kimi K3 input"),
+                price(output_match.group(1), "Kimi K3 output"),
+            )
+    if values is None:
+        statement = re.search(
             r"Kimi K3 API pricing.*?Input tokens are billed at \$([0-9.]+).*?Output tokens are billed at \$([0-9.]+)",
             source,
             re.I | re.S,
         )
-    if not match:
-        raise OfficialSourceError("Kimi K3 API pricing statement not found")
-    values = (price(match.group(1), "Kimi K3 input"), price(match.group(2), "Kimi K3 output"))
+        if not statement:
+            raise OfficialSourceError("Kimi K3 API pricing statement not found")
+        values = (
+            price(statement.group(1), "Kimi K3 input"),
+            price(statement.group(2), "Kimi K3 output"),
+        )
     return {str(row["model"]): values for row in rows}
 
 
 def parse_deepseek(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
     del now
     text = visible_text(source)
-    model_order = re.search(r"deepseek-v4-flash.*?deepseek-v4-pro", text, re.I)
+    model_order = re.search(
+        r"deepseek-(?:v4(?:\.1)?-flash|flash).*?deepseek-v4-pro",
+        text,
+        re.I,
+    )
     if not model_order:
         raise OfficialSourceError("DeepSeek V4 pricing table not found")
 
@@ -346,24 +377,41 @@ def parse_deepseek(source: str, rows: list[dict[str, Any]], now: datetime) -> di
         re.I,
     )
     if tiered_input and tiered_output:
-        values = (
+        flash = (
+            price(tiered_input.group(1), "DeepSeek V4.1 Flash peak input"),
+            price(tiered_output.group(1), "DeepSeek V4.1 Flash peak output"),
+        )
+        pro = (
             price(tiered_input.group(2), "DeepSeek V4 Pro peak input"),
             price(tiered_output.group(2), "DeepSeek V4 Pro peak output"),
         )
-        return {str(row["model"]): values for row in rows}
+    else:
+        legacy = re.search(
+            r"1M INPUT TOKENS \(CACHE MISS\).*?\$([0-9.]+).*?\$([0-9.]+).*?1M OUTPUT TOKENS.*?\$([0-9.]+).*?\$([0-9.]+)",
+            text,
+            re.I,
+        )
+        if not legacy:
+            raise OfficialSourceError("DeepSeek V4 prices missing")
+        flash = (
+            price(legacy.group(1), "DeepSeek V4.1 Flash input"),
+            price(legacy.group(3), "DeepSeek V4.1 Flash output"),
+        )
+        pro = (
+            price(legacy.group(2), "DeepSeek V4 Pro input"),
+            price(legacy.group(4), "DeepSeek V4 Pro output"),
+        )
 
-    legacy = re.search(
-        r"1M INPUT TOKENS \(CACHE MISS\).*?\$([0-9.]+).*?\$([0-9.]+).*?1M OUTPUT TOKENS.*?\$([0-9.]+).*?\$([0-9.]+)",
-        text,
-        re.I,
-    )
-    if not legacy:
-        raise OfficialSourceError("DeepSeek V4 prices missing")
-    values = (
-        price(legacy.group(2), "DeepSeek V4 Pro input"),
-        price(legacy.group(4), "DeepSeek V4 Pro output"),
-    )
-    return {str(row["model"]): values for row in rows}
+    result: dict[str, tuple[float, float]] = {}
+    for row in rows:
+        model = str(row["model"]).lower()
+        if model in {"deepseek-v4.1-flash", "deepseek-v4-flash", "deepseek-flash"}:
+            result[str(row["model"])] = flash
+        elif model == "deepseek-v4-pro":
+            result[str(row["model"])] = pro
+        else:
+            raise OfficialSourceError(f"Unsupported DeepSeek row: {row['model']}")
+    return result
 
 
 def parse_xai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
@@ -382,18 +430,36 @@ def parse_xai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[st
                 price(table_match.group(2), f"{row['model']} output"),
             )
             continue
+        pricing_match = re.search(
+            rf"(?:^|\|\s*){model}(?:\s*Long context\s*[^|]*)?\s*\|\s*[^|]+"
+            r"\|\s*\$([0-9.]+)\s*\|\s*\$[0-9.]+\s*\|\s*\$([0-9.]+)\s*\|",
+            source,
+            re.I | re.M,
+        )
+        if pricing_match:
+            result[str(row["model"])] = (
+                price(pricing_match.group(1), f"{row['model']} input"),
+                price(pricing_match.group(2), f"{row['model']} output"),
+            )
+            continue
         matches = re.findall(
             rf'\\?"name\\?":\\?"{model}\\?".*?\\?"promptTextTokenPrice\\?":\\?"([0-9]+)\\?".*?\\?"completionTextTokenPrice\\?":\\?"([0-9]+)\\?"',
             source,
             re.S,
         )
-        unique = set(matches)
-        if len(unique) != 1:
+        unique = {
+            (Decimal(prompt) / Decimal(10_000), Decimal(completion) / Decimal(10_000))
+            for prompt, completion in matches
+        }
+        if not unique:
             raise OfficialSourceError(f"xAI prices missing or inconsistent: {row['model']}")
-        prompt, completion = unique.pop()
+        prompt, completion = min(unique, key=lambda pair: pair[0] + pair[1])
+        regional = (prompt * Decimal("1.1"), completion * Decimal("1.1"))
+        if any(pair != (prompt, completion) and pair != regional for pair in unique):
+            raise OfficialSourceError(f"xAI prices missing or inconsistent: {row['model']}")
         result[str(row["model"])] = (
-            price(str(Decimal(prompt) / Decimal(10_000)), f"{row['model']} input"),
-            price(str(Decimal(completion) / Decimal(10_000)), f"{row['model']} output"),
+            price(str(prompt), f"{row['model']} input"),
+            price(str(completion), f"{row['model']} output"),
         )
     return result
 

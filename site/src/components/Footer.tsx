@@ -1,6 +1,6 @@
 type FooterProps = {
-  generatedAt: string
-  modelCount: number
+  generatedAt?: string
+  modelCount?: number
 }
 
 function displayTimestamp(value: string): string {
@@ -8,17 +8,19 @@ function displayTimestamp(value: string): string {
 }
 
 export default function Footer({ generatedAt, modelCount }: FooterProps) {
-  const timestamp = displayTimestamp(generatedAt)
+  const timestamp = generatedAt ? displayTimestamp(generatedAt) : null
 
   return (
     <footer className="mt-20 border-t-2 border-ink">
       <div className="mx-auto max-w-publication px-4 py-8 text-xs text-ink-muted sm:px-6">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span>
-            Generated <time dateTime={generatedAt}>{timestamp}</time>
-          </span>
-          <span aria-hidden="true">·</span>
-          <span>{modelCount} {modelCount === 1 ? 'model' : 'models'} tracked</span>
+          {timestamp && modelCount !== undefined ? (
+            <>
+              <span>Generated <time dateTime={generatedAt}>{timestamp}</time></span>
+              <span aria-hidden="true">·</span>
+              <span>{modelCount} {modelCount === 1 ? 'model' : 'models'} tracked</span>
+            </>
+          ) : <span>An independent ledger of AI costs, with practical tools for deciding what to run.</span>}
           <span aria-hidden="true">·</span>
           <a className="editorial-link" href="https://marginaltoken.com">
             marginaltoken.com

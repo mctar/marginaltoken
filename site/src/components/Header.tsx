@@ -3,6 +3,7 @@ import { longDate } from '../lib/format'
 type HeaderProps = {
   asOf: string
   route: string
+  dateline?: string
 }
 
 const navigation = [
@@ -12,10 +13,11 @@ const navigation = [
   { href: '/spreads/', label: 'Spreads' },
   { href: '/compare/', label: 'Compare' },
   { href: '/infrastructure/', label: 'Rent vs Run' },
+  { href: '/notes/', label: 'Market notes' },
   { href: '/methodology/', label: 'Methodology' },
 ]
 
-export default function Header({ asOf, route }: HeaderProps) {
+export default function Header({ asOf, route, dateline }: HeaderProps) {
   return (
     <header className="publication-header">
       <div className="mx-auto max-w-publication px-4 sm:px-6">
@@ -28,7 +30,7 @@ export default function Header({ asOf, route }: HeaderProps) {
             The Marginal Token
           </a>
         </div>
-        <p className="dateline">Price file as of {longDate(asOf)}</p>
+        <p className="dateline">{dateline ?? `Price file as of ${longDate(asOf)}`}</p>
         <nav className="section-nav" aria-label="Primary navigation">
           {navigation.map((item) => {
             const active = item.href === route

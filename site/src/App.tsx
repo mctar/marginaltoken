@@ -12,13 +12,15 @@ import MethodologyPage from './pages/MethodologyPage'
 import ModelPage, { MissingModelPage } from './pages/ModelPage'
 import SpreadsPage from './pages/SpreadsPage'
 import TapePage from './pages/TapePage'
+import NotesPage from './pages/NotesPage'
+import { marketNotes } from './lib/market-notes'
 
 type State =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   | { status: 'ready'; data: FeedData }
 
-type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/' | '/open/'
+type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/' | '/open/' | '/notes/'
 
 function routeFor(pathname: string): Route {
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
@@ -28,6 +30,7 @@ function routeFor(pathname: string): Route {
   if (normalized === '/compare/') return '/compare/'
   if (normalized === '/infrastructure/') return '/infrastructure/'
   if (normalized === '/methodology/') return '/methodology/'
+  if (normalized.startsWith('/notes/')) return '/notes/'
   if (normalized.startsWith('/model/')) return '/model/'
   return '/'
 }
@@ -48,6 +51,7 @@ export default function App() {
   const modelKey = route === '/model/' ? modelKeyFor(window.location.pathname) : null
 
   useEffect(() => {
+    if (route === '/notes/') return
     loadFeed(
       route === '/model/' || route === '/spreads/' || route === '/infrastructure/' || route === '/compare/',
       route === '/infrastructure/',
@@ -55,6 +59,17 @@ export default function App() {
       .then((data) => setState({ status: 'ready', data }))
       .catch((error: unknown) => setState({ status: 'error', message: error instanceof Error ? error.message : String(error) }))
   }, [route])
+
+  if (route === '/notes/') {
+    return (
+      <div className="min-h-screen">
+        <a className="skip-link" href="#main">Skip to content</a>
+        <Header asOf={marketNotes[0]?.date ?? ''} route={route} dateline="Market notes · Evidence and implications" />
+        <NotesPage pathname={window.location.pathname} />
+        <Footer />
+      </div>
+    )
+  }
 
   if (state.status === 'loading') {
     return <div className="loading-page">Reading the tape.</div>

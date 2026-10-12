@@ -1,0 +1,30 @@
+[
+  {
+    "slug": "haiku-5-5-context-pricing",
+    "date": "2026-10-12",
+    "checked": "2026-10-12",
+    "author": "Thordur Arnason",
+    "title": "Haiku 5.5’s price depends on how much context you carry",
+    "summary": "The 100,000-token boundary changes both input and output rates. Price agent workloads by prompt length, with cached tokens included.",
+    "paragraphs": [
+      "Haiku 5.5’s standard API rate starts at $0.10 input and $0.50 output per million tokens for prompts up to 100,000 tokens. Above that threshold, the rates rise to $0.50 input and $2.50 output.",
+      "Anthropic counts cached reads and cache writes toward a request’s prompt length. Each request is priced individually, so a cache hit can reduce billable cost while the prompt still crosses into the higher tariff.",
+      "For long conversations and agent runs, context management changes the tariff as well as the number of billable tokens. A one-million-token context window comes with more than one price band."
+    ],
+    "modelKey": "anthropic/claude-haiku-5.5",
+    "comparisonModelKey": "anthropic/claude-haiku-4.5",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Cost your Haiku workload",
+    "calculatorGuidance": "Compare with Haiku 4.5 using your actual prompt sizes, cache use and output volumes. Choose Standard or Standard long context for Haiku 5.5 to match your prompt length before estimating savings.",
+    "sources": [
+      {
+        "label": "Anthropic API pricing and long-context terms",
+        "href": "https://platform.claude.com/docs/en/about-claude/pricing#long-context-pricing"
+      },
+      {
+        "label": "Haiku 5.5 launch · 7 October 2026",
+        "href": "https://platform.claude.com/docs/en/release-notes/overview"
+      }
+    ]
+  }
+]

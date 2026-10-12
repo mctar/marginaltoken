@@ -94,6 +94,46 @@ const replaceMeta = (html, selector, from, to) => {
   return html.replace(from, to)
 }
 
+const marketNotes = JSON.parse(await readFile(path.join(siteDir, 'src/content/market-notes.json'), 'utf8'))
+const editorialShell = (title, description, url) => shell
+  .replace('<title>The Marginal Token</title>', `<title>${escapeAttribute(title)}</title>`)
+  .replaceAll('content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."', `content="${escapeAttribute(description)}"`)
+  .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${escapeAttribute(url)}" />`)
+  .replace('<meta property="og:title" content="The Marginal Token" />', `<meta property="og:title" content="${escapeAttribute(title)}" />`)
+  .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${escapeAttribute(url)}" />`)
+  .replace('<meta name="twitter:title" content="The Marginal Token" />', `<meta name="twitter:title" content="${escapeAttribute(title)}" />`)
+const notesDir = path.join(distDir, 'notes')
+await mkdir(notesDir, { recursive: true })
+await writeFile(path.join(notesDir, 'index.html'), editorialShell(
+  'Market notes — The Marginal Token',
+  'Short notes on changes that affect the cost of buying and running AI, linked to verified sources and practical tools.',
+  'https://marginaltoken.com/notes/',
+))
+const noteSlugs = new Set()
+for (const note of marketNotes) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(note.slug) || noteSlugs.has(note.slug)) {
+    throw new Error(`Invalid or duplicate market note slug: ${note.slug}`)
+  }
+  noteSlugs.add(note.slug)
+  const url = `https://marginaltoken.com/notes/${note.slug}/`
+  const structuredData = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: note.title,
+    description: note.summary,
+    datePublished: note.date,
+    author: { '@type': 'Person', name: note.author },
+    publisher: { '@type': 'Organization', name: 'The Marginal Token', url: 'https://marginaltoken.com/' },
+    mainEntityOfPage: url,
+    citation: note.sources.map((source) => source.href),
+  }).replaceAll('<', '\\u003c')
+  const noteHtml = editorialShell(`${note.title} — The Marginal Token`, note.summary, url)
+    .replace('<meta property="og:type" content="website" />', '<meta property="og:type" content="article" />')
+    .replace('</head>', `    <meta property="article:published_time" content="${escapeAttribute(note.date)}" />\n    <script type="application/ld+json">${structuredData}</script>\n  </head>`)
+  await mkdir(path.join(notesDir, note.slug), { recursive: true })
+  await writeFile(path.join(notesDir, note.slug, 'index.html'), noteHtml)
+}
+
 for (const model of prices.models) {
   const segments = model.key.split('/')
   if (segments.some((segment) => !segment || segment === '.' || segment === '..')) continue

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { capabilityOptions as capabilities, supportsCapability, type Capability } from '../lib/capabilities'
 import { modelComparisonPath } from '../lib/compare'
+import { matchesOpenness, type OpennessFilter } from '../lib/decisions'
 import { contextSize, price, providerName } from '../lib/format'
 import { capabilityTags, modelPath } from '../lib/models'
-import type { PriceModel, PricesFeed } from '../lib/types'
+import type { DecisionsFeed, PriceModel, PricesFeed } from '../lib/types'
 
 type SortKey = 'display' | 'provider' | 'input_mtok' | 'output_mtok' | 'context' | 'source'
 type Direction = 'asc' | 'desc'
@@ -145,7 +146,8 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
   )
 }
 
-export default function TapePage({ prices }: { prices: PricesFeed }) {
+export default function TapePage({ prices, decisions }: { prices: PricesFeed; decisions: DecisionsFeed | null }) {
+  const [openness, setOpenness] = useState<OpennessFilter>(() => initialEnum('openness', ['all','weights','permissive','custom','unknown'] as const, 'all'))
   const [query, setQuery] = useState(() => initialValue('q'))
   const [providerQuery, setProviderQuery] = useState('')
   const [selectedProviders, setSelectedProviders] = useState<string[]>(() => initialList('provider'))
@@ -223,6 +225,7 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
       if (selectedReleaseStages.length > 0 && !selectedReleaseStages.includes(model.releaseStage ?? 'stable')) return false
       if (basketOnly && !model.indexEligible) return false
       if (expiringOnly && !model.expirationDate) return false
+      if (!matchesOpenness(model, openness, decisions)) return false
       if (huggingFaceOnly && !model.huggingFaceId) return false
       return true
     })
@@ -238,6 +241,7 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
     maximumInput,
     maximumOutput,
     prices.models,
+    decisions,
     query,
     selectedCapabilities,
     selectedContextBands,
@@ -246,6 +250,7 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
     selectedReleaseStages,
     sortKey,
     source,
+    openness,
   ])
 
   const visibleRows = rowLimit === 'all' ? rows : rows.slice(0, Number(rowLimit))
@@ -261,12 +266,13 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
     selectedReleaseStages.length +
     Number(basketOnly) +
     Number(expiringOnly) +
-    Number(huggingFaceOnly)
+    Number(huggingFaceOnly) + Number(openness !== 'all')
 
   useEffect(() => {
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     for (const provider of [...selectedProviders].sort()) params.append('provider', provider)
+    if (openness !== 'all') params.set('openness', openness)
     if (source !== 'all') params.set('source', source)
     for (const band of selectedPriceBands) params.append('price', band)
     if (maximumInput) params.set('max_input', maximumInput)
@@ -299,6 +305,7 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
     selectedReleaseStages,
     sortKey,
     source,
+    openness,
   ])
 
   const sort = (key: SortKey) => {
@@ -323,6 +330,7 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
     setBasketOnly(false)
     setExpiringOnly(false)
     setHuggingFaceOnly(false)
+    setOpenness('all')
   }
 
   return (
@@ -366,6 +374,9 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
           </div>
 
           <div className="filter-facets">
+            <FilterDisclosure label="Weights & terms" count={Number(openness !== 'all')}>
+              <div className="facet-options">{(['all','weights','permissive','custom','unknown'] as const).map(value=><FilterOption key={value} checked={openness === value} label={{all:'All models',weights:'Verified open weights',permissive:'Permissive license',custom:'Custom license terms',unknown:'Weights or license unverified'}[value]} onChange={()=>setOpenness(value)} />)}</div>
+            </FilterDisclosure>
             <FilterDisclosure label="Provider" count={selectedProviders.length}>
               <label className="facet-search">
                 <span>Find a provider</span>
@@ -474,6 +485,7 @@ export default function TapePage({ prices }: { prices: PricesFeed }) {
 
         {activeFilterCount > 0 && (
           <div className="active-filters" aria-label="Active filters">
+            {openness !== 'all' && <FilterChip label={`Weights: ${openness}`} onRemove={() => setOpenness('all')} />}
             {query.trim() && <FilterChip label={`Search: ${query.trim()}`} onRemove={() => setQuery('')} />}
             {selectedProviders.map((provider) => (
               <FilterChip key={provider} label={providerName(provider)} onRemove={() => setSelectedProviders((current) => current.filter((value) => value !== provider))} />

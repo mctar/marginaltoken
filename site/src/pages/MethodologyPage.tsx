@@ -18,6 +18,14 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
 
       <article className="methodology-grid">
         <section>
+          <span className="method-number">Decision tools</span>
+          <h2>Open weights and workload economics</h2>
+          <p>The open shelf verifies that the exact linked Hugging Face repository lists model weight files. License IDs distinguish permissive, custom, and unknown terms; gated access is disclosed. Training data and code are not assessed. A missing repository does not classify a model as proprietary.</p>
+          <p>The decision feed checks public sources daily. Failed checks retain dated last-good records; the frontend excludes verification older than seven days. Detailed billing plans cover Anthropic, OpenAI, and conservatively parsed Google text-token rows. Routed quotes preserve reported cache rates. Unknown rates required by a workload prevent a complete estimate. Visitors select the applicable context tier. Cache storage is a monthly token-hour quantity.</p>
+          <p>Presets are illustrative; success rates, token multipliers, and rate overrides are visitor supplied. For independent success probability p and at most n attempts, acceptance is 1 − (1 − p)ⁿ and expected attempts are acceptance / p (n when p is zero). API and review costs apply to every attempt. Review does not change the entered success probability. Total modeled spend is divided by expected accepted tasks; zero acceptance has no finite cost per successful task. Scenario files are processed in the browser, and shared URLs include aggregate assumptions.</p>
+        </section>
+
+        <section>
           <span className="method-number">01</span>
           <h2>What is tracked</h2>
           <p>

@@ -19,6 +19,18 @@ for (const route of ['tape', 'methodology', 'model']) {
   await copyFile(path.join(distDir, 'index.html'), path.join(routeDir, 'index.html'))
 }
 
+const openTitle = 'Open model weights & licenses — The Marginal Token'
+const openDescription = 'Explore verified model weight repositories, license terms, hosted API prices, and workload cost comparisons.'
+const openUrl = 'https://marginaltoken.com/open/'
+const openHtml = shell.replace('<title>The Marginal Token</title>', `<title>${openTitle}</title>`)
+  .replaceAll('content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."', `content="${openDescription}"`)
+  .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${openUrl}" />`)
+  .replace('<meta property="og:title" content="The Marginal Token" />', `<meta property="og:title" content="${openTitle}" />`)
+  .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${openUrl}" />`)
+  .replace('<meta name="twitter:title" content="The Marginal Token" />', `<meta name="twitter:title" content="${openTitle}" />`)
+await mkdir(path.join(distDir, 'open'), { recursive: true })
+await writeFile(path.join(distDir, 'open', 'index.html'), openHtml)
+
 const infrastructureTitle = 'Rent vs Run AI inference — The Marginal Token'
 const infrastructureDescription = 'Compare posted AI API prices with a transparent NVIDIA NIM capacity plan and find whether a modeled break-even exists.'
 const infrastructureUrl = 'https://marginaltoken.com/infrastructure/'
@@ -37,7 +49,7 @@ await mkdir(infrastructureDir, { recursive: true })
 await writeFile(path.join(infrastructureDir, 'index.html'), infrastructureHtml)
 
 const compareTitle = 'AI model cost comparison — The Marginal Token'
-const compareDescription = 'Compare current AI model API prices against your workload, from cost per request to estimated monthly spend.'
+const compareDescription = 'Compare model billing plans, cache and reasoning costs, retries, human review, and cost per successful task using your workload assumptions.'
 const compareUrl = 'https://marginaltoken.com/compare/'
 let compareHtml = shell
   .replace('<title>The Marginal Token</title>', `<title>${compareTitle}</title>`)

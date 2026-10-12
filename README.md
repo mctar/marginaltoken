@@ -9,7 +9,7 @@ The live site is intended for `https://marginaltoken.com`. Phase 1 has no backen
 ```text
 collector/   Fetch, normalize, validate, diff, and index prices
 data/        Five committed public feed files
-site/        Static three-route publication
+site/        Static publication and decision tools
 deploy/      GitHub Pages publisher and systemd units
 ```
 
@@ -26,6 +26,7 @@ The five core deterministic files carry the same `generatedAt` revision timestam
 - `data/provenance.json`: provider freshness, matching-key price differences, and unresolved OpenRouter discovery signals for tracked first-party providers.
 - `data/brief.json`: an optional, revision-matched headline and two-sentence note generated locally from verified events.
 - `data/offers.json`: per-model marketplace offers with field-level source links, standard input/output rates, cache rates, context, quantization, maximum output, supported API parameters, and conservative like-for-like comparison groups.
+- `data/decisions.json`: independently sourced weight repository and license records, dated verification status, and detailed lab cache, batch, and context billing plans.
 - `data/deployment.json`: a separate reviewed NVIDIA NIM deployment register with lifecycle status and verified GPU, tensor-parallel, precision, and optimization profiles; it never enters the API price tape.
 
 The Frontier Basket is the simple mean output price of one current, production, general-purpose frontier representative per independent provider, using public first-party standard global API rates. The Token Price Deflator is chain-linked between verified observations. A successor or newly added provider enters the reference basket at its current price, so a composition change is neutral; price moves in continuing constituents change the index. Basket changes remain visible as public events, while methodology corrections require an explicit rebase.
@@ -179,6 +180,16 @@ The first OpenRouter appearance of a paid model from a registered provider is wr
 ## Venue offers
 
 `collector/endpoints.py` preserves standard per-host OpenRouter offers and cache rates, then verifies or supplements fields from supported direct marketplace catalogs. Every offer carries its price source; mixed-source configuration fields carry separate provenance. Deterministic serving-configuration keys summarize price ranges only within conservative comparison groups. Model cards expose the leading declared configurations and widest spreads with expandable, source-labelled offer tables, while The Spreads ranks all non-zero comparable gaps. Batch or priority tiers, offer history, and claims of equivalent quality, throughput, reliability, or contractual terms remain outside this edition.
+
+## Decision tools
+
+`python3 collector/decisions.py` publishes `data/decisions.json` independently of the core price tape. Repository metadata is cached for 24 hours and checked against the exact model repository ID. Weight files, gated access, source dates, and license IDs are disclosed. Known permissive licenses are distinguished from custom and unknown terms; this is not an assessment of full open source AI. First-party billing plans currently cover Anthropic, OpenAI, and conservatively parsed Google text-token rows. Missing and ambiguous rates are omitted. A changed source format retains dated last-good records; records older than seven days are excluded by the frontend even if publication stops.
+
+The Open models route has an eight-slot reviewed shortlist, a searchable stable-model shelf, license and tool filters, and a four-model comparison tray. Successors require a matching verified weight repository. The Tape and model cards expose the same classification.
+
+Compare supports explicit lab standard, batch, and long-context plans; routed venue quotes; cache reads and writes; reasoning; cache token-hour storage; token and regional multipliers; and manual rate overrides. Unknown rates required by the workload prevent a complete estimate. Workload presets are illustrative. Outcome mode uses visitor-supplied success rates and bounded independent retries (1–10 attempts), charging API and human review costs on every attempt and dividing by expected accepted tasks. Zero acceptance has no finite cost per successful task. Scenario JSON import/export and shared URLs preserve aggregate assumptions; no prompts or evaluation task data are uploaded. Share images show modeled monthly cost and label entered assumptions.
+
+The hourly service runs the decision collector alongside existing collectors, while its public source checks are cached daily. Deploy the updated unit and reload the user service manager when enabling this collector on an existing installation.
 
 ## NVIDIA NIM profiles
 

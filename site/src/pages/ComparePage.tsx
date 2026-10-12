@@ -1,178 +1,450 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import ShareImageButton from '../components/ShareImageButton'
-import { calculateCost, comparisonPath, defaultWorkload, nonNegativeNumber, type Workload } from '../lib/compare'
+import { defaultWorkload, nonNegativeNumber } from '../lib/compare'
+import {
+  currentVerification,
+  decisionFor,
+  matchesOpenness,
+} from '../lib/decisions'
+import {
+  applyRateOverrides,
+  billComparisonPath,
+  calculateBill,
+  defaultAssumptions,
+  optionalNumber,
+  parseAssumptions,
+  percent,
+  workloadPresets,
+  type BillWorkload,
+  type ModelAssumptions,
+} from '../lib/economics'
 import { contextSize, price, providerName } from '../lib/format'
-import { capabilityTags, modelPath } from '../lib/models'
+import { modelPath } from '../lib/models'
 import { createComparisonShareImage } from '../lib/share-image'
 import { shareImageFilename } from '../lib/share'
-import type { MetaFeed, PriceModel, PricesFeed } from '../lib/types'
+import type {
+  BillingPlan,
+  DecisionsFeed,
+  MetaFeed,
+  OffersFeed,
+  PriceModel,
+  PricesFeed,
+} from '../lib/types'
 
-const preferredProviders = ['anthropic', 'openai', 'google']
-
-function parameterNumber(params: URLSearchParams, name: string, fallback: number): string {
-  const value = params.get(name)
-  if (value === null || value.trim() === '') return String(fallback)
-  const parsed = Number(value)
-  return Number.isFinite(parsed) && parsed >= 0 ? value : String(fallback)
+type Quote = {
+  id: string
+  plan: BillingPlan
+  source: string
+  sourceUrl: string
+  verifiedAt?: string
+  context?: number
+  maxOutput?: number
 }
-
-function defaultKeys(prices: PricesFeed, basket: string[]): string[] {
-  const byKey = new Map(prices.models.map((model) => [model.key, model]))
-  const basketModels = basket.map((key) => byKey.get(key)).filter((model): model is PriceModel => Boolean(model))
-  return [...basketModels]
-    .sort((a, b) => {
-      const left = preferredProviders.indexOf(a.provider)
-      const right = preferredProviders.indexOf(b.provider)
-      const leftRank = left === -1 ? preferredProviders.length : left
-      const rightRank = right === -1 ? preferredProviders.length : right
-      return leftRank - rightRank || a.display.localeCompare(b.display)
+function quotesFor(
+  model: PriceModel,
+  decisions: DecisionsFeed | null,
+  offers: OffersFeed | null,
+): Quote[] {
+  const quotes: Quote[] = [
+    {
+      id: 'tape',
+      plan: {
+        id: 'tape',
+        label: 'Standard tape quote',
+        input_mtok: model.input_mtok,
+        output_mtok: model.output_mtok,
+      },
+      source:
+        model.source === 'firstparty' ? 'First-party tape' : 'OpenRouter tape',
+      sourceUrl: model.sourceUrl ?? `https://openrouter.ai/${model.key}`,
+      context: model.context,
+      maxOutput: model.maxOutputTokens,
+    },
+  ]
+  const billing = decisionFor(model, decisions)?.billing
+  if (billing && currentVerification(billing))
+    for (const plan of billing.plans)
+      quotes.push({
+        id: 'lab:' + plan.id,
+        plan,
+        source: `Published lab plan${billing.status === 'last_good' ? ' · Last good' : ''}`,
+        sourceUrl: billing.sourceUrl,
+        verifiedAt: billing.verifiedAt,
+        context: model.context,
+        maxOutput: model.maxOutputTokens,
+      })
+  for (const offer of offers?.models.find((row) => row.key === model.key)
+    ?.offers ?? [])
+    quotes.push({
+      id: `venue:${offer.venue}:${offer.tag}`,
+      plan: {
+        id: offer.tag,
+        label: `${offer.venue} · ${offer.quantization ?? 'precision undisclosed'} · ${contextSize(offer.context)}`,
+        input_mtok: offer.input_mtok,
+        output_mtok: offer.output_mtok,
+        cached_input_mtok: offer.cached_input_mtok,
+        cache_write_mtok: offer.cache_write_mtok,
+        reasoning_mtok: offer.reasoning_mtok,
+      },
+      source: `${offer.venue} · ${offer.source ?? 'OpenRouter endpoints'}`,
+      sourceUrl:
+        offer.sourceUrl ?? `https://openrouter.ai/${model.key}/providers`,
+      context: offer.context,
+      maxOutput: offer.maxOutputTokens,
     })
-    .slice(0, 3)
-    .map((model) => model.key)
+  return quotes
 }
-
-function initialKeys(prices: PricesFeed, basket: string[]): string[] {
-  const valid = new Set(prices.models.map((model) => model.key))
-  const requested = [...new Set(new URLSearchParams(window.location.search).getAll('model'))]
-    .filter((key) => valid.has(key))
-    .slice(0, 4)
-  if (requested.length > 0) return [...requested, ...Array(Math.max(0, 2 - requested.length)).fill('')]
-  return defaultKeys(prices, basket)
+function parameter(p: URLSearchParams, name: string, fallback: number): string {
+  const value = p.get(name)
+  return value !== null && value.trim() && optionalNumber(value) !== null
+    ? value
+    : String(fallback)
 }
-
-function normalizeSearch(value: string): string {
-  return value
-    .normalize('NFKD')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
-}
-
-function money(value: number): string {
-  const maximumFractionDigits = value < 0.01 ? 4 : value < 100 ? 2 : 0
-  const minimumFractionDigits = value < 100 ? 2 : 0
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits, maximumFractionDigits })}`
-}
-
-async function copyText(value: string): Promise<void> {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value)
-    return
-  }
-  const field = document.createElement('textarea')
-  field.value = value
-  field.setAttribute('readonly', '')
-  field.style.position = 'fixed'
-  field.style.opacity = '0'
-  document.body.append(field)
-  field.select()
-  const copied = document.execCommand('copy')
-  field.remove()
-  if (!copied) throw new Error('Copy unavailable')
-}
-
-export default function ComparePage({ prices, meta }: { prices: PricesFeed; meta: MetaFeed }) {
-  const params = useMemo(() => new URLSearchParams(window.location.search), [])
-  const [selectedKeys, setSelectedKeys] = useState(() => initialKeys(prices, meta.basket))
-  const [calls, setCalls] = useState(() => parameterNumber(params, 'calls', defaultWorkload.calls))
-  const [inputTokens, setInputTokens] = useState(() => parameterNumber(params, 'input', defaultWorkload.inputTokens))
-  const [outputTokens, setOutputTokens] = useState(() => parameterNumber(params, 'output', defaultWorkload.outputTokens))
-  const [modelQuery, setModelQuery] = useState('')
-  const [shareStatus, setShareStatus] = useState('')
-
-  const groups = useMemo(() => {
-    const grouped = new Map<string, PriceModel[]>()
-    for (const model of prices.models) {
-      const group = grouped.get(model.provider) ?? []
-      group.push(model)
-      grouped.set(model.provider, group)
-    }
-    return [...grouped.entries()]
-      .map(([provider, models]) => ({
-        provider,
-        label: providerName(provider),
-        models: [...models].sort((a, b) => a.display.localeCompare(b.display)),
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label))
-  }, [prices.models])
-
-  const visibleGroups = useMemo(() => {
-    const query = normalizeSearch(modelQuery)
-    if (!query) return groups
-    const terms = query.split(/\s+/).filter(Boolean)
-    return groups
-      .map((group) => ({
-        ...group,
-        models: group.models.filter((model) => {
-          if (selectedKeys.includes(model.key)) return true
-          const haystack = normalizeSearch(`${model.display} ${model.key} ${group.label}`)
-          return terms.every((term) => haystack.includes(term))
-        }),
-      }))
-      .filter((group) => group.models.length > 0)
-  }, [groups, modelQuery, selectedKeys])
-
-  const visibleModelCount = new Set(visibleGroups.flatMap((group) => group.models.map((model) => model.key))).size
-
-  const byKey = useMemo(() => new Map(prices.models.map((model) => [model.key, model])), [prices.models])
-  const selectedModels = selectedKeys.map((key) => byKey.get(key)).filter((model): model is PriceModel => Boolean(model))
-  const workload: Workload = {
-    calls: nonNegativeNumber(calls),
-    inputTokens: nonNegativeNumber(inputTokens),
-    outputTokens: nonNegativeNumber(outputTokens),
-  }
-  const results = selectedModels.map((model) => ({ model, cost: calculateCost(model, workload) }))
-  const cheapest = results.length > 0 ? Math.min(...results.map((result) => result.cost.monthlyTotal)) : 0
-  const cheapestResults = results.filter((result) => result.cost.monthlyTotal === cheapest)
-  const cheapestModel = cheapestResults[0]?.model
-
-  useEffect(() => {
-    const path = comparisonPath(selectedKeys, {
-      calls: nonNegativeNumber(calls),
-      inputTokens: nonNegativeNumber(inputTokens),
-      outputTokens: nonNegativeNumber(outputTokens),
-    })
-    window.history.replaceState(null, '', `${path}${window.location.hash}`)
-    setShareStatus('')
-  }, [calls, inputTokens, outputTokens, selectedKeys])
-
-  const updateSelection = (index: number, key: string) => {
-    setSelectedKeys((current) => current.map((value, candidate) => candidate === index ? key : value))
-    setModelQuery('')
-  }
-
-  const shareLink = async () => {
-    const url = window.location.href
-    const names = selectedModels.map((model) => model.display).join(', ')
-    const text = names ? `Compare the API cost of ${names}.` : 'Compare AI model API costs.'
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Model cost comparison — The Marginal Token', text, url })
-        setShareStatus('Shared')
-        return
-      } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') return
-      }
-    }
-    try {
-      await copyText(url)
-      setShareStatus('Comparison link copied')
-    } catch {
-      setShareStatus('Copy unavailable — use the address bar')
-    }
-  }
-
+function money(n: number): string {
   return (
-    <main id="main" className="compare-page mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
+    '$' +
+    n.toLocaleString('en-US', {
+      minimumFractionDigits: n < 100 ? 2 : 0,
+      maximumFractionDigits:
+        n > 0 && n < 0.0001 ? 8 : n < 0.01 ? 4 : n < 100 ? 2 : 0,
+    })
+  )
+}
+function initialKeys(prices: PricesFeed, basket: string[]): string[] {
+  const valid = new Set(prices.models.map((m) => m.key))
+  const chosen = [
+    ...new Set(new URLSearchParams(window.location.search).getAll('model')),
+  ]
+    .filter((k) => valid.has(k))
+    .slice(0, 4)
+  if (chosen.length)
+    return [...chosen, ...Array(Math.max(0, 2 - chosen.length)).fill('')]
+  const providers = ['anthropic', 'openai', 'google']
+  const rank = (key: string) => {
+    const index = providers.indexOf(key.split('/')[0])
+    return index < 0 ? providers.length : index
+  }
+  return basket
+    .filter((k) => valid.has(k))
+    .sort((a, b) => rank(a) - rank(b))
+    .slice(0, 3)
+}
+function NumberField({
+  label,
+  value,
+  onChange,
+  step = '1',
+  max,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  step?: string
+  max?: number
+}) {
+  return (
+    <label>
+      <span>{label}</span>
+      <input
+        type="number"
+        min="0"
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </label>
+  )
+}
+
+export default function ComparePage({
+  prices,
+  meta,
+  decisions,
+  offers,
+}: {
+  prices: PricesFeed
+  meta: MetaFeed
+  decisions: DecisionsFeed | null
+  offers: OffersFeed | null
+}) {
+  const params = useMemo(() => new URLSearchParams(window.location.search), [])
+  const [keys, setKeys] = useState(() => initialKeys(prices, meta.basket))
+  const [calls, setCalls] = useState(() =>
+    parameter(params, 'calls', defaultWorkload.calls),
+  )
+  const [input, setInput] = useState(() =>
+    parameter(params, 'input', defaultWorkload.inputTokens),
+  )
+  const [output, setOutput] = useState(() =>
+    parameter(params, 'output', defaultWorkload.outputTokens),
+  )
+  const [reasoning, setReasoning] = useState(() =>
+    parameter(params, 'reasoning', 0),
+  )
+  const [cacheRead, setCacheRead] = useState(() =>
+    parameter(params, 'cache_read', 0),
+  )
+  const [cacheWrite, setCacheWrite] = useState(() =>
+    parameter(params, 'cache_write', 0),
+  )
+  const [hourly, setHourly] = useState(() =>
+    parameter(params, 'review_hourly', 60),
+  )
+  const [outcomes, setOutcomes] = useState(params.get('outcomes') === '1')
+  const [assumptions, setAssumptions] = useState<
+    Record<string, ModelAssumptions>
+  >(() => parseAssumptions(params.get('assumptions')))
+  const [query, setQuery] = useState('')
+  const [openOnly, setOpenOnly] = useState(false)
+  const [preset, setPreset] = useState('custom')
+  const [shareStatus, setShareStatus] = useState('')
+  const [importStatus, setImportStatus] = useState('')
+  const workload: BillWorkload = {
+    calls: nonNegativeNumber(calls),
+    inputTokens: nonNegativeNumber(input),
+    outputTokens: nonNegativeNumber(output),
+    reasoningTokens: nonNegativeNumber(reasoning),
+    cacheReadPct: percent(cacheRead),
+    cacheWritePct: percent(cacheWrite),
+    reviewHourly: nonNegativeNumber(hourly),
+  }
+  const models = keys
+    .map((k) => prices.models.find((m) => m.key === k))
+    .filter((m): m is PriceModel => Boolean(m))
+  const assumptionFor = (m: PriceModel): ModelAssumptions => {
+    if (assumptions[m.key]) return assumptions[m.key]
+    const q = quotesFor(m, decisions, offers).find(
+      (q) =>
+        q.id === 'lab:standard' &&
+        q.plan.input_mtok === m.input_mtok &&
+        q.plan.output_mtok === m.output_mtok &&
+        m.source === 'firstparty',
+    )
+    return { ...defaultAssumptions, quote: q?.id ?? 'tape' }
+  }
+  const selectedAssumptions = Object.fromEntries(
+    models.map((m) => [m.key, assumptionFor(m)]),
+  )
+  const results = models.map((model) => {
+    const a = assumptionFor(model),
+      quotes = quotesFor(model, decisions, offers),
+      quote = quotes.find((q) => q.id === a.quote)
+    const fallback = quotes[0],
+      plan = applyRateOverrides((quote ?? fallback).plan, a)
+    const bill = calculateBill(plan, workload, a, outcomes)
+    if (Number(cacheRead) > 100 || Number(cacheWrite) > 100)
+      bill.problems.push('Cache percentages must be between 0 and 100%.')
+    if (!quote)
+      bill.problems.push(
+        'Selected quote is no longer available. Choose a current price plan.',
+      )
+    if (
+      (quote ?? fallback).context &&
+      bill.inputTokens + (bill.outputTokens + bill.reasoningTokens) >
+        (quote ?? fallback).context!
+    )
+      bill.problems.push('Request exceeds the published total context limit.')
+    if (
+      (quote ?? fallback).maxOutput &&
+      bill.outputTokens + bill.reasoningTokens > (quote ?? fallback).maxOutput!
+    )
+      bill.problems.push(
+        'Output plus reasoning exceeds the published output limit.',
+      )
+    if (bill.reasoningTokens > 0 && model.supportsReasoning === false)
+      bill.problems.push(
+        'This listing does not report reasoning support. Set its reasoning tokens to zero.',
+      )
+    bill.complete = bill.problems.length === 0
+    return { model, a, quote: quote ?? fallback, plan, bill }
+  })
+  const comparable =
+    results.length >= 2 &&
+    results.every(
+      (r) => r.bill.complete && (!outcomes || r.bill.costPerSuccess !== null),
+    )
+  const minimum = comparable
+    ? Math.min(
+        ...results.map((r) =>
+          outcomes ? r.bill.costPerSuccess! : r.bill.monthlyTotal,
+        ),
+      )
+    : null
+  const update = (key: string, field: keyof ModelAssumptions, value: string) =>
+    setAssumptions((old) => ({
+      ...old,
+      [key]: {
+        ...assumptionFor(prices.models.find((m) => m.key === key)!),
+        ...old[key],
+        [field]: value,
+      },
+    }))
+  useEffect(() => {
+    const a = Object.fromEntries(
+      keys.filter(Boolean).map((k) => {
+        const m = prices.models.find((m) => m.key === k)!
+        return [k, assumptionFor(m)]
+      }),
+    )
+    window.history.replaceState(
+      null,
+      '',
+      billComparisonPath(keys, workload, a, outcomes) + window.location.hash,
+    )
+    setShareStatus('')
+  }, [
+    keys,
+    calls,
+    input,
+    output,
+    reasoning,
+    cacheRead,
+    cacheWrite,
+    hourly,
+    outcomes,
+    assumptions,
+    decisions,
+    offers,
+  ])
+  const choosePreset = (id: string) => {
+    setPreset(id)
+    const p = workloadPresets.find((p) => p.id === id)
+    if (p) {
+      setInput(String(p.inputTokens))
+      setOutput(String(p.outputTokens))
+      setReasoning(String(p.reasoningTokens))
+      setCacheRead(String(p.cacheReadPct))
+      setCacheWrite('0')
+    }
+  }
+  const changeUsage = (set: (v: string) => void) => (v: string) => {
+    set(v)
+    setPreset('custom')
+  }
+  const filtered = prices.models
+    .filter(
+      (m) =>
+        (keys.includes(m.key) ||
+          !openOnly ||
+          matchesOpenness(m, 'weights', decisions)) &&
+        (keys.includes(m.key) ||
+          `${m.display} ${providerName(m.provider)} ${m.key}`
+            .toLowerCase()
+            .includes(query.toLowerCase())),
+    )
+    .sort(
+      (a, b) =>
+        providerName(a.provider).localeCompare(providerName(b.provider)) ||
+        a.display.localeCompare(b.display),
+    )
+  const groups = [...new Set(filtered.map((m) => m.provider))]
+  const shareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setShareStatus('Scenario link copied')
+    } catch {
+      setShareStatus('Use the address bar to copy this scenario')
+    }
+  }
+  const exportScenario = () => {
+    const blob = new Blob(
+      [
+        JSON.stringify(
+          {
+            version: 1,
+            models: keys.filter(Boolean),
+            workload,
+            outcomes,
+            assumptions: selectedAssumptions,
+          },
+          null,
+          2,
+        ),
+      ],
+      { type: 'application/json' },
+    )
+    const url = URL.createObjectURL(blob),
+      link = document.createElement('a')
+    link.href = url
+    link.download = 'marginal-token-scenario.json'
+    link.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+  const importScenario = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      if (file.size > 100000)
+        throw new Error('Use an aggregate scenario file under 100 KB.')
+      const scenario = JSON.parse(await file.text())
+      if (
+        scenario.version !== 1 ||
+        !Array.isArray(scenario.models) ||
+        !scenario.workload ||
+        typeof scenario.workload !== 'object' ||
+        Array.isArray(scenario.workload)
+      )
+        throw new Error('Use an exported version 1 scenario file.')
+      const selected = [...new Set<string>(scenario.models)]
+        .filter((k) => prices.models.some((m) => m.key === k))
+        .slice(0, 4)
+      if (!selected.length)
+        throw new Error('No current model IDs were found in this scenario.')
+      const w = scenario.workload
+      for (const f of [
+        'calls',
+        'inputTokens',
+        'outputTokens',
+        'reasoningTokens',
+        'cacheReadPct',
+        'cacheWritePct',
+        'reviewHourly',
+      ])
+        if (typeof w[f] !== 'number' || !Number.isFinite(w[f]) || w[f] < 0)
+          throw new Error('The workload contains invalid values.')
+      setKeys([
+        ...selected,
+        ...Array(Math.max(0, 2 - selected.length)).fill(''),
+      ])
+      setCalls(String(w.calls))
+      setInput(String(w.inputTokens))
+      setOutput(String(w.outputTokens))
+      setReasoning(String(w.reasoningTokens))
+      setCacheRead(String(w.cacheReadPct))
+      setCacheWrite(String(w.cacheWritePct))
+      setHourly(String(w.reviewHourly))
+      setOutcomes(scenario.outcomes === true)
+      setAssumptions(parseAssumptions(JSON.stringify(scenario.assumptions)))
+      setPreset('custom')
+      setImportStatus(
+        'Scenario loaded. Review its assumptions against current prices.',
+      )
+    } catch (error) {
+      setImportStatus(
+        error instanceof Error ? error.message : 'Could not read the scenario.',
+      )
+    }
+    e.target.value = ''
+  }
+  return (
+    <main
+      id="main"
+      className="compare-page mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14"
+    >
       <header className="page-heading compare-heading">
-        <p className="section-kicker">Costed comparison</p>
+        <p className="section-kicker">Usage, billing, and outcomes</p>
         <h1>Run the numbers.</h1>
         <p>
-          Compare the standard API cost of two to four models against the same workload. Every selection and assumption stays in the URL, ready to share.
+          Compare two to four models using published price plans and your
+          workload. Add your measured success rates to see the cost of
+          acceptable results.
         </p>
       </header>
-
-      <section className="compare-workbench" aria-label="Comparison assumptions">
+      <section
+        className="compare-workbench"
+        aria-label="Comparison assumptions"
+      >
         <div className="compare-panel workload-panel">
           <div className="compare-panel-heading">
             <span>01</span>
@@ -181,25 +453,97 @@ export default function ComparePage({ prices, meta }: { prices: PricesFeed; meta
               <h2>Set the usage</h2>
             </div>
           </div>
-          <div className="workload-fields">
-            <label>
-              <span>Requests / month</span>
-              <input type="number" min="0" step="100" inputMode="numeric" value={calls} onChange={(event) => setCalls(event.target.value)} />
-            </label>
-            <label>
-              <span>Input tokens / request</span>
-              <input type="number" min="0" step="100" inputMode="numeric" value={inputTokens} onChange={(event) => setInputTokens(event.target.value)} />
-            </label>
-            <label>
-              <span>Output tokens / request</span>
-              <input type="number" min="0" step="100" inputMode="numeric" value={outputTokens} onChange={(event) => setOutputTokens(event.target.value)} />
-            </label>
-          </div>
-          <p className="workload-volume">
-            Monthly volume: {(workload.calls * workload.inputTokens).toLocaleString('en-US')} input and {(workload.calls * workload.outputTokens).toLocaleString('en-US')} output tokens.
+          <label className="decision-select">
+            <span>Start with a workload</span>
+            <select
+              value={preset}
+              onChange={(e) => choosePreset(e.target.value)}
+            >
+              {workloadPresets.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="decision-note">
+            Presets are editable examples, not measured model performance. One
+            request means one model attempt.
           </p>
+          <div className="workload-fields">
+            <NumberField
+              label={outcomes ? 'Tasks / month' : 'Requests / month'}
+              value={calls}
+              onChange={changeUsage(setCalls)}
+              step="100"
+            />
+            <NumberField
+              label="Input tokens / attempt"
+              value={input}
+              onChange={changeUsage(setInput)}
+              step="100"
+            />
+            <NumberField
+              label="Answer tokens / attempt"
+              value={output}
+              onChange={changeUsage(setOutput)}
+              step="100"
+            />
+            <NumberField
+              label="Additional reasoning tokens / attempt"
+              value={reasoning}
+              onChange={changeUsage(setReasoning)}
+              step="100"
+            />
+          </div>
+          <details className="decision-details">
+            <summary>Cache usage</summary>
+            <div className="workload-fields">
+              <NumberField
+                label="Cached reads · % of input"
+                value={cacheRead}
+                onChange={changeUsage(setCacheRead)}
+                max={100}
+              />
+              <NumberField
+                label="Cache writes · % of input"
+                value={cacheWrite}
+                onChange={changeUsage(setCacheWrite)}
+                max={100}
+              />
+            </div>
+            <p className="decision-note">
+              Input includes uncached, cache-read, and cache-write tokens. Those
+              portions are disjoint. Reasoning is additional to the answer; use
+              zero if your output count already includes it. Unknown required
+              cache rates make the estimate incomplete.
+            </p>
+          </details>
+          <label className="decision-check outcome-switch">
+            <input
+              type="checkbox"
+              checked={outcomes}
+              onChange={(e) => setOutcomes(e.target.checked)}
+            />
+            Cost successful tasks
+          </label>
+          {outcomes && (
+            <>
+              <NumberField
+                label="Reviewer cost · $ / hour"
+                value={hourly}
+                onChange={setHourly}
+                step="5"
+              />
+              <p className="decision-note">
+                Enter each model’s observed success rate below. Success means
+                your acceptance test passed. Retries assume independent attempts
+                with the same token usage; review is charged per reviewed
+                attempt.
+              </p>
+            </>
+          )}
         </div>
-
         <div className="compare-panel model-picker-panel">
           <div className="compare-panel-heading">
             <span>02</span>
@@ -212,37 +556,56 @@ export default function ComparePage({ prices, meta }: { prices: PricesFeed; meta
             <span>Find a model</span>
             <input
               type="search"
-              value={modelQuery}
-              onChange={(event) => setModelQuery(event.target.value)}
-              placeholder={`Search ${prices.models.length} models by name, provider, or ID`}
-              autoComplete="off"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by model, developer, or ID"
             />
-            {modelQuery && <small>{visibleModelCount} choices visible</small>}
+          </label>
+          <label className="decision-check">
+            <input
+              type="checkbox"
+              checked={openOnly}
+              onChange={(e) => setOpenOnly(e.target.checked)}
+            />
+            Show verified open weights
           </label>
           <div className="model-selectors">
-            {selectedKeys.map((key, index) => (
-              <div className="model-selector" key={index}>
+            {keys.map((key, i) => (
+              <div className="model-selector" key={i}>
                 <label>
-                  <span>Model {index + 1}</span>
-                  <select value={key} onChange={(event) => updateSelection(index, event.target.value)}>
+                  <span>Model {i + 1}</span>
+                  <select
+                    value={key}
+                    onChange={(e) => {
+                      setKeys((a) =>
+                        a.map((k, j) => (j === i ? e.target.value : k)),
+                      )
+                      setQuery('')
+                    }}
+                  >
                     <option value="">Choose a model</option>
-                    {visibleGroups.map((group) => (
-                      <optgroup key={group.provider} label={group.label}>
-                        {group.models.map((model) => (
-                          <option
-                            key={model.key}
-                            value={model.key}
-                            disabled={model.key !== key && selectedKeys.includes(model.key)}
-                          >
-                            {model.display} · {price(model.output_mtok)} output · {model.source === 'firstparty' ? 'First party' : 'OpenRouter'}
-                          </option>
-                        ))}
+                    {groups.map((g) => (
+                      <optgroup key={g} label={providerName(g)}>
+                        {filtered
+                          .filter((m) => m.provider === g)
+                          .map((m) => (
+                            <option
+                              key={m.key}
+                              value={m.key}
+                              disabled={m.key !== key && keys.includes(m.key)}
+                            >
+                              {m.display} · {price(m.output_mtok)} output
+                            </option>
+                          ))}
                       </optgroup>
                     ))}
                   </select>
                 </label>
-                {selectedKeys.length > 2 && (
-                  <button type="button" onClick={() => setSelectedKeys((current) => current.filter((_, candidate) => candidate !== index))}>
+                {keys.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => setKeys((a) => a.filter((_, j) => j !== i))}
+                  >
                     Remove
                   </button>
                 )}
@@ -250,81 +613,358 @@ export default function ComparePage({ prices, meta }: { prices: PricesFeed; meta
             ))}
           </div>
           <div className="compare-picker-actions">
-            {selectedKeys.length < 4 && <button type="button" onClick={() => setSelectedKeys((current) => [...current, ''])}>+ Add model</button>}
-            <span>{selectedModels.length} selected · maximum 4</span>
+            {keys.length < 4 && (
+              <button type="button" onClick={() => setKeys((a) => [...a, ''])}>
+                + Add model
+              </button>
+            )}
+            <span>{models.length} selected · maximum 4</span>
           </div>
+          <div className="scenario-actions">
+            <button type="button" onClick={exportScenario}>
+              Export scenario
+            </button>
+            <label className="scenario-import">
+              Import scenario
+              <input
+                type="file"
+                accept="application/json,.json"
+                onChange={importScenario}
+              />
+            </label>
+            <p aria-live="polite">{importStatus}</p>
+          </div>
+          <p className="decision-note">
+            Files are processed in your browser. The scenario link includes your
+            entered assumptions and aggregate success rates.
+          </p>
         </div>
       </section>
-
-      <section className="compare-results" aria-labelledby="comparison-results-title">
+      <section className="model-assumptions" aria-labelledby="billing-heading">
+        <div className="compare-panel-heading">
+          <span>03</span>
+          <div>
+            <p className="section-kicker">Published plans + your assumptions</p>
+            <h2 id="billing-heading">Cost each model</h2>
+          </div>
+        </div>
+        <div className="assumption-grid">
+          {results.map(({ model, a, quote, plan }) => {
+            const quotes = quotesFor(model, decisions, offers)
+            return (
+              <article className="assumption-card" key={model.key}>
+                <h3>{model.display}</h3>
+                <label className="decision-select">
+                  <span>Price plan / serving route</span>
+                  <select
+                    aria-label={`Price plan for ${model.display}`}
+                    value={a.quote}
+                    onChange={(e) => update(model.key, 'quote', e.target.value)}
+                  >
+                    {!quotes.some((q) => q.id === a.quote) && (
+                      <option value={a.quote}>
+                        Previously selected quote · unavailable
+                      </option>
+                    )}
+                    {quotes.map((q) => (
+                      <option key={q.id} value={q.id}>
+                        {q.plan.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="decision-source">
+                  <a href={quote.sourceUrl}>{quote.source}</a>
+                  {quote.verifiedAt
+                    ? ` · Checked ${quote.verifiedAt.slice(0, 10)}`
+                    : ''}
+                </p>
+                <p className="decision-note">
+                  {price(plan.input_mtok)} input · {price(plan.output_mtok)}{' '}
+                  output / Mtok
+                  {plan.cached_input_mtok !== undefined
+                    ? ` · ${price(plan.cached_input_mtok)} cache reads`
+                    : ''}
+                  . Choose the context price tier that applies to your prompt.
+                </p>
+                <details className="decision-details">
+                  <summary>Token usage & rate adjustments</summary>
+                  <div className="assumption-fields">
+                    <NumberField
+                      label="Input token multiplier"
+                      value={a.tokenMultiplier}
+                      onChange={(v) => update(model.key, 'tokenMultiplier', v)}
+                      step="0.1"
+                    />
+                    <NumberField
+                      label="Answer token multiplier"
+                      value={a.outputMultiplier}
+                      onChange={(v) => update(model.key, 'outputMultiplier', v)}
+                      step="0.1"
+                    />
+                    <NumberField
+                      label="Reasoning tokens · blank uses workload"
+                      value={a.reasoningTokens}
+                      onChange={(v) => update(model.key, 'reasoningTokens', v)}
+                      step="100"
+                    />
+                    <NumberField
+                      label="Rate multiplier · regional / negotiated"
+                      value={a.rateMultiplier}
+                      onChange={(v) => update(model.key, 'rateMultiplier', v)}
+                      step="0.05"
+                    />
+                    <label>
+                      <span>Cache write duration</span>
+                      <select
+                        value={a.cacheDuration}
+                        onChange={(e) =>
+                          update(model.key, 'cacheDuration', e.target.value)
+                        }
+                      >
+                        <option value="5m">Default / 5 minutes</option>
+                        <option value="1h">1 hour</option>
+                      </select>
+                    </label>
+                    <NumberField
+                      label="Cache storage · million token-hours / month"
+                      value={a.storageMillionTokenHours}
+                      onChange={(v) =>
+                        update(model.key, 'storageMillionTokenHours', v)
+                      }
+                      step="0.1"
+                    />
+                    <NumberField
+                      label="Tools & other charges · $ / attempt"
+                      value={a.extraPerAttempt}
+                      onChange={(v) => update(model.key, 'extraPerAttempt', v)}
+                      step="0.001"
+                    />
+                  </div>
+                  <p className="decision-note">
+                    Multipliers are your assumptions. Cache storage is a monthly
+                    quantity and is not multiplied by retries.
+                  </p>
+                </details>
+                <details className="decision-details">
+                  <summary>Your rate overrides</summary>
+                  <p className="decision-note">
+                    Leave blank to use the selected quote. Entered rates are
+                    assumptions, in USD per million tokens.
+                  </p>
+                  <div className="assumption-fields">
+                    {(
+                      [
+                        ['inputRate', 'Uncached input'],
+                        ['outputRate', 'Answer output'],
+                        ['reasoningRate', 'Reasoning output'],
+                        ['cachedInputRate', 'Cache read'],
+                        ['cacheWriteRate', 'Cache write · selected duration'],
+                        [
+                          'cacheStorageRate',
+                          'Storage · per million token-hour',
+                        ],
+                      ] as const
+                    ).map(([field, label]) => (
+                      <NumberField
+                        key={field}
+                        label={label}
+                        value={a[field]}
+                        onChange={(v) => update(model.key, field, v)}
+                        step="0.001"
+                      />
+                    ))}
+                  </div>
+                </details>
+                {outcomes && (
+                  <div className="outcome-fields">
+                    <NumberField
+                      label={`Success rate for ${model.display} · %`}
+                      value={a.successPct}
+                      onChange={(v) => update(model.key, 'successPct', v)}
+                      step="0.1"
+                      max={100}
+                    />
+                    <NumberField
+                      label={`Maximum attempts for ${model.display}`}
+                      value={a.maxAttempts}
+                      onChange={(v) => update(model.key, 'maxAttempts', v)}
+                      max={10}
+                    />
+                    <NumberField
+                      label={`Reviewed attempts for ${model.display} · %`}
+                      value={a.reviewPct}
+                      onChange={(v) => update(model.key, 'reviewPct', v)}
+                      max={100}
+                    />
+                    <NumberField
+                      label={`Review minutes for ${model.display}`}
+                      value={a.reviewMinutes}
+                      onChange={(v) => update(model.key, 'reviewMinutes', v)}
+                      step="0.1"
+                    />
+                  </div>
+                )}
+              </article>
+            )
+          })}
+        </div>
+      </section>
+      <section
+        className="compare-results"
+        aria-labelledby="comparison-results-title"
+      >
         <div className="compare-results-heading">
           <div>
             <p className="section-kicker">The mark</p>
-            <h2 id="comparison-results-title">Monthly cost</h2>
-            {results.length >= 2 && cheapestModel && (
-              cheapestResults.length === 1
-                ? <p><strong>{cheapestModel.display}</strong> is the lowest-cost selection for this workload at {money(cheapest)} per month.</p>
-                : <p><strong>{cheapestResults.length} models tie</strong> for the lowest cost in this workload at {money(cheapest)} per month.</p>
-            )}
+            <h2 id="comparison-results-title">
+              {outcomes ? 'Cost per successful task' : 'Monthly bill'}
+            </h2>
+            <p>
+              {outcomes
+                ? 'API spend, retries, and human review, divided by expected accepted tasks.'
+                : 'Cache, reasoning, storage, and selected price adjustments included.'}
+            </p>
           </div>
           <div className="compare-share">
             <div className="compare-share-actions">
               <ShareImageButton
-                createImage={() => createComparisonShareImage({
-                  results: results.map(({ model, cost }) => ({ model, monthlyTotal: cost.monthlyTotal })),
-                  workload,
-                  asOf: meta.asOf,
-                  path: '/compare/',
-                })}
+                createImage={() =>
+                  createComparisonShareImage({
+                    results: results.map((r) => ({
+                      model: r.model,
+                      monthlyTotal: r.bill.monthlyTotal,
+                    })),
+                    workload,
+                    asOf: meta.asOf,
+                    path: '/compare/',
+                    assumptionNote: outcomes
+                      ? 'Modeled monthly cost incl. retries & review. Success rates are user supplied.'
+                      : 'Modeled monthly bill using selected price plans and user assumptions.',
+                  })
+                }
                 filename={shareImageFilename('model-cost-comparison')}
                 shareTitle="AI model cost comparison — The Marginal Token"
-                shareText="A costed comparison using current standard AI model API prices."
-                disabled={results.length < 2}
+                shareText="A modeled cost comparison using selected prices and workload assumptions."
+                disabled={
+                  results.length < 2 || results.some((r) => !r.bill.complete)
+                }
               />
-              <button className="share-link-button" type="button" onClick={shareLink}>Share link</button>
+              <button
+                className="share-link-button"
+                type="button"
+                onClick={shareLink}
+              >
+                Share scenario link
+              </button>
             </div>
-            <span className="share-link-status" aria-live="polite">{shareStatus}</span>
+            <span className="share-link-status" aria-live="polite">
+              {shareStatus}
+            </span>
           </div>
         </div>
-
         {results.length < 2 ? (
           <div className="compare-empty">
             <strong>Add at least two models to compare.</strong>
-            <p>The calculator only compares posted prices; it does not infer model quality.</p>
+            <p>
+              Your assumptions determine the workload and quality threshold.
+            </p>
           </div>
         ) : (
           <div className="comparison-cards">
-            {results.map(({ model, cost }) => {
-              const isCheapest = cost.monthlyTotal === cheapest
-              const difference = cost.monthlyTotal - cheapest
-              const premium = cheapest > 0 ? (difference / cheapest) * 100 : 0
+            {results.map(({ model, a, bill }) => {
+              const measure = outcomes
+                  ? bill.costPerSuccess
+                  : bill.monthlyTotal,
+                best = comparable && measure === minimum
               return (
-                <article className={`comparison-card ${isCheapest ? 'cheapest' : ''}`} key={model.key}>
+                <article
+                  className={`comparison-card ${best ? 'cheapest' : ''}`}
+                  key={model.key}
+                >
                   <header>
                     <span>{providerName(model.provider)}</span>
-                    <h3><a href={modelPath(model.key)}>{model.display}</a></h3>
-                    <small>{contextSize(model.context)} context</small>
+                    <h3>
+                      <a href={modelPath(model.key)}>{model.display}</a>
+                    </h3>
+                    <small>
+                      {contextSize(model.context)} context
+                      {matchesOpenness(model, 'weights', decisions)
+                        ? ' · Open weights'
+                        : ''}
+                    </small>
                   </header>
-                  <div className="comparison-total">
-                    <span>Estimated monthly cost</span>
-                    <strong>{money(cost.monthlyTotal)}</strong>
-                    <small>{money(cost.totalPerRequest)} per request</small>
-                  </div>
-                  <dl>
-                    <div><dt>Input cost</dt><dd>{money(cost.monthlyInput)}</dd></div>
-                    <div><dt>Output cost</dt><dd>{money(cost.monthlyOutput)}</dd></div>
-                    <div><dt>Input rate</dt><dd>{price(model.input_mtok)} / Mtok</dd></div>
-                    <div><dt>Output rate</dt><dd>{price(model.output_mtok)} / Mtok</dd></div>
-                  </dl>
-                  <p className={`comparison-verdict ${isCheapest ? 'best' : ''}`}>
-                    {isCheapest
-                      ? cheapestResults.length > 1 ? 'Tied lowest cost in this comparison' : 'Lowest cost in this comparison'
-                      : `${money(difference)} more / month · ${premium.toFixed(0)}% premium`}
-                  </p>
-                  {capabilityTags(model).length > 0 && (
-                    <ul className="comparison-tags">
-                      {capabilityTags(model).map((tag) => <li key={tag}>{tag}</li>)}
-                    </ul>
+                  {bill.complete ? (
+                    <>
+                      <div className="comparison-total">
+                        <span>
+                          {outcomes
+                            ? 'Per successful task'
+                            : 'Estimated monthly cost'}
+                        </span>
+                        <strong>
+                          {measure === null
+                            ? 'No successful tasks'
+                            : money(measure)}
+                        </strong>
+                        <small>
+                          {outcomes
+                            ? `${bill.acceptedTasks?.toLocaleString('en-US', { maximumFractionDigits: 1 })} expected accepted tasks`
+                            : `${money(bill.perAttempt)} per attempt`}
+                        </small>
+                      </div>
+                      <dl>
+                        <div>
+                          <dt>Monthly total</dt>
+                          <dd>{money(bill.monthlyTotal)}</dd>
+                        </div>
+                        <div>
+                          <dt>API & other charges</dt>
+                          <dd>{money(bill.monthlyApi)}</dd>
+                        </div>
+                        {outcomes && (
+                          <>
+                            <div>
+                              <dt>Human review</dt>
+                              <dd>{money(bill.monthlyReview)}</dd>
+                            </div>
+                            <div>
+                              <dt>Expected attempts</dt>
+                              <dd>
+                                {bill.attempts.toLocaleString('en-US', {
+                                  maximumFractionDigits: 1,
+                                })}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Success / attempt</dt>
+                              <dd>
+                                {a.successPct}% · up to {a.maxAttempts} attempts
+                              </dd>
+                            </div>
+                          </>
+                        )}
+                        <div>
+                          <dt>Cache storage</dt>
+                          <dd>{money(bill.monthlyStorage)}</dd>
+                        </div>
+                      </dl>
+                      {best && (
+                        <p className="comparison-verdict best">
+                          Lowest modeled cost
+                          {outcomes ? ' per successful task' : ''}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="decision-warning">
+                      <strong>Estimate incomplete</strong>
+                      <ul>
+                        {bill.problems.map((p) => (
+                          <li key={p}>{p}</li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </article>
               )
@@ -332,7 +972,12 @@ export default function ComparePage({ prices, meta }: { prices: PricesFeed; meta
           </div>
         )}
         <p className="comparison-disclaimer">
-          Estimates use current standard list prices and exclude caching, batch, priority, regional and long-context adjustments. Price is not a measure of output quality.
+          Calculations run in your browser. Success rates and adjustments are
+          user supplied; no quality is inferred from price or API
+          specifications. Published plans describe their stated context and
+          billing terms. Tool charges, taxes, and other fees require your own
+          assumptions. A token multiplier represents measured usage differences
+          for the same work.
         </p>
       </section>
     </main>

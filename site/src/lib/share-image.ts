@@ -429,6 +429,7 @@ export async function createShortlistShareImage(options: {
 export async function createComparisonShareImage(options: {
   results: ComparisonShareResult[]
   workload: ComparisonShareWorkload
+  assumptionNote?: string
   asOf: string
   path?: string
 }): Promise<Blob> {
@@ -437,7 +438,7 @@ export async function createComparisonShareImage(options: {
   drawTitle(
     context,
     'Costed comparison',
-    'Monthly API cost',
+    options.assumptionNote ? 'Monthly modeled cost' : 'Monthly API cost',
     `${options.workload.calls.toLocaleString('en-US')} requests / month · ${options.workload.inputTokens.toLocaleString('en-US')} input + ${options.workload.outputTokens.toLocaleString('en-US')} output tokens each`,
   )
 
@@ -487,9 +488,9 @@ export async function createComparisonShareImage(options: {
 
   context.fillStyle = MUTED
   context.font = `400 15px ${SERIF}`
-  context.fillText('Standard list prices only. Price is not a measure of model quality.', 60, 542)
+  context.fillText(options.assumptionNote ?? 'Standard list prices only. Price is not a measure of model quality.', 60, 542)
   drawFooter(context, {
-    source: 'The Marginal Token price file · official lab + OpenRouter routed rates',
+    source: options.assumptionNote ? 'Selected published plans + user-entered assumptions · The Marginal Token' : 'The Marginal Token price file · official lab + OpenRouter routed rates',
     asOf: options.asOf,
     path: options.path,
   })

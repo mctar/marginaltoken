@@ -1,4 +1,5 @@
-import type { BriefFeed, ChangesFeed, DeploymentFeed, FeedData, HistoryFeed, MetaFeed, OffersFeed, PricesFeed, ProvenanceFeed } from './types'
+import { validDecisions } from './decisions.ts'
+import type { DecisionsFeed, BriefFeed, ChangesFeed, DeploymentFeed, FeedData, HistoryFeed, MetaFeed, OffersFeed, PricesFeed, ProvenanceFeed } from './types'
 
 async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(path, { cache: 'no-store' })
@@ -17,7 +18,7 @@ async function fetchOptionalJson<T>(path: string): Promise<T | null> {
 }
 
 export async function loadFeed(includeOffers = false, includeDeployment = false): Promise<FeedData> {
-  const [prices, history, changes, meta, candidateBrief, candidateProvenance, candidateOffers, candidateDeployment] = await Promise.all([
+  const [prices, history, changes, meta, candidateBrief, candidateProvenance, candidateOffers, candidateDeployment, candidateDecisions] = await Promise.all([
     fetchJson<PricesFeed>('/data/prices.json'),
     fetchJson<HistoryFeed>('/data/history.json'),
     fetchJson<ChangesFeed>('/data/changes.json'),
@@ -26,6 +27,7 @@ export async function loadFeed(includeOffers = false, includeDeployment = false)
     fetchOptionalJson<ProvenanceFeed>('/data/provenance.json'),
     includeOffers ? fetchOptionalJson<OffersFeed>('/data/offers.json') : Promise.resolve(null),
     includeDeployment ? fetchOptionalJson<DeploymentFeed>('/data/deployment.json') : Promise.resolve(null),
+    fetchOptionalJson<DecisionsFeed>('/data/decisions.json'),
   ])
   if (!Array.isArray(prices.models) || !Array.isArray(meta.indexHistory)) {
     throw new Error('The published feed is incomplete')
@@ -67,5 +69,5 @@ export async function loadFeed(includeOffers = false, includeDeployment = false)
     ))
     ? candidateDeployment
     : null
-  return { prices, history, changes, meta, brief, provenance, offers, deployment }
+  return { prices, history, changes, meta, brief, provenance, offers, deployment, decisions: validDecisions(candidateDecisions) ? candidateDecisions : null }
 }

@@ -43,6 +43,7 @@ export default function FrontPage({ data }: { data: FeedData }) {
 
   return (
     <main id="main" className="mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
+      <aside className="decision-entry"><strong>What should you run?</strong><a href="/open/">Explore open models →</a><a href="/compare/">Cost your workload →</a></aside>
       <section className="front-lead" aria-labelledby="front-title">
         <div>
           <p className="section-kicker">Frontier basket + token deflator</p>

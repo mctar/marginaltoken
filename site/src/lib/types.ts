@@ -281,4 +281,50 @@ export type FeedData = {
   provenance: ProvenanceFeed | null
   offers: OffersFeed | null
   deployment: DeploymentFeed | null
+  decisions?: DecisionsFeed | null
+}
+
+export type WeightsRecord = {
+  repository: string
+  sourceUrl: string
+  licenseUrl: string
+  license: string
+  licenseName: string
+  licenseClass: 'permissive' | 'custom' | 'unknown'
+  gated: boolean
+  weightsAvailable: boolean
+  verifiedAt: string
+  status: 'fresh' | 'last_good' | 'stale'
+}
+
+export type BillingPlan = {
+  reasoning_mtok?: number
+  id: string
+  label: string
+  input_mtok: number
+  output_mtok: number
+  cached_input_mtok?: number
+  cache_write_mtok?: number
+  cacheWriteHour_mtok?: number
+  cache_storage_mtok_hour?: number
+  minimumPromptTokens?: number
+  maximumPromptTokens?: number
+}
+
+export type DecisionModel = {
+  key: string
+  weights?: WeightsRecord
+  billing?: {
+    plans: BillingPlan[]
+    sourceUrl: string
+    verifiedAt: string
+    status: 'fresh' | 'last_good' | 'stale'
+  }
+}
+
+export type DecisionsFeed = {
+  version: 1
+  generatedAt: string
+  asOf: string
+  models: DecisionModel[]
 }

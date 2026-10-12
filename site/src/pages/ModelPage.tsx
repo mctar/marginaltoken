@@ -3,11 +3,12 @@ import OfferPanel from '../components/OfferPanel'
 import ShareImageButton from '../components/ShareImageButton'
 import { cheaperMatches } from '../lib/alternatives'
 import { comparisonPath, modelComparisonPath } from '../lib/compare'
+import { weightsLabel } from '../lib/decisions'
 import { contextSize, longDate, price, providerName } from '../lib/format'
 import { capabilityTags, modalityList, modelPath } from '../lib/models'
 import { createModelShareImage } from '../lib/share-image'
 import { shareImageFilename } from '../lib/share'
-import type { OfferModel, PriceModel } from '../lib/types'
+import type { DecisionModel, OfferModel, PriceModel } from '../lib/types'
 
 async function copyText(value: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
@@ -40,12 +41,14 @@ export default function ModelPage({
   asOf,
   offerModel,
   offersAsOf,
+  decision,
 }: {
   model: PriceModel
   models: PriceModel[]
   asOf: string
   offerModel: OfferModel | null
   offersAsOf: string | null
+  decision?: DecisionModel
 }) {
   const [shareStatus, setShareStatus] = useState('')
   const tags = capabilityTags(model)
@@ -197,6 +200,7 @@ export default function ModelPage({
         </footer>
       </article>
 
+      {decision?.weights && decision.weights.repository === model.huggingFaceId && <section className="model-weights decision-entry"><strong>{weightsLabel(decision.weights)}</strong><a href={decision.weights.licenseUrl}>{decision.weights.licenseName} · license terms →</a><span>{decision.weights.gated ? 'Gated repository · ' : ''}Verified {decision.weights.verifiedAt.slice(0,10)}</span><a href="/open/">Explore open models →</a></section>}
       {offerModel && offersAsOf && <OfferPanel model={model} offerModel={offerModel} asOf={offersAsOf} />}
 
       <section className="model-alternatives" aria-labelledby="cheaper-matches-title">

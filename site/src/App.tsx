@@ -4,6 +4,7 @@ import Header from './components/Header'
 import SourceWatch from './components/SourceWatch'
 import { loadFeed } from './lib/data'
 import type { FeedData } from './lib/types'
+import OpenPage from './pages/OpenPage'
 import FrontPage from './pages/FrontPage'
 import ComparePage from './pages/ComparePage'
 import InfrastructurePage from './pages/InfrastructurePage'
@@ -17,10 +18,11 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ready'; data: FeedData }
 
-type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/'
+type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/' | '/open/'
 
 function routeFor(pathname: string): Route {
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
+  if (normalized === '/open/') return '/open/'
   if (normalized === '/tape/') return '/tape/'
   if (normalized === '/spreads/') return '/spreads/'
   if (normalized === '/compare/') return '/compare/'
@@ -47,7 +49,7 @@ export default function App() {
 
   useEffect(() => {
     loadFeed(
-      route === '/model/' || route === '/spreads/' || route === '/infrastructure/',
+      route === '/model/' || route === '/spreads/' || route === '/infrastructure/' || route === '/compare/',
       route === '/infrastructure/',
     )
       .then((data) => setState({ status: 'ready', data }))
@@ -74,9 +76,10 @@ export default function App() {
       <a className="skip-link" href="#main">Skip to content</a>
       <Header asOf={data.meta.asOf} route={route} />
       <SourceWatch provenance={data.provenance} />
-      {route === '/tape/' && <TapePage prices={data.prices} />}
+      {route === '/tape/' && <TapePage prices={data.prices} decisions={data.decisions ?? null} />}
+      {route === '/open/' && <OpenPage prices={data.prices} decisions={data.decisions ?? null} />}
       {route === '/spreads/' && <SpreadsPage prices={data.prices} offers={data.offers} />}
-      {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} />}
+      {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} decisions={data.decisions ?? null} offers={data.offers} />}
       {route === '/infrastructure/' && (
         <InfrastructurePage prices={data.prices} offers={data.offers} deployment={data.deployment} meta={data.meta} />
       )}
@@ -84,6 +87,7 @@ export default function App() {
       {route === '/model/' && (model ? (
         <ModelPage
           model={model}
+          decision={data.decisions?.models.find((row) => row.key === model.key)}
           models={data.prices.models}
           asOf={data.meta.asOf}
           offerModel={offerModel}

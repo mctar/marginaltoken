@@ -943,6 +943,177 @@ a {
   font-size: 1.1rem;
 }
 
+.market-note-preview {
+  display: grid;
+  gap: 1rem;
+  margin-top: 3rem;
+  border-bottom: 1px solid var(--rule);
+  border-top: 1px solid var(--ink);
+  padding: 1.4rem 0;
+}
+
+.market-note-meta,
+.market-note-byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  color: var(--ink-muted);
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+
+.market-note-meta {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.market-note-preview h2,
+.notes-list h2 {
+  max-width: 38ch;
+  margin: 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.market-note-preview h2 a,
+.notes-list h2 a {
+  text-decoration: none;
+}
+
+.market-note-preview h2 a:hover,
+.notes-list h2 a:hover {
+  color: var(--teal);
+}
+
+.market-note-preview > div > p,
+.notes-list li > div > p {
+  max-width: 46rem;
+  margin: 0.65rem 0 0;
+  color: var(--ink-muted);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.market-note-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1.5rem;
+  margin-top: 0.85rem;
+}
+
+.notes-page {
+  min-height: 60vh;
+}
+
+.notes-title {
+  max-width: 25ch;
+  margin: 0.8rem 0 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(2.25rem, 5.5vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.notes-intro {
+  max-width: 42rem;
+  margin-top: 1.2rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+
+.notes-list {
+  margin: 2.75rem 0 0;
+  padding: 0;
+  border-top: 2px solid var(--ink);
+  list-style: none;
+}
+
+.notes-list li {
+  display: grid;
+  gap: 1rem;
+  border-bottom: 1px solid var(--rule);
+  padding: 1.7rem 0;
+}
+
+.notes-list .text-link {
+  display: inline-block;
+  margin-top: 0.9rem;
+}
+
+.market-note-article {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.market-note-article > header {
+  margin-top: 2rem;
+}
+
+.market-note-byline {
+  margin-top: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.2rem;
+}
+
+.market-note-body {
+  margin-top: 1.75rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.12rem, 2vw, 1.28rem);
+  line-height: 1.65;
+}
+
+.market-note-body p {
+  margin: 0 0 1.25rem;
+}
+
+.market-note-calculator {
+  margin-top: 2rem;
+  border-left: 3px solid var(--teal);
+  background: var(--paper-deep);
+  padding: 1.2rem 1.4rem;
+}
+
+.market-note-calculator h2 {
+  margin: 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.market-note-calculator p {
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.market-note-sources {
+  margin-top: 2rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.1rem;
+}
+
+.market-note-sources ul {
+  display: grid;
+  gap: 0.5rem;
+  padding-left: 1.2rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .market-note-preview,
+  .notes-list li {
+    grid-template-columns: minmax(9rem, 0.3fr) minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+
 .machine-note {
   display: grid;
   gap: 1.5rem;

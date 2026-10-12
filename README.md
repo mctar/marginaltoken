@@ -181,6 +181,10 @@ The first OpenRouter appearance of a paid model from a registered provider is wr
 
 `collector/endpoints.py` preserves standard per-host OpenRouter offers and cache rates, then verifies or supplements fields from supported direct marketplace catalogs. Every offer carries its price source; mixed-source configuration fields carry separate provenance. Deterministic serving-configuration keys summarize price ranges only within conservative comparison groups. Model cards expose the leading declared configurations and widest spreads with expandable, source-labelled offer tables, while The Spreads ranks all non-zero comparable gaps. Batch or priority tiers, offer history, and claims of equivalent quality, throughput, reliability, or contractual terms remain outside this edition.
 
+## Market notes
+
+Reviewed editorial notes live in `site/src/content/market-notes.json`. Each has a permanent slug, publication and evidence-check dates, a byline, source links, and a calculator link selecting the relevant model and published billing plan. The homepage shows the latest compact entry, `/notes/` preserves the archive, and each note has a static entry document with its own canonical URL and article metadata. Notes remain readable independently of price-feed availability and hourly revisions. To publish another reviewed note, add a record to the same register and build the site; no route or component changes are needed.
+
 ## Decision tools
 
 `python3 collector/decisions.py` publishes `data/decisions.json` independently of the core price tape. Repository metadata is cached for 24 hours and checked against the exact model repository ID. Weight files, gated access, source dates, and license IDs are disclosed. Known permissive licenses are distinguished from custom and unknown terms; this is not an assessment of full open source AI. First-party billing plans currently cover Anthropic, OpenAI, and conservatively parsed Google text-token rows. Missing and ambiguous rates are omitted. A changed source format retains dated last-good records; records older than seven days are excluded by the frontend even if publication stops.

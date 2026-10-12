@@ -34,6 +34,8 @@ test('selects the first available reviewed successor and falls back safely', () 
     model('anthropic/claude-fable-5.1'),
     model('anthropic/claude-opus-5'),
     model('anthropic/claude-opus-5.5'),
+    model('anthropic/claude-haiku-4.5'),
+    model('anthropic/claude-haiku-5.5'),
     model('openai/gpt-5.6-sol'),
     model('openai/gpt-6.1-sol'),
     model('openai/gpt-6-astra'),
@@ -49,6 +51,7 @@ test('selects the first available reviewed successor and falls back safely', () 
   ])
   const selections = columns.flatMap((column) => column.selections)
   assert.equal(selections.find((slot) => slot.id === 'anthropic-fable')?.model?.key, 'anthropic/claude-fable-5.1')
+  assert.equal(selections.find((slot) => slot.id === 'anthropic-haiku')?.model?.key, 'anthropic/claude-haiku-5.5')
     assert.equal(selections.find((slot) => slot.id === 'openai-frontier')?.model?.key, 'openai/gpt-6-astra')
     assert.equal(selections.find((slot) => slot.id === 'openai-sol')?.model?.key, 'openai/gpt-6.1-sol')
   assert.equal(selections.find((slot) => slot.id === 'google-flash')?.model?.key, 'google/gemini-3.8-flash')

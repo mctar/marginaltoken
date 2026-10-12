@@ -31,7 +31,7 @@ export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = [
       { id: 'anthropic-fable', tier: 'Fable', provider: 'anthropic', candidates: ['anthropic/claude-fable-5.1', 'anthropic/claude-fable-5'] },
       { id: 'anthropic-opus', tier: 'Opus', provider: 'anthropic', candidates: ['anthropic/claude-opus-5.5', 'anthropic/claude-opus-5'] },
       { id: 'anthropic-sonnet', tier: 'Sonnet', provider: 'anthropic', candidates: ['anthropic/claude-sonnet-5.5', 'anthropic/claude-sonnet-5'] },
-      { id: 'anthropic-haiku', tier: 'Haiku', provider: 'anthropic', candidates: ['anthropic/claude-haiku-4.5'] },
+      { id: 'anthropic-haiku', tier: 'Haiku', provider: 'anthropic', candidates: ['anthropic/claude-haiku-5.5', 'anthropic/claude-haiku-4.5'] },
     ],
   },
   {

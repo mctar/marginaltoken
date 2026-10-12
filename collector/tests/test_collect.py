@@ -58,6 +58,7 @@ class FirstPartyCatalogTests(unittest.TestCase):
             "anthropic/claude-fable-5": (10.0, 50.0, 1000000),
             "anthropic/claude-opus-5": (5.0, 25.0, 1000000),
             "anthropic/claude-haiku-4.5": (1.0, 5.0, 200000),
+            "anthropic/claude-haiku-5.5": (0.1, 0.5, 1000000),
             "moonshotai/kimi-k3": (3.0, 15.0, 1048576),
             "openai/gpt-6-astra": (10.0, 50.0, 1050000),
             "openai/gpt-6.1-sol": (2.0, 10.0, 1050000),
@@ -91,6 +92,7 @@ class FirstPartyCatalogTests(unittest.TestCase):
         self.assertTrue(by_key["moonshotai/kimi-k3"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-sonnet-5"]["indexEligible"])
         self.assertFalse(by_key["anthropic/claude-haiku-4.5"]["indexEligible"])
+        self.assertFalse(by_key["anthropic/claude-haiku-5.5"]["indexEligible"])
         self.assertFalse(by_key["openai/gpt-6-astra"]["indexEligible"])
         self.assertTrue(by_key["openai/gpt-6.1-sol"]["indexEligible"])
         self.assertFalse(by_key["openai/gpt-5.6-sol"]["indexEligible"])

@@ -1,6 +1,7 @@
 import DeflatorChart from '../components/DeflatorChart'
 import LatestMoves from '../components/LatestMoves'
 import MachineNote from '../components/MachineNote'
+import MarketNotePreview from '../components/MarketNotePreview'
 import ShareImageButton from '../components/ShareImageButton'
 import Shortlist from '../components/Shortlist'
 import { longDate, price, providerName } from '../lib/format'
@@ -143,6 +144,7 @@ export default function FrontPage({ data }: { data: FeedData }) {
         </div>
       </section>
 
+      <MarketNotePreview />
       <MachineNote brief={data.brief} revision={meta.generatedAt} />
 
       <div className="mt-16 grid gap-12 border-t border-ink pt-7 md:grid-cols-[1.5fr_1fr]">

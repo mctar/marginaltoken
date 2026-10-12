@@ -44,6 +44,8 @@ test('selects the first available reviewed successor and falls back safely', () 
     model('qwen/qwen3-max'),
     model('x-ai/grok-4.7'),
     model('deepseek/deepseek-v4.1-flash'),
+    model('mistralai/mistral-medium-3.5'),
+    model('mistralai/mistral-large-4'),
   ])
   const selections = columns.flatMap((column) => column.selections)
   assert.equal(selections.find((slot) => slot.id === 'anthropic-fable')?.model?.key, 'anthropic/claude-fable-5.1')
@@ -55,6 +57,7 @@ test('selects the first available reviewed successor and falls back safely', () 
     assert.equal(selections.find((slot) => slot.id === 'anthropic-opus')?.model?.key, 'anthropic/claude-opus-5.5')
     assert.equal(selections.find((slot) => slot.id === 'xai-frontier')?.model?.key, 'x-ai/grok-4.7')
     assert.equal(selections.find((slot) => slot.id === 'deepseek-frontier')?.model?.key, 'deepseek/deepseek-v4.1-flash')
+  assert.equal(selections.find((slot) => slot.id === 'mistral-frontier')?.model?.key, 'mistralai/mistral-large-4')
 })
 
 test('maps prices consistently onto a base-ten logarithmic axis', () => {

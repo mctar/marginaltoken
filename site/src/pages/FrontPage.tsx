@@ -130,7 +130,7 @@ export default function FrontPage({ data }: { data: FeedData }) {
               <li key={model.key}>
                 <a href={modelPath(model.key)}>
                   <span>{providerName(model.provider)}</span>
-                  <strong>{model.display}</strong>
+                  <strong>{model.display}{model.releaseStage === 'preview' ? ' · Preview' : ''}</strong>
                   <small>{price(model.output_mtok)} output / Mtok</small>
                 </a>
               </li>

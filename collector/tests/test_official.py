@@ -8,6 +8,7 @@ from pathlib import Path
 
 from collector.official import (
     FetchResult,
+    OfficialSourceError,
     parse_anthropic,
     parse_deepseek,
     parse_google,
@@ -203,6 +204,28 @@ Batch
                 "mistral-small-4": (0.15, 0.6),
             },
         )
+
+    def test_mistral_sale_uses_active_uncached_standard_prices(self) -> None:
+        source = """
+<table><tr><td><a>Mistral Large 4 <span>↗</span></a><span>Sale price</span></td>
+<td><del><span>Original price: </span>$1.36</del><ins><span>Sale price: </span>$0.68</ins></td>
+<td><del><span>Original price: </span>$0.14</del><ins><span>Sale price: </span>$0.07</ins></td>
+<td><del><span>Original price: </span>$4.18</del><ins><span>Sale price: </span>$2.09</ins></td></tr>
+<tr><td>Mistral Medium 3.5</td><td>$1.5</td><td>$0.15</td><td>$7.5</td></tr></table>
+"""
+        rows = [row("mistralai", "mistral-large-4", "Mistral Large 4")]
+        self.assertEqual(parse_mistral(source, rows, NOW), {"mistral-large-4": (0.68, 2.09)})
+
+    def test_mistral_tracks_standard_prices_after_sale_ends(self) -> None:
+        source = "<table><tr><td>Mistral Large 4 <span>↗</span></td><td>$1.36</td><td>$0.14</td><td>$4.18</td></tr></table>"
+        rows = [row("mistralai", "mistral-large-4", "Mistral Large 4")]
+        self.assertEqual(parse_mistral(source, rows, NOW), {"mistral-large-4": (1.36, 4.18)})
+
+    def test_mistral_rejects_ambiguous_active_prices(self) -> None:
+        source = "<table><tr><td>Mistral Large 4</td><td>$1.36 $0.68</td><td>$0.07</td><td>$2.09</td></tr></table>"
+        rows = [row("mistralai", "mistral-large-4", "Mistral Large 4")]
+        with self.assertRaisesRegex(OfficialSourceError, "input price ambiguous"):
+            parse_mistral(source, rows, NOW)
 
     def test_moonshot_json_ld_copy(self) -> None:
         source = "Kimi K3 API pricing is calculated based on token usage. Input tokens are billed at $3.00 per 1M tokens on a cache miss. Output tokens are billed at $15.00 per 1M tokens."

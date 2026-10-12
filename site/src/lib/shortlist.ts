@@ -22,7 +22,7 @@ export type ShortlistSelection = ShortlistSlot & {
 
 // This is an editorial set, not a model-name heuristic. Add a newly released
 // successor to the front of its slot only after its standard API rate and
-// production status have been reviewed. Older keys remain as safe fallbacks.
+// release status have been reviewed. Older keys remain as safe fallbacks.
 export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = [
   {
     id: 'anthropic',
@@ -76,7 +76,7 @@ export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = [
         id: 'mistral-frontier',
         tier: 'Mistral',
         provider: 'mistralai',
-        candidates: ['mistralai/mistral-medium-3.5', 'mistralai/mistral-medium-3-5'],
+        candidates: ['mistralai/mistral-large-4', 'mistralai/mistral-medium-3.5', 'mistralai/mistral-medium-3-5'],
       },
       {
         id: 'deepseek-frontier',

@@ -270,8 +270,38 @@ def parse_google(source: str, rows: list[dict[str, Any]], now: datetime) -> dict
 def parse_mistral(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
     del now
     text = visible_text(source)
+    # Keep table cells separate, and omit superseded prices inside <del>.
+    # The sale badge and cached-input column must not shift the quote basis.
+    table_rows = []
+    for table_row in re.findall(r"<tr\b[^>]*>(.*?)</tr>", source, re.I | re.S):
+        cells = re.findall(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", table_row, re.I | re.S)
+        table_rows.append([
+            visible_text(re.sub(r"<del\b[^>]*>.*?</del>", "", cell, flags=re.I | re.S))
+            for cell in cells
+        ])
     result: dict[str, tuple[float, float]] = {}
     for row in rows:
+        selected = next((
+            cells for cells in table_rows
+            if cells and re.fullmatch(
+                rf"{re.escape(str(row['display']))}(?:\s*\|\s*↗)?(?:\s*\|\s*Sale price)?",
+                cells[0], re.I,
+            )
+        ), None)
+        if selected is not None:
+            rate_cells = selected[1:]
+            if rate_cells and rate_cells[0] == "↗":
+                rate_cells = rate_cells[1:]
+            if len(rate_cells) != 3:
+                raise OfficialSourceError(f"Mistral price columns missing: {row['model']}")
+            pair = []
+            for label, cell in (("input", rate_cells[0]), ("output", rate_cells[2])):
+                amounts = re.findall(r"\$\s*([0-9]+(?:\.[0-9]+)?)", cell)
+                if len(amounts) != 1:
+                    raise OfficialSourceError(f"Mistral {label} price ambiguous: {row['model']}")
+                pair.append(price(amounts[0], f"{row['model']} {label}"))
+            result[str(row["model"])] = (pair[0], pair[1])
+            continue
         starts = [match.start() for match in re.finditer(re.escape(str(row["display"])), text, re.I)]
         found: tuple[float, float] | None = None
         for start in starts:

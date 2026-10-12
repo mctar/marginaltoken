@@ -14,6 +14,8 @@ from collector.collect import (
     firstparty_conflicts,
     load_firstparty,
     main,
+    merge_models,
+    normalize_firstparty,
     normalize_openrouter,
 )
 
@@ -71,6 +73,7 @@ class FirstPartyCatalogTests(unittest.TestCase):
             "google/gemini-3.5-flash": (1.5, 9.0, 1048576),
             "google/gemini-3.5-flash-lite": (0.3, 2.5, 1048576),
             "mistralai/mistral-large-2512": (0.5, 1.5, 256000),
+            "mistralai/mistral-large-4": (0.68, 2.09, 1000000),
             "mistralai/mistral-small-4": (0.15, 0.6, 256000),
             "deepseek/deepseek-v4.1-flash": (0.3, 1.2, 1048576),
             "x-ai/grok-4.7": (2.0, 6.0, 500000),
@@ -93,10 +96,27 @@ class FirstPartyCatalogTests(unittest.TestCase):
         self.assertFalse(by_key["openai/gpt-5.6-sol"]["indexEligible"])
         self.assertTrue(by_key["google/gemini-3.8-flash"]["indexEligible"])
         self.assertFalse(by_key["google/gemini-3.6-flash"]["indexEligible"])
+        self.assertTrue(by_key["mistralai/mistral-large-4"]["indexEligible"])
+        self.assertFalse(by_key["mistralai/mistral-medium-3.5"]["indexEligible"])
+        self.assertEqual(by_key["mistralai/mistral-large-4"]["releaseStage"], "preview")
         self.assertTrue(by_key["deepseek/deepseek-v4.1-flash"]["indexEligible"])
         self.assertFalse(by_key["deepseek/deepseek-v4-pro"]["indexEligible"])
         self.assertTrue(by_key["x-ai/grok-4.7"]["indexEligible"])
         self.assertFalse(by_key["x-ai/grok-4.5"]["indexEligible"])
+
+    def test_reviewed_release_status_overrides_slug_heuristic(self) -> None:
+        broad = normalize_openrouter({"data": [raw_model("mistralai/mistral-large-4", "0.00000068", "0.00000209")]})
+        self.assertEqual(broad[0]["releaseStage"], "stable")
+        merged = merge_models(broad, self.models)
+        large = next(model for model in merged if model["key"] == "mistralai/mistral-large-4")
+        self.assertEqual(large["releaseStage"], "preview")
+
+    def test_invalid_reviewed_release_status_is_rejected(self) -> None:
+        catalog_path = Path(__file__).resolve().parents[1] / "firstparty.json"
+        catalog = json.loads(catalog_path.read_text())
+        catalog[0]["release_stage"] = "unknown"
+        with self.assertRaisesRegex(CollectorError, "release_stage"):
+            normalize_firstparty(catalog)
 
 
 class CollectorTests(unittest.TestCase):

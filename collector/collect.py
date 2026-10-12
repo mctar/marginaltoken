@@ -266,6 +266,9 @@ def normalize_firstparty(payload: Any) -> list[dict[str, Any]]:
         context = raw.get("context", 0)
         if not isinstance(context, int) or context < 0:
             raise CollectorError(f"{key} context must be a non-negative integer")
+        stage = raw.get("release_stage")
+        if stage is not None and stage not in ("stable", "preview", "experimental"):
+            raise CollectorError(f"{key} release_stage must be stable, preview, or experimental")
         entries.append(
             {
                 "key": key,
@@ -281,6 +284,8 @@ def normalize_firstparty(payload: Any) -> list[dict[str, Any]]:
                 "indexEligible": bool(raw.get("index_eligible", False)),
             }
         )
+        if stage is not None:
+            entries[-1]["releaseStage"] = stage
     eligible_counts: dict[str, int] = {}
     for entry in entries:
         eligible_counts.setdefault(entry["provider"], 0)

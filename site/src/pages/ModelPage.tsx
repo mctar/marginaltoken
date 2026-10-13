@@ -32,7 +32,7 @@ function modelSource(model: PriceModel): { href: string; label: string } {
   if (model.source === 'firstparty' && model.sourceUrl) {
     return { href: model.sourceUrl, label: 'First-party pricing' }
   }
-  return { href: `https://openrouter.ai/${model.key}`, label: 'OpenRouter listing' }
+  return { href: model.sourceUrl ?? `https://openrouter.ai/${model.routedId ?? model.key}`, label: 'OpenRouter listing' }
 }
 
 export default function ModelPage({

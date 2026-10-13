@@ -1,0 +1,50 @@
+import copy
+import unittest
+from datetime import datetime, timezone
+
+from collector.collect import normalize_openrouter
+from collector.register import apply_register, firstparty_catalog, read_register
+
+
+class RegisterTests(unittest.TestCase):
+    def setUp(self):
+        self.register = read_register()
+        self.now = datetime(2026, 10, 13, tzinfo=timezone.utc)
+        self.models = [{"key": f"{r['provider']}/{r['model']}", "provider": r["provider"],
+                        "source": "firstparty", "checked": "2026-10-13", "verificationStatus": "fresh"}
+                       for r in firstparty_catalog(self.register)]
+
+    def test_only_verified_same_family_successor_promotes(self):
+        old = "openai/gpt-6.1-sol"
+        new = "openai/future-sol"
+        self.register["models"][new] = {**copy.deepcopy(self.register["models"][old]), "order": 200}
+        row = {**next(m for m in self.models if m["key"] == old), "key": new}
+        self.models.append(row)
+        row["verificationStatus"] = "manual"
+        self.assertEqual(apply_register(self.models, self.register, self.now)["basket"]["openai"], old)
+        row["verificationStatus"] = "fresh"
+        self.assertEqual(apply_register(self.models, self.register, self.now)["basket"]["openai"], new)
+        self.register["models"][new]["family"] = "openai-frontier"
+        self.assertEqual(apply_register(self.models, self.register, self.now)["basket"]["openai"], old)
+
+    def test_no_discovery_or_stale_source_changes_policy(self):
+        new = "anthropic/future-opus"
+        self.register["models"][new] = {**copy.deepcopy(self.register["models"]["anthropic/claude-opus-5.5"]), "order": 200}
+        row = {"key": new, "provider": "anthropic", "source": "firstparty", "checked": "2026-10-01", "verificationStatus": "fresh"}
+        self.models.append(row)
+        result = apply_register(self.models, self.register, self.now)
+        self.assertEqual(result["basket"]["anthropic"], "anthropic/claude-opus-5.5")
+        self.assertFalse(row["promotionVerified"])
+
+    def test_alias_deduplicates_but_preserves_route(self):
+        raw = lambda key: {"id": key, "pricing": {"prompt": ".000001", "completion": ".000002"}}
+        rows = normalize_openrouter({"data": [raw("mistralai/mistral-large-4"), raw("mistralai/mistral-large-4-0")]})
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["key"], "mistralai/mistral-large-4")
+        self.assertEqual(rows[0]["routedId"], "mistralai/mistral-large-4-0")
+        self.assertTrue(rows[0]["sourceUrl"].endswith("mistral-large-4-0"))
+
+    def test_deprecated_is_not_alias(self):
+        from collector.register import canonical_key
+        self.assertEqual(canonical_key("google/gemini-3.7-flash"), "google/gemini-3.7-flash")
+        self.assertEqual(self.register["models"]["google/gemini-3.7-flash"]["lifecycle"]["successor"], "google/gemini-3.8-flash")

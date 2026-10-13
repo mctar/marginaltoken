@@ -1,3 +1,4 @@
+import register from '../../../collector/model-register.json' with { type: 'json' }
 import type { PriceModel } from './types'
 
 export const SHORTLIST_MIN_PRICE = 0.1
@@ -7,6 +8,7 @@ export type ShortlistSlot = {
   id: string
   tier: string
   provider: string
+  family?: string
   candidates: readonly string[]
 }
 
@@ -23,72 +25,7 @@ export type ShortlistSelection = ShortlistSlot & {
 // This is an editorial set, not a model-name heuristic. Add a newly released
 // successor to the front of its slot only after its standard API rate and
 // release status have been reviewed. Older keys remain as safe fallbacks.
-export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = [
-  {
-    id: 'anthropic',
-    title: 'Anthropic',
-    slots: [
-      { id: 'anthropic-fable', tier: 'Fable', provider: 'anthropic', candidates: ['anthropic/claude-fable-5.1', 'anthropic/claude-fable-5'] },
-      { id: 'anthropic-opus', tier: 'Opus', provider: 'anthropic', candidates: ['anthropic/claude-opus-5.5', 'anthropic/claude-opus-5'] },
-      { id: 'anthropic-sonnet', tier: 'Sonnet', provider: 'anthropic', candidates: ['anthropic/claude-sonnet-5.5', 'anthropic/claude-sonnet-5'] },
-      { id: 'anthropic-haiku', tier: 'Haiku', provider: 'anthropic', candidates: ['anthropic/claude-haiku-5.5', 'anthropic/claude-haiku-4.5'] },
-    ],
-  },
-  {
-    id: 'openai',
-    title: 'OpenAI',
-    slots: [
-      { id: 'openai-frontier', tier: 'Astra', provider: 'openai', candidates: ['openai/gpt-6-astra'] },
-      { id: 'openai-sol', tier: 'Sol', provider: 'openai', candidates: ['openai/gpt-6.1-sol', 'openai/gpt-6-sol', 'openai/gpt-5.6-sol'] },
-      { id: 'openai-luna', tier: 'Luna', provider: 'openai', candidates: ['openai/gpt-6-luna', 'openai/gpt-5.6-luna'] },
-    ],
-  },
-  {
-    id: 'google',
-    title: 'Google',
-    slots: [
-      {
-        id: 'google-pro',
-        tier: 'Pro',
-        provider: 'google',
-        candidates: ['google/gemini-3.1-pro-preview', 'google/gemini-2.5-pro'],
-      },
-      {
-        id: 'google-flash',
-        tier: 'Flash',
-        provider: 'google',
-        candidates: ['google/gemini-3.8-flash', 'google/gemini-3.7-flash', 'google/gemini-3.6-flash', 'google/gemini-3.5-flash'],
-      },
-      {
-        id: 'google-flash-lite',
-        tier: 'Flash-Lite',
-        provider: 'google',
-        candidates: ['google/gemini-3.5-flash-lite', 'google/gemini-3.1-flash-lite', 'google/gemini-2.5-flash-lite'],
-      },
-    ],
-  },
-  {
-    id: 'other-frontier',
-    title: 'Other frontier',
-    slots: [
-      { id: 'xai-frontier', tier: 'xAI', provider: 'x-ai', candidates: ['x-ai/grok-4.7', 'x-ai/grok-4.6', 'x-ai/grok-4.5', 'x-ai/grok-4.3'] },
-      {
-        id: 'mistral-frontier',
-        tier: 'Mistral',
-        provider: 'mistralai',
-        candidates: ['mistralai/mistral-large-4', 'mistralai/mistral-medium-3.5', 'mistralai/mistral-medium-3-5'],
-      },
-      {
-        id: 'deepseek-frontier',
-        tier: 'DeepSeek',
-        provider: 'deepseek',
-        candidates: ['deepseek/deepseek-v4.1-flash', 'deepseek/deepseek-v4-pro', 'deepseek/deepseek-v3.2'],
-      },
-      { id: 'kimi-frontier', tier: 'Kimi', provider: 'moonshotai', candidates: ['moonshotai/kimi-k3', 'moonshotai/kimi-k2.6'] },
-      { id: 'qwen-frontier', tier: 'Qwen', provider: 'qwen', candidates: ['qwen/qwen3.7-max', 'qwen/qwen3-max'] },
-    ],
-  },
-]
+export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = register.apiShortlist
 
 export const SHORTLIST_SLOT_COUNT = SHORTLIST_COLUMNS.reduce(
   (count, column) => count + column.slots.length,
@@ -101,7 +38,7 @@ export function selectShortlist(models: readonly PriceModel[]): Array<ShortlistC
     ...column,
     selections: column.slots.map((slot) => ({
       ...slot,
-      model: slot.candidates.map((key) => byKey.get(key)).find(Boolean) ?? null,
+      model: [...models.filter((m) => m.family === slot.family && m.promotionVerified).sort((a, b) => (b.selectionOrder ?? 0) - (a.selectionOrder ?? 0)), ...slot.candidates.map((key) => byKey.get(key))].find((m) => m && m.lifecycle?.status !== 'deprecated' && m.lifecycle?.status !== 'retired') ?? null,
     })),
   }))
 }

@@ -13,7 +13,7 @@ site/        Static publication and decision tools
 deploy/      GitHub Pages publisher and systemd units
 ```
 
-OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/firstparty.json` is the reviewed cold-start fallback and model register. Each provider has exactly one index representative, while the register also retains reviewed current tiers and recent production predecessors. Verified first-party rows replace matching OpenRouter rows. New paid OpenRouter listings from those providers act as discovery signals and remain in a persistent review queue until verified into the register, explicitly dismissed in `collector/firstparty-reviewed.json`, or delisted. A separate venue scan preserves OpenRouter's route-level offers and verifies supported fields against direct Standard pricing from Together AI and Fireworks AI without changing the single-quote Tape.
+OpenRouter provides the broad tape. Official pricing adapters scan Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI independently on every hourly run. `collector/model-register.json` is the sole reviewed source for identities, API IDs, lifecycle, fallback prices, basket families, and shortlist policies. `firstparty.json` is a generated legacy export, never an editable policy source. Fresh official rates can promote reviewed successors within approved families; discovery alone cannot. Each provider has exactly one index representative, while the register also retains reviewed current tiers and recent production predecessors. Verified first-party rows replace matching OpenRouter rows. New paid OpenRouter listings from those providers act as discovery signals and remain in a persistent review queue until verified into the register, explicitly dismissed in `collector/firstparty-reviewed.json`, or delisted. A separate venue scan preserves OpenRouter's route-level offers and verifies supported fields against direct Standard pricing from Together AI and Fireworks AI without changing the single-quote Tape.
 
 ## Feed contract
 
@@ -169,9 +169,9 @@ the same validated feed revisions as GitHub Pages.
 
 ## Updating first-party prices
 
-Add the model metadata and a reviewed fallback rate to `collector/firstparty.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Add or extend that provider's strict parser in `collector/official.py` and a compact source fixture in `collector/tests/test_official.py`. Standard uncached, non-batch, global rates are used. For context tiers, record the lowest standard tier; for time-banded prices, record the highest standard rate. Explain either choice in `rate_note`.
+Add the model metadata and a reviewed fallback rate to `collector/model-register.json`, preserving the OpenRouter-compatible `provider/model` key when one exists. Add or extend that provider's strict parser in `collector/official.py` and a compact source fixture in `collector/tests/test_official.py`. Standard uncached, non-batch, global rates are used. For context tiers, record the lowest standard tier; for time-banded prices, record the highest standard rate. Explain either choice in `rate_note`.
 
-The first OpenRouter appearance of a paid model from a registered provider is written to `collector/state/firstparty-review-pending.json` and published in source health. Verification adds it to `collector/firstparty.json`; an intentionally excluded variant is added to `collector/firstparty-reviewed.json` with a review date and reason. The queue is persistent, so an hourly rerun cannot silently clear an unresolved signal.
+The first OpenRouter appearance of a paid model from a registered provider is written to `collector/state/firstparty-review-pending.json` and published in source health. Verification adds it to `collector/model-register.json`; an intentionally excluded variant is added to `collector/firstparty-reviewed.json` with a review date and reason. The queue is persistent, so an hourly rerun cannot silently clear an unresolved signal.
 
 ## Updating The Shortlist
 

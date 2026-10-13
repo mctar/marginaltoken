@@ -1,3 +1,4 @@
+import register from '../../../collector/model-register.json' with { type: 'json' }
 import type {
   DecisionModel,
   DecisionsFeed,
@@ -112,16 +113,8 @@ export function validDecisions(value: unknown): value is DecisionsFeed {
 }
 
 // Reviewed editorial slots. A successor must have verified weights to enter.
-export const OPEN_SHORTLIST = [
-  ['moonshotai/kimi-k3', 'moonshotai/kimi-k2.6', 'moonshotai/kimi-k2.5'],
-  ['deepseek/deepseek-v4-pro', 'deepseek/deepseek-v3.2'],
-  ['qwen/qwen3.8-27b', 'qwen/qwen3.6-27b', 'qwen/qwen3.5-27b'],
-  ['z-ai/glm-5.3', 'z-ai/glm-5.2', 'z-ai/glm-5.1'],
-  ['minimax/minimax-m3', 'minimax/minimax-m2.7', 'minimax/minimax-m2.5'],
-  ['mistralai/mistral-large-4', 'mistralai/mistral-small-2603'],
-  ['openai/gpt-oss-120b'],
-  ['google/gemma-4-26b-a4b-it', 'google/gemma-4-31b-it'],
-] as const
+export const OPEN_SHORTLIST: readonly (readonly string[])[] = register.openShortlist
+
 export function openShortlist(
   models: PriceModel[],
   feed?: DecisionsFeed | null,

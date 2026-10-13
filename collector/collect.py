@@ -23,15 +23,17 @@ from typing import Any
 try:
     from collector.official import DEFAULT_MAX_STALE_HOURS, refresh_firstparty
     from collector.repairs import repair_openai_july_30
+    from collector.register import REGISTER_PATH, read_register, firstparty_catalog, canonical_key, apply_register
 except ModuleNotFoundError:  # Direct execution: python3 collector/collect.py
     from official import DEFAULT_MAX_STALE_HOURS, refresh_firstparty
     from repairs import repair_openai_july_30
+    from register import REGISTER_PATH, read_register, firstparty_catalog, canonical_key, apply_register
 
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = ROOT / "data"
 DEFAULT_STATE_DIR = Path(__file__).resolve().parent / "state"
-DEFAULT_FIRSTPARTY = Path(__file__).resolve().parent / "firstparty.json"
+DEFAULT_FIRSTPARTY = REGISTER_PATH
 DEFAULT_FIRSTPARTY_REVIEWED = Path(__file__).resolve().parent / "firstparty-reviewed.json"
 OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models"
 
@@ -164,6 +166,7 @@ def release_stage(key: str) -> str:
 
 def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
     models: list[dict[str, Any]] = []
+    register = read_register()
     seen: set[str] = set()
     for raw in payload["data"]:
         if not isinstance(raw, dict):
@@ -207,7 +210,7 @@ def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
             top_provider = {}
 
         model = {
-            "key": key,
+            "key": canonical_key(key, register),
             "display": display_name(raw.get("name"), key),
             "provider": provider,
             "input_mtok": mtok_value(prompt_raw, f"{key} prompt price"),
@@ -224,6 +227,8 @@ def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
             "supportsStructuredOutput": "response_format" in supported_parameters,
             "releaseStage": release_stage(key),
         }
+        model["routedId"] = key
+        model["sourceUrl"] = f"https://openrouter.ai/{key}"
         max_output_tokens = top_provider.get("max_completion_tokens")
         if isinstance(max_output_tokens, int) and max_output_tokens > 0:
             model["maxOutputTokens"] = max_output_tokens
@@ -236,7 +241,9 @@ def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
             if isinstance(value, str) and value.strip():
                 model[output_field] = value.strip()
         models.append(model)
-    return sorted(models, key=lambda model: model["key"])
+    # Prefer an explicitly routed alias when both old and new IDs are listed.
+    unique = {m["key"]: m for m in sorted(models, key=lambda m: m["routedId"] == m["key"], reverse=True)}
+    return sorted(unique.values(), key=lambda model: model["key"])
 
 
 def normalize_firstparty(payload: Any) -> list[dict[str, Any]]:
@@ -314,7 +321,8 @@ def normalize_firstparty(payload: Any) -> list[dict[str, Any]]:
 
 
 def load_firstparty(path: Path) -> list[dict[str, Any]]:
-    return normalize_firstparty(load_json(path))
+    payload = load_json(path)
+    return normalize_firstparty(firstparty_catalog(payload) if isinstance(payload, dict) else payload)
 
 
 def load_reviewed_firstparty(path: Path) -> set[str]:
@@ -708,7 +716,9 @@ def collect_once(
     generated_at = iso_utc(now)
     date = now.astimezone(timezone.utc).strftime("%Y-%m-%d")
 
-    baseline_catalog = load_json(firstparty_path)
+    baseline_payload = load_json(firstparty_path)
+    register = read_register(firstparty_path) if isinstance(baseline_payload, dict) else None
+    baseline_catalog = firstparty_catalog(register) if register else baseline_payload
     normalize_firstparty(baseline_catalog)
     reviewed_keys = load_reviewed_firstparty(firstparty_reviewed_path)
     if refresh_official is None:
@@ -747,6 +757,7 @@ def collect_once(
     if not isinstance(previous_models, list):
         raise CollectorError("previous prices.json has an invalid models field")
     models = merge_models(openrouter, curated)
+    register_public = apply_register(models, register, now) if register else None
     if len(models) < min_models:
         raise CollectorError(f"only {len(models)} normalized models, minimum is {min_models}")
     if previous_models and Decimal(len(models)) / Decimal(len(previous_models)) < retention_ratio:
@@ -850,6 +861,7 @@ def collect_once(
         and not repair_applied
         and not provenance_changed
         and not index_migration_needed
+        and (register_public is None or read_feed(data_dir / "model-register.json", {}) == register_public)
     ):
         state_dir.mkdir(parents=True, exist_ok=True)
         atomic_write_json(state_dir / "last-good-openrouter.json", raw_payload)
@@ -864,6 +876,7 @@ def collect_once(
                 "date": date,
                 "input_mtok": model["input_mtok"],
                 "output_mtok": model["output_mtok"],
+                **{field: model[field] for field in ("source", "sourceUrl", "checked", "rateNote") if field in model},
             }
             for model in models
         ]
@@ -877,6 +890,7 @@ def collect_once(
                     "date": date,
                     "input_mtok": model["input_mtok"],
                     "output_mtok": model["output_mtok"],
+                    **{field: model[field] for field in ("source", "sourceUrl", "checked", "rateNote") if field in model},
                 }
             )
 
@@ -965,6 +979,8 @@ def collect_once(
     }
 
     data_dir.mkdir(parents=True, exist_ok=True)
+    if register_public is not None:
+        atomic_write_json(data_dir / "model-register.json", register_public)
     for filename, payload in (
         ("prices.json", prices_payload),
         ("history.json", history_payload),

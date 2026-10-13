@@ -196,7 +196,11 @@ def parse_anthropic(source: str, rows: list[dict[str, Any]], now: datetime) -> d
     text = visible_text(source)
     marker = "The following table shows pricing for all Claude models:"
     start = text.find(marker)
-    end = text.find("Batch processing", start + len(marker))
+    boundaries = [
+        text.find(label, start + len(marker))
+        for label in ("Cloud platform pricing", "Feature-specific pricing", "Fast mode pricing", "Batch processing")
+    ]
+    end = min((position for position in boundaries if position >= 0), default=-1)
     if start < 0 or end < 0:
         raise OfficialSourceError("Anthropic model pricing table not found")
     table = text[start:end]
@@ -206,9 +210,18 @@ def parse_anthropic(source: str, rows: list[dict[str, Any]], now: datetime) -> d
     result: dict[str, tuple[float, float]] = {}
     for row in rows:
         display = str(row["display"])
-        row_match = re.search(rf"(?:^|\|\s*){re.escape(display)}\s*\|", table)
-        if not row_match:
+        # The Tape uses Haiku's short-prompt standard rate. Match that named
+        # tier explicitly, even if the long-context row appears first.
+        qualifier = (
+            r"(?:\s*\(for prompts up to 100,000 tokens\))?"
+            if row["model"] == "claude-haiku-5.5" else ""
+        )
+        matches = list(re.finditer(rf"(?:^|\|\s*){re.escape(display)}{qualifier}\s*\|", table))
+        if not matches:
             raise OfficialSourceError(f"Anthropic row missing: {display}")
+        if len(matches) != 1:
+            raise OfficialSourceError(f"Anthropic row ambiguous: {display}")
+        row_match = matches[0]
         row_start = row_match.start()
         next_row = table.find(" | Claude ", row_match.end())
         segment = table[row_start : next_row if next_row >= 0 else len(table)]
@@ -547,6 +560,40 @@ def _last_good_prices(cached: dict[str, Any], rows: list[dict[str, Any]]) -> dic
     return result
 
 
+def _parse_rows(
+    parser: Callable[[str, list[dict[str, Any]], datetime], dict[str, tuple[float, float]]],
+    source: str,
+    rows: list[dict[str, Any]],
+    now: datetime,
+) -> tuple[dict[str, tuple[float, float]], dict[str, str]]:
+    """A removed or malformed model must not block its valid siblings."""
+    values: dict[str, tuple[float, float]] = {}
+    errors: dict[str, str] = {}
+    for row in rows:
+        model = str(row["model"])
+        try:
+            parsed = parser(source, [row], now)
+            if set(parsed) != {model}:
+                raise OfficialSourceError(f"adapter did not return tracked row: {model}")
+            pair = parsed[model]
+            values[model] = (
+                price(str(pair[0]), f"{model} input"),
+                price(str(pair[1]), f"{model} output"),
+            )
+        except Exception as error:
+            errors[model] = str(error)
+    return values, errors
+
+
+def _fallback_status(verified_at: str, now: datetime, max_stale_hours: int) -> str:
+    try:
+        cached_at = datetime.fromisoformat(verified_at.replace("Z", "+00:00"))
+        age_hours = (now.astimezone(timezone.utc) - cached_at.astimezone(timezone.utc)).total_seconds() / 3600
+        return "last_good" if age_hours <= max_stale_hours else "stale"
+    except (ValueError, TypeError):
+        return "stale"
+
+
 def refresh_firstparty(
     catalog: list[dict[str, Any]],
     *,
@@ -555,7 +602,7 @@ def refresh_firstparty(
     max_stale_hours: int = DEFAULT_MAX_STALE_HOURS,
     fetcher: Callable[[str, dict[str, Any] | None], FetchResult] = fetch_source,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Return a price-refreshed catalog plus a public-safe provider report."""
+    """Refresh each model, retaining its own dated fallback and source status."""
 
     grouped: dict[str, list[dict[str, Any]]] = {}
     for row in catalog:
@@ -578,83 +625,111 @@ def refresh_firstparty(
         public_url = PROVIDER_PUBLIC_URLS.get(provider, url)
         parser = PARSERS.get(provider)
         cached = providers_state.get(provider) if isinstance(providers_state.get(provider), dict) else {}
-        values: dict[str, tuple[float, float]] | None = None
-        status = "fresh"
-        detail = ""
-        verified_at = _iso(now)
-
-        if not url or not parser:
-            status = "manual"
-            detail = "No automated provider adapter"
-        else:
+        values: dict[str, tuple[float, float]] = {}
+        errors: dict[str, str] = {}
+        fetched = None
+        content_hash = cached.get("contentHash")
+        used_alternate = False
+        if url and parser:
             try:
                 fetched = fetcher(url, cached)
                 if fetched.not_modified:
-                    values = _last_good_prices(cached, rows)
-                    if values is None:
-                        # The reviewed register may have gained a model while the
-                        # provider page retained its ETag. Retry without
-                        # validators so the new row can be verified immediately.
+                    complete = _last_good_prices(cached, rows)
+                    if complete is None or cached.get("failedModels"):
+                        # New or previously failed rows need another parse, even
+                        # if the provider retains the same cache validators.
                         fetched = fetcher(url, None)
                         if fetched.not_modified:
                             raise OfficialSourceError("unconditional refresh returned 304")
                     else:
-                        content_hash = cached.get("contentHash")
+                        values = complete
                 if not fetched.not_modified:
                     if fetched.text is None:
                         raise OfficialSourceError("official source returned no content")
-                    try:
-                        values = parser(fetched.text, rows, now)
-                    except OfficialSourceError:
-                        if fetcher is not fetch_source:
-                            raise
-                        fetched = fetch_source_with_curl(url, cached)
-                        if fetched.text is None:
-                            raise OfficialSourceError("curl source returned no content")
-                        values = parser(fetched.text, rows, now)
+                    values, errors = _parse_rows(parser, fetched.text, rows, now)
                     content_hash = hashlib.sha256(fetched.text.encode("utf-8")).hexdigest()
-                expected = {str(row["model"]) for row in rows}
-                if set(values) != expected:
-                    raise OfficialSourceError(
-                        f"adapter returned {len(values)} of {len(expected)} tracked rows"
-                    )
-                providers_state[provider] = {
-                    "sourceUrl": url,
-                    "verifiedAt": verified_at,
-                    "etag": fetched.etag,
-                    "lastModified": fetched.last_modified,
-                    "contentHash": content_hash,
-                    "prices": {
-                        model: {"input_mtok": pair[0], "output_mtok": pair[1]}
-                        for model, pair in sorted(values.items())
-                    },
-                }
+                    if errors and fetcher is fetch_source:
+                        failed_rows = [row for row in rows if str(row["model"]) in errors]
+                        try:
+                            alternate = fetch_source_with_curl(url, cached)
+                            if alternate.text is None:
+                                raise OfficialSourceError("curl source returned no content")
+                            recovered, remaining = _parse_rows(parser, alternate.text, failed_rows, now)
+                            values.update(recovered)
+                            for model in recovered:
+                                errors.pop(model)
+                            errors.update(remaining)
+                            used_alternate = bool(recovered)
+                        except Exception:
+                            # Keep successes from the primary representation.
+                            pass
             except Exception as error:
-                values = _last_good_prices(cached, rows)
-                detail = str(error)
-                verified_at = str(cached.get("verifiedAt") or "")
-                if values is None:
-                    status = "manual"
+                values = {}
+                errors = {str(row["model"]): str(error) for row in rows}
+        else:
+            errors = {str(row["model"]): "No automated provider adapter" for row in rows}
+
+        model_reports = []
+        saved_prices = {}
+        cached_prices = cached.get("prices", {})
+        if not isinstance(cached_prices, dict):
+            cached_prices = {}
+        for row in rows:
+            model = str(row["model"])
+            target = refreshed_by_key[(provider, model)]
+            detail = errors.get(model, "")
+            if model in values:
+                pair = values[model]
+                verified_at = _iso(now)
+                status = "fresh"
+            else:
+                previous = _last_good_prices(cached, [row])
+                previous_row = cached_prices.get(model, {})
+                verified_at = (
+                    str(previous_row.get("verifiedAt", cached.get("verifiedAt")) or "")
+                    if isinstance(previous_row, dict) else ""
+                )
+                if previous is None:
+                    pair, verified_at, status = None, "", "manual"
                     detail = f"{detail}; no last-good snapshot"
                 else:
-                    status = "last_good"
-                    try:
-                        cached_at = datetime.fromisoformat(verified_at.replace("Z", "+00:00"))
-                        age_hours = (now.astimezone(timezone.utc) - cached_at.astimezone(timezone.utc)).total_seconds() / 3600
-                        if age_hours > max_stale_hours:
-                            status = "stale"
-                    except (ValueError, TypeError):
-                        status = "stale"
-
-        if values is not None:
-            checked = verified_at[:10]
-            for row in rows:
-                target = refreshed_by_key[(provider, str(row["model"]))]
-                pair = values[str(row["model"])]
+                    pair = previous[model]
+                    status = _fallback_status(verified_at, now, max_stale_hours)
+            target["verification_status"] = status
+            if pair is not None:
                 target["input_mtok"] = pair[0]
                 target["output_mtok"] = pair[1]
-                target["source_url"] = public_url
-                target["checked"] = checked
+                target["source_url"] = public_url or row["source_url"]
+                if verified_at:
+                    target["checked"] = verified_at[:10]
+                saved_prices[model] = {
+                    "input_mtok": pair[0], "output_mtok": pair[1],
+                    "verifiedAt": verified_at or None,
+                }
+            model_report = {
+                "model": model, "display": row["display"],
+                "status": status, "verifiedAt": verified_at or None,
+            }
+            if detail:
+                model_report["detail"] = detail[:240]
+            model_reports.append(model_report)
+
+        # Migrate provider-wide v1 snapshots into per-model verification dates.
+        # A partial response never advances the date of a retained predecessor.
+        known_dates = [r["verifiedAt"] for r in model_reports if r["verifiedAt"]]
+        verified_at = min(known_dates) if known_dates else None
+        severity = {"fresh": 0, "last_good": 1, "stale": 2, "manual": 3}
+        status = max((r["status"] for r in model_reports), key=severity.__getitem__)
+        if url and parser:
+            providers_state[provider] = {
+                "sourceUrl": url,
+                "verifiedAt": verified_at,
+                "etag": fetched.etag if fetched and not used_alternate else None,
+                "lastModified": fetched.last_modified if fetched and not used_alternate else None,
+                "contentHash": content_hash,
+                "failedModels": sorted(errors),
+                "prices": saved_prices,
+            }
 
         report = {
             "provider": provider,
@@ -662,12 +737,15 @@ def refresh_firstparty(
             "sourceUrl": public_url or str(rows[0].get("source_url", "")),
             "verifiedAt": verified_at or None,
             "modelCount": len(rows),
+            "freshModelCount": sum(r["status"] == "fresh" for r in model_reports),
+            "models": model_reports,
         }
-        if detail:
-            report["detail"] = detail[:240]
+        details = [r["detail"] for r in model_reports if r.get("detail")]
+        if details:
+            report["detail"] = "; ".join(details)[:240]
         provider_reports.append(report)
 
-    last_good_payload = {"version": 1, "providers": providers_state}
+    last_good_payload = {"version": 2, "providers": providers_state}
     _write_json(state_path, last_good_payload)
     degraded = sum(report["status"] != "fresh" for report in provider_reports)
     report_payload = {

@@ -120,6 +120,14 @@ class FirstPartyCatalogTests(unittest.TestCase):
         with self.assertRaisesRegex(CollectorError, "release_stage"):
             normalize_firstparty(catalog)
 
+    def test_muse_wonder_preserves_routed_quote_with_reviewed_preview_stage(self) -> None:
+        model = normalize_openrouter({"data": [raw_model("meta/muse-wonder", "0.000004", "0.000020", "Meta: Muse Wonder")]})[0]
+        self.assertEqual(model["releaseStage"], "preview")
+        self.assertEqual(model["key"], "meta/muse-wonder")
+        self.assertEqual((model["input_mtok"], model["output_mtok"]), (4, 20))
+        self.assertEqual(model["source"], "openrouter")
+        self.assertFalse(model["indexEligible"])
+
 
 class CollectorTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -293,6 +301,31 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(provenance["status"], "healthy")
         self.assertEqual(provenance["conflictCount"], 0)
         self.assertEqual(provenance["reviewCandidateCount"], 0)
+
+    def test_independent_verification_survives_into_public_prices_and_provenance(self) -> None:
+        self.write_firstparty_pair("flagship")
+        catalog = json.loads(self.firstparty.read_text())
+        catalog[0].update(verification_status="fresh", checked="2026-07-31", output_mtok=9.0)
+        catalog[1].update(verification_status="stale", checked="2026-07-01")
+        report = {"status": "degraded", "degradedProviderCount": 1, "providers": [{
+            "provider": "lab", "status": "stale", "sourceUrl": "https://example.com/pricing",
+            "verifiedAt": "2026-07-01T10:00:00Z", "modelCount": 2, "freshModelCount": 1,
+            "models": [
+                {"model": "flagship", "display": "Lab Flagship", "status": "fresh", "verifiedAt": "2026-07-31T10:00:00Z"},
+                {"model": "opus", "display": "Lab Opus", "status": "stale", "verifiedAt": "2026-07-01T10:00:00Z", "detail": "row missing"},
+            ],
+        }]}
+        with patch("collector.collect.refresh_firstparty", return_value=(catalog, report)):
+            collect_once(data_dir=self.data, state_dir=self.state, firstparty_path=self.firstparty, firstparty_reviewed_path=self.reviewed, source_file=self.source, now=datetime(2026, 7, 31, 10, tzinfo=timezone.utc), min_models=1, refresh_official=True)
+        prices = {m["key"]: m for m in json.loads((self.data / "prices.json").read_text())["models"]}
+        self.assertEqual(prices["lab/flagship"]["verificationStatus"], "fresh")
+        self.assertEqual(prices["lab/flagship"]["output_mtok"], 9)
+        self.assertEqual(prices["lab/opus"]["checked"], "2026-07-01")
+        source = json.loads((self.data / "provenance.json").read_text())["providers"][0]
+        self.assertEqual(source["freshModelCount"], 1)
+        self.assertEqual(source["models"][0]["key"], "lab/flagship")
+        self.assertEqual(source["models"][1]["status"], "stale")
+        self.assertEqual(source["models"][1]["lastVerified"], "2026-07-01")
 
     def test_new_first_party_provider_listing_stays_in_review_queue(self) -> None:
         self.collect()

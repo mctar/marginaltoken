@@ -184,6 +184,7 @@ export default function ModelPage({
             <span>Source</span>
             <a href={source.href}>{source.label}</a>
             {model.checked && <small>Checked {longDate(model.checked)}</small>}
+            {model.verificationStatus && <small>Verification: {model.verificationStatus.replace('_', ' ')}</small>}
           </div>
           {model.rateNote && (
             <div>

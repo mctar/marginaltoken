@@ -150,6 +150,10 @@ def string_list(value: Any) -> list[str]:
 
 
 def release_stage(key: str) -> str:
+    # Meta's provider ID omits its preview status. Reviewed 2026-10-13:
+    # https://dev.meta.ai/docs/overview#build-with-muse-wonder
+    if key == "meta/muse-wonder":
+        return "preview"
     lowered = key.lower()
     if "experimental" in lowered or "-exp-" in lowered or lowered.endswith(":exp"):
         return "experimental"
@@ -286,6 +290,11 @@ def normalize_firstparty(payload: Any) -> list[dict[str, Any]]:
         )
         if stage is not None:
             entries[-1]["releaseStage"] = stage
+        verification = raw.get("verification_status")
+        if verification is not None:
+            if verification not in ("fresh", "last_good", "stale", "manual"):
+                raise CollectorError(f"{key} has invalid verification_status")
+            entries[-1]["verificationStatus"] = verification
     eligible_counts: dict[str, int] = {}
     for entry in entries:
         eligible_counts.setdefault(entry["provider"], 0)
@@ -769,6 +778,16 @@ def collect_once(
             ),
             "modelCount": report["modelCount"],
             "reviewCandidateCount": reviews_by_provider.get(report["provider"], 0),
+            **({
+                "freshModelCount": report["freshModelCount"],
+                "models": [{
+                    "key": f"{report['provider']}/{model['model']}",
+                    "display": model["display"],
+                    "status": model["status"],
+                    "lastVerified": str(model["verifiedAt"])[:10] if model.get("verifiedAt") else None,
+                    **({"detail": model["detail"]} if model.get("detail") else {}),
+                } for model in report["models"]],
+            } if "models" in report else {}),
             **({"detail": report["detail"]} if report.get("detail") else {}),
         }
         for report in firstparty_report["providers"]

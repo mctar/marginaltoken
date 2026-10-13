@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from collector.official import (
@@ -122,6 +122,36 @@ Batch
                 "claude-sonnet-5": (2.0, 10.0),
             },
         )
+
+    def test_anthropic_qualified_haiku_uses_short_prompt_tier_in_any_order(self) -> None:
+        short = "| Claude Haiku 5.5 (for prompts up to 100,000 tokens) | $0.10 / MTok | $0.125 / MTok | $0.20 / MTok | $0.01 / MTok | $0.50 / MTok |"
+        long = "| Claude Haiku 5.5 (for prompts over 100,000 tokens) | $0.50 / MTok | $0.625 / MTok | $1 / MTok | $0.05 / MTok | $2.50 / MTok |"
+        for tiers in [(short, long), (long, short)]:
+            with self.subTest(tiers=tiers):
+                source = "The following table shows pricing for all Claude models:\n" + "\n".join(tiers) + "\nBatch processing"
+                self.assertEqual(parse_anthropic(source, [row("anthropic", "claude-haiku-5.5", "Claude Haiku 5.5")], NOW), {"claude-haiku-5.5": (0.1, 0.5)})
+
+    def test_anthropic_does_not_substitute_haiku_long_context_for_missing_base(self) -> None:
+        source = "The following table shows pricing for all Claude models:\n| Claude Haiku 5.5 (for prompts over 100,000 tokens) | $0.50 / MTok | $0.625 / MTok | $1 / MTok | $0.05 / MTok | $2.50 / MTok |\nBatch processing"
+        with self.assertRaisesRegex(OfficialSourceError, "row missing"):
+            parse_anthropic(source, [row("anthropic", "claude-haiku-5.5", "Claude Haiku 5.5")], NOW)
+
+    def test_anthropic_rejects_ambiguous_standard_rows(self) -> None:
+        source = "The following table shows pricing for all Claude models:\n" + ("| Claude Haiku 5.5 | $0.10 / MTok | $0.125 / MTok | $0.20 / MTok | $0.01 / MTok | $0.50 / MTok |\n" * 2) + "Batch processing"
+        with self.assertRaisesRegex(OfficialSourceError, "row ambiguous"):
+            parse_anthropic(source, [row("anthropic", "claude-haiku-5.5", "Claude Haiku 5.5")], NOW)
+
+    def test_anthropic_fast_mode_table_is_outside_standard_prices(self) -> None:
+        source = """
+The following table shows pricing for all Claude models:
+| Model | Base input tokens | 5m cache writes | 1h cache writes | Cache hits and refreshes | Output tokens |
+| Claude Opus 5.5 | $4 / MTok | $5 / MTok | $8 / MTok | $0.20 / MTok | $20 / MTok |
+### Fast mode pricing
+| Model | Input | Output |
+| Claude Opus 5.5 | $8 / MTok | $40 / MTok |
+### Batch processing
+"""
+        self.assertEqual(parse_anthropic(source, [row("anthropic", "claude-opus-5.5", "Claude Opus 5.5")], NOW), {"claude-opus-5.5": (4, 20)})
 
     def test_google_paid_tier(self) -> None:
         source = """
@@ -413,6 +443,91 @@ Batch
             (by_model["gpt-6-astra"]["input_mtok"], by_model["gpt-6-astra"]["output_mtok"]),
             (10.0, 50.0),
         )
+
+    def seed_old_provider_snapshot(self) -> list[dict]:
+        catalog = self.catalog + [row("openai", "gpt-6-astra", "GPT-6 Astra")]
+        (self.state / "firstparty-last-good.json").write_text(json.dumps({
+            "version": 1, "providers": {"openai": {
+                "verifiedAt": NOW.isoformat(), "etag": "v1",
+                "prices": {"gpt-5.6-luna": {"input_mtok": 0.2, "output_mtok": 1.2}, "gpt-6-astra": {"input_mtok": 10, "output_mtok": 50}},
+            }},
+        }))
+        return catalog
+
+    def test_missing_predecessor_keeps_its_date_while_valid_row_refreshes(self) -> None:
+        catalog = self.seed_old_provider_snapshot()
+        later = NOW + timedelta(hours=49)
+        refreshed, report = refresh_firstparty(catalog, state_dir=self.state, now=later, fetcher=lambda url, cached: FetchResult(self.source("0.10", "0.50"), etag="v2"))
+        by_model = {r["model"]: r for r in refreshed}
+        self.assertEqual((by_model["gpt-5.6-luna"]["input_mtok"], by_model["gpt-5.6-luna"]["output_mtok"]), (0.1, 0.5))
+        self.assertEqual(by_model["gpt-5.6-luna"]["checked"], "2026-08-02")
+        self.assertEqual(by_model["gpt-5.6-luna"]["verification_status"], "fresh")
+        self.assertEqual(by_model["gpt-6-astra"]["output_mtok"], 50)
+        self.assertEqual(by_model["gpt-6-astra"]["checked"], "2026-07-31")
+        self.assertEqual(by_model["gpt-6-astra"]["verification_status"], "stale")
+        self.assertEqual(report["providers"][0]["freshModelCount"], 1)
+        self.assertEqual(report["providers"][0]["status"], "stale")
+        saved = json.loads((self.state / "firstparty-last-good.json").read_text())
+        self.assertEqual(saved["version"], 2)
+        self.assertEqual(saved["providers"]["openai"]["prices"]["gpt-6-astra"]["verifiedAt"], NOW.isoformat())
+
+    def test_new_unverified_row_does_not_erase_valid_sibling(self) -> None:
+        catalog = self.catalog + [row("openai", "gpt-6-astra", "GPT-6 Astra")]
+        refreshed, report = refresh_firstparty(catalog, state_dir=self.state, now=NOW, fetcher=lambda url, cached: FetchResult(self.source("0.10", "0.50")))
+        self.assertEqual(refreshed[0]["output_mtok"], 0.5)
+        self.assertEqual(refreshed[0]["verification_status"], "fresh")
+        self.assertEqual(refreshed[1]["output_mtok"], 99)
+        self.assertEqual(refreshed[1]["checked"], "2026-07-01")
+        self.assertEqual(refreshed[1]["verification_status"], "manual")
+        self.assertEqual(report["providers"][0]["freshModelCount"], 1)
+
+    def test_304_after_partial_parse_retries_even_with_all_cached_prices(self) -> None:
+        catalog = self.seed_old_provider_snapshot()
+        refresh_firstparty(catalog, state_dir=self.state, now=NOW + timedelta(hours=1), fetcher=lambda url, cached: FetchResult(self.source("0.10", "0.50"), etag="v2"))
+        calls = []
+        full = self.source("0.10", "0.50").replace("| gpt-5.6-luna", "| gpt-6-astra | $9 | $1 | $12 | $45 | $18 | $2 | $24 | $70 |\n| gpt-5.6-luna")
+        def fetcher(url, cached):
+            calls.append(cached is None)
+            return FetchResult(None, not_modified=True) if cached is not None else FetchResult(full, etag="v2")
+        refreshed, report = refresh_firstparty(catalog, state_dir=self.state, now=NOW + timedelta(hours=2), fetcher=fetcher)
+        self.assertEqual(calls, [False, True])
+        self.assertEqual(refreshed[1]["output_mtok"], 45)
+        self.assertEqual(report["providers"][0]["status"], "fresh")
+
+    def test_offline_fallback_ages_each_model_independently(self) -> None:
+        catalog = self.seed_old_provider_snapshot()
+        refresh_firstparty(catalog, state_dir=self.state, now=NOW + timedelta(hours=49), fetcher=lambda url, cached: FetchResult(self.source("0.10", "0.50")))
+        def offline(url, cached):
+            raise OSError("offline")
+        refreshed, report = refresh_firstparty(catalog, state_dir=self.state, now=NOW + timedelta(hours=50), fetcher=offline)
+        self.assertEqual(refreshed[0]["verification_status"], "last_good")
+        self.assertEqual(refreshed[1]["verification_status"], "stale")
+        self.assertEqual(refreshed[0]["checked"], "2026-08-02")
+        self.assertEqual(refreshed[1]["checked"], "2026-07-31")
+        self.assertEqual(report["providers"][0]["freshModelCount"], 0)
+
+    def test_unknown_model_date_never_inherits_fresh_sibling_date(self) -> None:
+        catalog = self.seed_old_provider_snapshot()
+        path = self.state / "firstparty-last-good.json"
+        saved = json.loads(path.read_text())
+        saved["version"] = 2
+        saved["providers"]["openai"]["prices"]["gpt-6-astra"]["verifiedAt"] = None
+        path.write_text(json.dumps(saved))
+        refreshed, report = refresh_firstparty(catalog, state_dir=self.state, now=NOW, fetcher=lambda url, cached: FetchResult(self.source("0.10", "0.50")))
+        self.assertEqual(refreshed[1]["verification_status"], "stale")
+        self.assertEqual(refreshed[1]["checked"], "2026-07-01")
+        self.assertIsNone(report["providers"][0]["models"][1]["verifiedAt"])
+
+    def test_complete_304_snapshot_advances_verification_without_refetch(self) -> None:
+        refresh_firstparty(self.catalog, state_dir=self.state, now=NOW, fetcher=lambda url, cached: FetchResult(self.source("0.20", "1.20"), etag="v1"))
+        calls = []
+        def fetcher(url, cached):
+            calls.append(cached)
+            return FetchResult(None, etag="v1", not_modified=True)
+        refreshed, report = refresh_firstparty(self.catalog, state_dir=self.state, now=NOW + timedelta(days=1), fetcher=fetcher)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(refreshed[0]["checked"], "2026-08-01")
+        self.assertEqual(report["status"], "healthy")
 
 
 if __name__ == "__main__":

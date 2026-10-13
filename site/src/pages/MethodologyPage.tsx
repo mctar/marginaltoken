@@ -118,7 +118,8 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
               <a href={source.sourceUrl} key={source.provider}>
                 <span>{providerName(source.provider)}</span>
                 <strong>{source.status.replace('_', ' ')}</strong>
-                <small>{source.lastVerified ? `Verified ${source.lastVerified}` : 'No automated verification yet'}</small>
+                {source.freshModelCount !== undefined && <small>{source.freshModelCount} of {source.modelCount} models verified on the latest scan</small>}
+                <small>{source.lastVerified ? `Oldest verification ${source.lastVerified}` : 'No automated verification yet'}</small>
                 {(source.reviewCandidateCount ?? 0) > 0 && <small>{source.reviewCandidateCount} new model {source.reviewCandidateCount === 1 ? 'signal' : 'signals'}</small>}
                 {source.detail && <small>{source.detail}</small>}
               </a>

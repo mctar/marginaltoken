@@ -9,6 +9,7 @@ export type PriceModel = {
   sourceUrl?: string
   checked?: string
   rateNote?: string
+  verificationStatus?: 'fresh' | 'last_good' | 'stale' | 'manual'
   indexEligible?: boolean
   inputModalities?: string[]
   outputModalities?: string[]
@@ -110,6 +111,14 @@ export type ProviderSourceStatus = {
   sourceUrl: string
   lastVerified: string | null
   modelCount: number
+  freshModelCount?: number
+  models?: Array<{
+    key: string
+    display: string
+    status: 'fresh' | 'last_good' | 'stale' | 'manual'
+    lastVerified: string | null
+    detail?: string
+  }>
   reviewCandidateCount?: number
   detail?: string
 }

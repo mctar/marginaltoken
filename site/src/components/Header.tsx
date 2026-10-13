@@ -12,6 +12,7 @@ const navigation = [
   { href: '/open/', label: 'Open models' },
   { href: '/spreads/', label: 'Spreads' },
   { href: '/compare/', label: 'Compare' },
+  { href: '/plan/', label: 'Plan' },
   { href: '/infrastructure/', label: 'Rent vs Run' },
   { href: '/notes/', label: 'Market notes' },
   { href: '/methodology/', label: 'Methodology' },

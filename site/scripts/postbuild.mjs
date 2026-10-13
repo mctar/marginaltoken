@@ -13,7 +13,7 @@ await writeFile(path.join(distDir, '.nojekyll'), '')
 
 const shell = await readFile(path.join(distDir, 'index.html'), 'utf8')
 
-for (const route of ['tape', 'methodology', 'model']) {
+for (const route of ['tape', 'methodology', 'model', 'plan', 'watch']) {
   const routeDir = path.join(distDir, route)
   await mkdir(routeDir, { recursive: true })
   await copyFile(path.join(distDir, 'index.html'), path.join(routeDir, 'index.html'))

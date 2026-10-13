@@ -3,6 +3,8 @@ export type PriceModel = {
   family?: string
   selectionOrder?: number
   promotionVerified?: boolean
+  identityReviewed?: boolean
+  selectedSlots?: string[]
   apiId?: string
   routedId?: string
   lifecycle?: { status: string; date: string; successor?: string; detail?: string; sourceUrl: string }
@@ -36,6 +38,7 @@ export type PricesFeed = {
 }
 
 export type HistoryPoint = {
+  verificationStatus?: string
   source?: string
   sourceUrl?: string
   checked?: string

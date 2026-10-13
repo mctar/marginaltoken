@@ -101,7 +101,7 @@ Open the `Local` HTTP address printed by Vite, normally
 Vite's TypeScript modules and root-relative feed files under the `file://`
 protocol.
 
-The Vite development server reads the five root feed files directly. The production build copies them into `site/dist/data`, includes `CNAME` and `.nojekyll`, and creates static entry documents for `/tape/` and `/methodology/`.
+The Vite development server reads the public root feeds. The production build copies them into `site/dist/data`, includes `CNAME` and `.nojekyll`, creates static entry documents for the tools, current and archived model cards, and editorial notes, and generates public RSS feeds.
 
 ```bash
 npm test
@@ -198,3 +198,17 @@ The hourly service runs the decision collector alongside existing collectors, wh
 ## NVIDIA NIM profiles
 
 `collector/nvidia.py` verifies the reviewed NIM register against NVIDIA's lifecycle catalog and support matrices. It understands both the current machine-readable support rows and the per-model optimized-profile tables used by older NIM releases. On a successful collection it records the exact GPU labels, tensor-parallel counts, precisions, and optimization modes published for each model. A failed source check preserves the last-good register and marks that source stale; profile compatibility is never presented as measured throughput.
+
+## Planning, watches and histories
+
+`/plan/` contains mixed-fleet economics, local CSV repricing and evaluation/budget filtering. `/watch/` manages up to 20 browser-saved scenarios. Model cards carry scoped hosting facts, step plots, lifecycle events, accessible quote tables and CSV exports. Rent vs Run supports verified NIM profiles and declared custom runtimes, owned or rented hardware, memory fit and entered operating costs.
+
+Usage imports are limited to 2 MiB / 10,000 rows. Download a template from Plan. Normalized `input_tokens` includes cache reads/writes; `output_tokens` is answer-only, with `reasoning_tokens` additional. OpenAI output includes reasoning, which is subtracted before charging once. Anthropic input is uncached, so cache fields are added; output already includes thinking. Provider formats are flattened aggregate exports using the shown column conventions, not every vendor's dashboard CSV layout. Nonzero usage needs a request count. `min_prompt_tokens` and `max_prompt_tokens` must bracket the inclusive average, and every bucket must fit its chosen tariff. `cache_duration` defaults to `5m`; `1h` requires a reported one-hour write price. Non-text, tool, cache-storage and negotiated fees require separate billing. Repricing fixes token counts and does not assert output equivalence.
+
+Evaluations require model, task, suite, version, setting, accepted, total, date and source. Use exact ledger keys and describe the measured snapshot/runtime/effort in `setting`. Moving provider aliases are not accepted as evaluation identities. Only one configuration per model and task/suite/version is compared; quality thresholds can use the lower 95% Wilson bound. There are no invented benchmark scores or provider credentials.
+
+The register is the only editable selection policy. Add reviewed identities, explicit stage, identity evidence, family and order to `collector/model-register.json`; add first-party fallback facts only when confirmed. A newly registered same-family successor can propagate through hourly verification without editing separate selection arrays. Unknown listings remain in the persistent review queue. Update the generated compatibility export with `python3 -m collector.export_register`. Historical aliases preserve their original quote identity; API successors are never interchangeable aliases.
+
+`collector/hosting-reviewed.json` records scoped, dated primary-source terms; cards mark reviews overdue after 30 days. The existing editorial watch checks consequential policy changes. `site/scripts/feeds.mjs` builds notes, price and lifecycle RSS plus individual feeds under `/feeds/model/<provider>/<model>.xml`; stable GUIDs and XML escaping prevent repeat stories and malformed feeds. A delisting does not establish provider retirement.
+
+To preview against copied live feeds without modifying the tracked ledger, set `MARGINALTOKEN_DATA_DIR=/absolute/path/to/copied/feeds` for the production build. The normal build and deployment use the repository's `data/` directory.

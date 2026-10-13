@@ -151,11 +151,11 @@ def string_list(value: Any) -> list[str]:
     )
 
 
-def release_stage(key: str) -> str:
-    # Meta's provider ID omits its preview status. Reviewed 2026-10-13:
-    # https://dev.meta.ai/docs/overview#build-with-muse-wonder
-    if key == "meta/muse-wonder":
-        return "preview"
+def release_stage(key: str, register: dict[str, Any] | None = None) -> str:
+    register = register or read_register()
+    reviewed = register["models"].get(canonical_key(key, register))
+    if reviewed and reviewed.get("approved") and reviewed.get("stage"):
+        return reviewed["stage"]
     lowered = key.lower()
     if "experimental" in lowered or "-exp-" in lowered or lowered.endswith(":exp"):
         return "experimental"
@@ -225,7 +225,7 @@ def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
             or "include_reasoning" in supported_parameters,
             "supportsTools": "tools" in supported_parameters,
             "supportsStructuredOutput": "response_format" in supported_parameters,
-            "releaseStage": release_stage(key),
+            "releaseStage": release_stage(key, register),
         }
         model["routedId"] = key
         model["sourceUrl"] = f"https://openrouter.ai/{key}"
@@ -757,7 +757,19 @@ def collect_once(
     if not isinstance(previous_models, list):
         raise CollectorError("previous prices.json has an invalid models field")
     models = merge_models(openrouter, curated)
-    register_public = apply_register(models, register, now) if register else None
+    old_register = read_feed(data_dir / "model-register.json", {})
+    saved_selections = old_register.get("selections", {}) if isinstance(old_register, dict) else {}
+    prior_selections = {k: v for k, v in saved_selections.items() if isinstance(k, str) and isinstance(v, str)} if isinstance(saved_selections, dict) else {}
+    prior_meta = read_feed(data_dir / "meta.json", {})
+    if isinstance(prior_meta, dict) and isinstance(prior_meta.get("basket"), list):
+        for key in prior_meta["basket"]:
+            if isinstance(key, str) and "/" in key:
+                prior_selections.setdefault("basket:" + key.split("/", 1)[0], key)
+    for model in previous_models:
+        for slot in model.get("selectedSlots", []) if isinstance(model.get("selectedSlots"), list) else []:
+            if isinstance(slot, str):
+                prior_selections.setdefault("slot:" + slot, model["key"])
+    register_public = apply_register(models, register, now, prior_selections) if register else None
     if len(models) < min_models:
         raise CollectorError(f"only {len(models)} normalized models, minimum is {min_models}")
     if previous_models and Decimal(len(models)) / Decimal(len(previous_models)) < retention_ratio:
@@ -876,7 +888,7 @@ def collect_once(
                 "date": date,
                 "input_mtok": model["input_mtok"],
                 "output_mtok": model["output_mtok"],
-                **{field: model[field] for field in ("source", "sourceUrl", "checked", "rateNote") if field in model},
+                **{field: model[field] for field in ("source", "sourceUrl", "checked", "rateNote", "verificationStatus") if field in model},
             }
             for model in models
         ]
@@ -890,7 +902,7 @@ def collect_once(
                     "date": date,
                     "input_mtok": model["input_mtok"],
                     "output_mtok": model["output_mtok"],
-                    **{field: model[field] for field in ("source", "sourceUrl", "checked", "rateNote") if field in model},
+                    **{field: model[field] for field in ("source", "sourceUrl", "checked", "rateNote", "verificationStatus") if field in model},
                 }
             )
 

@@ -99,7 +99,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">11</span>
           <h2>Rent vs Run</h2>
           <p>
-            The infrastructure view keeps deployment metadata separate from the API price tape. NVIDIA NIM availability, lifecycle, and supported hardware profiles come from NVIDIA documentation; free hosted development endpoints are not treated as zero-cost production quotes. A selected profile records the published GPU family, tensor parallelism, precision, and optimization mode, and its tensor-parallel value sets GPUs per deployment. It is a compatibility record, not a performance benchmark. API spend uses the selected posted route basis. Self-hosted cost remains a planning model driven by visible assumptions for GPU-hours, usable utilization, aggregate output throughput, and annual software cost. Throughput is not inferred from model size or generalized from another benchmark. The first-deployment break-even is shown only when it occurs before the modeled output capacity is exhausted. Hardware, power, staffing, storage, networking, input-prefill pressure, reliability and negotiated terms remain outside the estimate. If verification fails, the last-good profile register remains visible with a stale source status rather than silently disappearing.
+            Verified NVIDIA NIM profiles record GPU compatibility, tensor parallelism, precision and optimization. Custom plans require current weight verification and entered runtime and memory assumptions. Monthly costs include either rental or owned-hardware amortization, plus entered power, software, staffing and other operating charges. Standby deployments incur costs without adding serving capacity. Aggregate memory fit is a capacity estimate, not proof of runtime support. Throughput and utilization are entered assumptions, with sensitivity tables; input-prefill pressure, queueing and reliability need workload measurements. The first-deployment break-even is shown only before modeled capacity is exhausted. Published API rates can exclude cache, context-band, tool and regional charges; use Plan or Compare for request-level billing.
           </p>
         </section>
       </article>
@@ -141,6 +141,14 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           )}
         </section>
       )}
+
+      <section className="methodology-section plan-panel">
+        <p className="section-kicker">Decision tools</p>
+        <h2>Assumptions, measurements and saved decisions</h2>
+        <p>The shared register separates canonical ledger keys, reviewed route aliases and provider API IDs. Basket promotions require reviewed identities in approved families and freshly verified official prices. The open shelf also requires stable status and current verification of the exact weight repository. New discoveries remain pending; a higher price or a new name does not change family policy.</p>
+        <p>The mixed-fleet planner charges a first attempt on every request and a second attempt on the escalated fraction. Acceptance rates are conditional on keeping the first result or using the escalated result. Usage CSVs are parsed locally using declared token conventions, and per-request prompt bounds are required to establish price bands. The capability/budget view uses reader-supplied accepted-task counts for matching task and suite versions, with sample sizes and confidence intervals. Neither prices nor capability flags imply equal quality.</p>
+        <p>Hosting cards describe dated, scoped product terms. Routed settings and region guarantees require their own verification. Historical prices carry saved source details where available; older provenance remains unrecorded. An expected promotion end is distinct from an observed price change. Browser watches compare saved published-quote baselines with current feeds on return; exported scenarios may contain your assumptions. RSS publishes observed price moves, listings, lifecycle events and editorial notes without creating a daily article.</p>
+      </section>
 
       <section className="source-register" aria-labelledby="source-title">
         <p className="section-kicker">Primary sources</p>

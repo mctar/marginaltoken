@@ -25,27 +25,59 @@ export type ShortlistSelection = ShortlistSlot & {
 // This is an editorial set, not a model-name heuristic. Add a newly released
 // successor to the front of its slot only after its standard API rate and
 // release status have been reviewed. Older keys remain as safe fallbacks.
-export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] = register.apiShortlist
+export const SHORTLIST_COLUMNS: readonly ShortlistColumn[] =
+  register.apiShortlist
 
 export const SHORTLIST_SLOT_COUNT = SHORTLIST_COLUMNS.reduce(
   (count, column) => count + column.slots.length,
   0,
 )
 
-export function selectShortlist(models: readonly PriceModel[]): Array<ShortlistColumn & { selections: ShortlistSelection[] }> {
+export function selectShortlist(
+  models: readonly PriceModel[],
+): Array<ShortlistColumn & { selections: ShortlistSelection[] }> {
   const byKey = new Map(models.map((model) => [model.key, model]))
   return SHORTLIST_COLUMNS.map((column) => ({
     ...column,
     selections: column.slots.map((slot) => ({
       ...slot,
-      model: [...models.filter((m) => m.family === slot.family && m.promotionVerified).sort((a, b) => (b.selectionOrder ?? 0) - (a.selectionOrder ?? 0)), ...slot.candidates.map((key) => byKey.get(key))].find((m) => m && m.lifecycle?.status !== 'deprecated' && m.lifecycle?.status !== 'retired') ?? null,
+      model:
+        [
+          ...models.filter(
+            (m) =>
+              m.selectedSlots?.includes(slot.id) &&
+              m.provider === slot.provider,
+          ),
+          ...models
+            .filter(
+              (m) =>
+                m.family === slot.family &&
+                m.provider === slot.provider &&
+                (m.selectionOrder ?? 0) >=
+                  (register.models[
+                    slot.candidates[0] as keyof typeof register.models
+                  ]?.order ?? 0) &&
+                m.promotionVerified,
+            )
+            .sort((a, b) => (b.selectionOrder ?? 0) - (a.selectionOrder ?? 0)),
+          ...slot.candidates.map((key) => byKey.get(key)),
+        ].find(
+          (m) =>
+            m &&
+            m.lifecycle?.status !== 'deprecated' &&
+            m.lifecycle?.status !== 'retired',
+        ) ?? null,
     })),
   }))
 }
 
 export function logPricePosition(value: number): number {
-  const safeValue = Number.isFinite(value) && value > 0 ? value : SHORTLIST_MIN_PRICE
-  const clamped = Math.min(SHORTLIST_MAX_PRICE, Math.max(SHORTLIST_MIN_PRICE, safeValue))
+  const safeValue =
+    Number.isFinite(value) && value > 0 ? value : SHORTLIST_MIN_PRICE
+  const clamped = Math.min(
+    SHORTLIST_MAX_PRICE,
+    Math.max(SHORTLIST_MIN_PRICE, safeValue),
+  )
   const minimum = Math.log10(SHORTLIST_MIN_PRICE)
   const maximum = Math.log10(SHORTLIST_MAX_PRICE)
   return ((Math.log10(clamped) - minimum) / (maximum - minimum)) * 100

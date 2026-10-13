@@ -646,6 +646,8 @@ def refresh_firstparty(
                 if not fetched.not_modified:
                     if fetched.text is None:
                         raise OfficialSourceError("official source returned no content")
+                    if re.search(r"<title[^>]*>\s*(?:ZScaler|Access Denied|Just a moment)", fetched.text, re.I):
+                        raise OfficialSourceError("Pricing source returned an access interstitial; rates could not be verified")
                     values, errors = _parse_rows(parser, fetched.text, rows, now)
                     content_hash = hashlib.sha256(fetched.text.encode("utf-8")).hexdigest()
                     if errors and fetcher is fetch_source:

@@ -4,6 +4,7 @@ import {
   decisionFor,
   matchesOpenness,
   validDecisions,
+  openShortlist,
 } from '../src/lib/decisions.ts'
 import type { DecisionsFeed, PriceModel } from '../src/lib/types.ts'
 const model: PriceModel = {
@@ -38,6 +39,13 @@ const feed: DecisionsFeed = {
     },
   ],
 }
+test('new reviewed open successors propagate by family and order only with exact verified weights', () => {
+  const successor={...model,key:'qwen/new-reviewed-27b',provider:'qwen',family:'open-2',identityReviewed:true,selectionOrder:200}
+  const d={...feed,models:[{...feed.models[0],key:successor.key}]}
+  assert.equal(openShortlist([successor],d)[0]?.key,successor.key)
+  assert.equal(openShortlist([{...successor,huggingFaceId:'x/Other'}],d).length,0)
+  assert.equal(openShortlist([{...successor,identityReviewed:false}],d).length,0)
+})
 test('openness is grounded in a matching repository, never a lab name', () => {
   assert.equal(matchesOpenness(model, 'weights', feed), true)
   assert.equal(matchesOpenness(model, 'permissive', feed), true)

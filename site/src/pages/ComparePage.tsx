@@ -1,3 +1,4 @@
+import SaveWatch from '../components/SaveWatch'
 import { quotesFor, type Quote } from '../lib/quotes'
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import ShareImageButton from '../components/ShareImageButton'
@@ -915,6 +916,7 @@ export default function ComparePage({
           for the same work.
         </p>
       </section>
+      <SaveWatch data={{prices,meta,decisions,offers,history:{generatedAt:prices.generatedAt,points:[]},changes:{generatedAt:prices.generatedAt,changes:[]},brief:null,provenance:null,deployment:null}} models={models} quotes={Object.fromEntries(models.map((m) => [m.key, assumptionFor(m).quote]))} workload={workload} path={() => window.location.pathname+window.location.search}/>
     </main>
   )
 }

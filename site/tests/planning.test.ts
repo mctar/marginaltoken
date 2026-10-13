@@ -4,6 +4,7 @@ import { calculateFleet, quoteBill, planningWorkload, wilson } from '../src/lib/
 import { csvRows, importUsage, repriceUsage, importEvaluations, csvText } from '../src/lib/imports.ts'
 import type { PriceModel } from '../src/lib/types'
 import type { Quote } from '../src/lib/quotes'
+import { quotesFor } from '../src/lib/quotes.ts'
 
 const model: PriceModel = { key:'lab/test',display:'Test',provider:'lab',source:'openrouter',context:1000000,input_mtok:2,output_mtok:10 }
 const q: Quote = { id:'lab:standard', source:'Lab',sourceUrl:'https://example.com',context:1000000,plan:{id:'standard',label:'Standard',input_mtok:2,output_mtok:10,cached_input_mtok:.2,cache_write_mtok:2.5} }
@@ -46,4 +47,13 @@ test('evaluation imports keep exact identities and suite versions; small samples
   assert.ok(wilson(8,10).low < wilson(80,100).low)
   assert.throws(() => importEvaluations(header+'lab/test,t,s,v,low,11,10,2026-10-13,local'))
   assert.throws(() => importEvaluations(header+'lab/test,t,s,v,low,1,10,2026-02-30,local'))
+  assert.throws(() => importEvaluations(header+'deepseek-flash,t,s,v,low,1,10,2026-10-13,local'))
+})
+test('published context plans retain the lower/upper prompt boundaries', () => {
+  const m={...model,key:'openai/gpt-6.1-sol',provider:'openai',source:'firstparty' as const,rateNote:'Standard rate for prompts up to 272,000 input tokens'}
+  const now=new Date().toISOString()
+  const quotes=quotesFor(m,{version:1,asOf:now.slice(0,10),generatedAt:now,models:[{key:m.key,billing:{status:'fresh',verifiedAt:now,sourceUrl:'https://example.com',plans:[q.plan,{...q.plan,id:'standard-long-context',label:'Long'}]}}]},null)
+  const workload={...planningWorkload,inputTokens:300000}
+  assert.equal(quoteBill(m,quotes.find((q) => q.id==='lab:standard')!,workload).complete,false)
+  assert.equal(quoteBill(m,quotes.find((q) => q.id==='lab:standard-long-context')!,workload).complete,true)
 })

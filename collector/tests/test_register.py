@@ -36,6 +36,26 @@ class RegisterTests(unittest.TestCase):
         self.assertEqual(result["basket"]["anthropic"], "anthropic/claude-opus-5.5")
         self.assertFalse(row["promotionVerified"])
 
+    def test_verified_successor_is_retained_when_its_price_source_fails(self):
+        old = "openai/gpt-6.1-sol"
+        new = "openai/future-sol"
+        self.register["models"][new] = {**copy.deepcopy(self.register["models"][old]), "order": 200, "apiId": "future-sol"}
+        row = {**next(m for m in self.models if m["key"] == old), "key": new}
+        self.models.append(row)
+        promoted = apply_register(self.models, self.register, self.now)
+        row["verificationStatus"] = "last_good"
+        held = apply_register(self.models, self.register, self.now, promoted["selections"])
+        self.assertEqual(held["basket"]["openai"], new)
+        self.assertIn("openai-sol", row["selectedSlots"])
+        self.assertFalse(row["promotionVerified"])
+        self.assertEqual(held["selections"]["slot:openai-sol"], new)
+
+    def test_clean_older_source_cannot_downgrade_the_reviewed_fallback(self):
+        row = next(m for m in self.models if m["key"] == "openai/gpt-6.1-sol")
+        row["verificationStatus"] = "manual"
+        held = apply_register(self.models, self.register, self.now)
+        self.assertEqual(held["basket"]["openai"], "openai/gpt-6.1-sol")
+
     def test_alias_deduplicates_but_preserves_route(self):
         raw = lambda key: {"id": key, "pricing": {"prompt": ".000001", "completion": ".000002"}}
         rows = normalize_openrouter({"data": [raw("mistralai/mistral-large-4"), raw("mistralai/mistral-large-4-0")]})

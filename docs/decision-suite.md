@@ -23,7 +23,7 @@ The site helps people understand AI costs and decide what to run. Its current pr
 2. Plan tools: shared quote handling, fleet economics, usage import and evaluation/budget view.
 3. Hosting facts, broader infrastructure costs, watchlists, RSS and model timelines.
 
-Each stage has its own commit and reviewable PR. The complete branch must pass collector tests, arithmetic/import tests, frontend tests, production builds and browser checks before publication is requested.
+The stages are separate implementation commits in one release PR because they share quote handling, identity checks and validation rules. The complete branch must pass collector tests, arithmetic/import tests, frontend tests, production builds and browser checks before publication is requested.
 
 ## Product decisions
 

@@ -125,7 +125,7 @@ export function calculateBill(
   const readFraction = percent(workload.cacheReadPct) / 100,
     writeFraction = percent(workload.cacheWritePct) / 100
   const problems: string[] = []
-  if (readFraction + writeFraction > 1)
+  if (readFraction + writeFraction > 1 + 1e-12)
     problems.push('Cache reads and writes must total at most 100% of input.')
   if (readFraction > 0 && plan.cached_input_mtok === undefined)
     problems.push(

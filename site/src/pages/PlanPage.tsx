@@ -26,7 +26,7 @@ import { modelPath } from '../lib/models'
 export const money = (n: number) =>
   '$' +
   n.toLocaleString('en-US', n > 0 && n < 0.01 ? {maximumSignificantDigits:4} : {
-    maximumFractionDigits: 2, minimumFractionDigits: 2,
+    maximumFractionDigits: n < 1 ? 4 : 2, minimumFractionDigits: 2,
   })
 export function NumberInput({
   label,

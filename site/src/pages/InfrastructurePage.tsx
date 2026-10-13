@@ -793,7 +793,7 @@ function NimInfrastructurePage({
           </article>
         </div>
 
-        {result.complete && (
+        {result.complete && Number.isFinite(result.totalCapacityMillions) && (
           <CostCurve result={result} assumptions={assumptions} />
         )}
         <p className="decision-note">

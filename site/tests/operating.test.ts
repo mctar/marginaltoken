@@ -19,4 +19,6 @@ test('memory overflow, zero serving capacity and invalid ownership period cannot
   assert.equal(calculateInfrastructure(model,null,'tape',{...a,gpuMemoryGB:48}).memoryFits,true)
   assert.equal(calculateInfrastructure(model,null,'tape',{...defaults,outputTokensPerSecond:0}).complete,false)
   assert.equal(calculateInfrastructure(model,null,'tape',{...defaults,costMode:'owned',amortizationMonths:0}).complete,false)
+  assert.equal(calculateInfrastructure(model,null,'tape',{...defaults,outputMillions:0}).complete,false)
+  assert.equal(calculateInfrastructure(model,null,'tape',{...defaults,inputMillions:0,outputMillions:0}).breakEvenWithinCapacity,false)
 })

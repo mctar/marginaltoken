@@ -136,6 +136,7 @@ export function calculateInfrastructure(
     ? Math.max(1, Math.ceil(assumptions.outputMillions / outputCapacityPerReplica))
     : 1
   const problems: string[] = []
+  if (assumptions.inputMillions > 0 && assumptions.outputMillions === 0) problems.push('Input-only capacity requires a prefill measurement. This planner sizes generated-token throughput.')
   if (!Number.isInteger(assumptions.gpusPerReplica) || assumptions.gpusPerReplica < 1) problems.push('GPU count must be a positive whole number.')
   if (assumptions.outputMillions > 0 && outputCapacityPerReplica <= 0) problems.push('Positive output demand requires positive throughput and utilization.')
   if (assumptions.costMode === 'owned' && !(assumptions.amortizationMonths && assumptions.amortizationMonths > 0)) problems.push('Owned hardware needs a positive amortization period.')
@@ -156,7 +157,7 @@ export function calculateInfrastructure(
   const blendedApiRate = selectedQuote.input_mtok * inputShare + selectedQuote.output_mtok * outputShare
   const breakEvenMillions = blendedApiRate > 0 ? (costPerReplica * (1 + standbyReplicas) + fixedMonthly) / blendedApiRate : null
   const totalCapacityMillions = outputShare > 0 ? outputCapacityPerReplica / outputShare : Number.POSITIVE_INFINITY
-  const breakEvenWithinCapacity = !problems.length && breakEvenMillions !== null && breakEvenMillions <= totalCapacityMillions
+  const breakEvenWithinCapacity = outputShare > 0 && !problems.length && breakEvenMillions !== null && breakEvenMillions <= totalCapacityMillions
   return {
     apiMonthly: selectedQuote.monthly,
     runMonthly,

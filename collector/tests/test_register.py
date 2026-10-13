@@ -49,6 +49,8 @@ class RegisterTests(unittest.TestCase):
         self.assertIn("openai-sol", row["selectedSlots"])
         self.assertFalse(row["promotionVerified"])
         self.assertEqual(held["selections"]["slot:openai-sol"], new)
+        self.register["models"][new]["stage"] = "experimental"
+        self.assertEqual(apply_register(self.models, self.register, self.now, held["selections"])["basket"]["openai"], old)
 
     def test_clean_older_source_cannot_downgrade_the_reviewed_fallback(self):
         row = next(m for m in self.models if m["key"] == "openai/gpt-6.1-sol")

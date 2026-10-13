@@ -97,6 +97,7 @@ def apply_register(models: list[dict[str, Any]], register: dict[str, Any], now: 
         if (old_key not in by_key or old_record.get("provider") != provider or
             old_record.get("family") != family or old_record.get("order", 0) < baseline_order or
             (old_key != fallback and not old_record.get("approved")) or
+            (old_record.get("approved") and old_record.get("stage") not in stages) or
             old_record.get("lifecycle", {}).get("status") in {"deprecated", "retired"}):
             old_key = fallback
         old_order = register["models"][old_key].get("order", 0)

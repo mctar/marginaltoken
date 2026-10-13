@@ -44,7 +44,14 @@ export function quotesFor(
     },
   ]
   const billing = decisionFor(model, decisions)?.billing
-  if (billing && currentVerification(billing))
+  const standard = billing?.plans.find((p) => p.id === 'standard')
+  const inconsistent =
+    model.source === 'firstparty' &&
+    model.verificationStatus === 'fresh' &&
+    standard &&
+    (Math.abs(standard.input_mtok - model.input_mtok) > 0.0001 ||
+      Math.abs(standard.output_mtok - model.output_mtok) > 0.0001)
+  if (billing && currentVerification(billing) && !inconsistent)
     for (const plan of billing.plans)
       quotes.push({
         id: 'lab:' + plan.id,

@@ -25,9 +25,8 @@ import { modelPath } from '../lib/models'
 
 export const money = (n: number) =>
   '$' +
-  n.toLocaleString('en-US', {
-    maximumFractionDigits: n < 1 ? 4 : 2,
-    minimumFractionDigits: 2,
+  n.toLocaleString('en-US', n > 0 && n < 0.01 ? {maximumSignificantDigits:4} : {
+    maximumFractionDigits: 2, minimumFractionDigits: 2,
   })
 export function NumberInput({
   label,
@@ -100,6 +99,8 @@ function ModelQuote({
         </select>
       </label>
       <p className="decision-note">
+        {money(quote.plan.input_mtok)} uncached input ·{' '}
+        {money(quote.plan.output_mtok)} output / million tokens ·{' '}
         <a href={quote.sourceUrl} target="_blank" rel="noreferrer">
           {quote.source}
         </a>{' '}
@@ -522,6 +523,11 @@ export default function PlanPage({ data }: { data: FeedData }) {
                   {workload.calls.toLocaleString()} +{' '}
                   {result.escalated.toLocaleString()}
                 </strong>
+                <small>
+                  {result.complete
+                    ? money(result.api) + ' API / month'
+                    : 'Incomplete API estimate'}
+                </small>
               </div>
               <div>
                 <span>Human review</span>

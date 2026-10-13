@@ -57,3 +57,10 @@ test('published context plans retain the lower/upper prompt boundaries', () => {
   assert.equal(quoteBill(m,quotes.find((q) => q.id==='lab:standard')!,workload).complete,false)
   assert.equal(quoteBill(m,quotes.find((q) => q.id==='lab:standard-long-context')!,workload).complete,true)
 })
+test('an older billing snapshot cannot override a newly verified standard tape price', () => {
+  const m={...model,source:'firstparty' as const,verificationStatus:'fresh' as const,input_mtok:3,output_mtok:12}
+  const now=new Date().toISOString()
+  const quotes=quotesFor(m,{version:1,asOf:now.slice(0,10),generatedAt:now,models:[{key:m.key,billing:{status:'fresh',verifiedAt:now,sourceUrl:'https://example.com',plans:[q.plan]}}]},null)
+  assert.deepEqual(quotes.map((q) => q.id),['tape'])
+  assert.equal(quotes[0].plan.input_mtok,3)
+})

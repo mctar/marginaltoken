@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T06:01:36Z",
+  "generatedAt": "2026-10-14T06:07:52Z",
   "asOf": "2026-10-14",
   "models": [
     {
@@ -1431,8 +1431,8 @@
       "key": "deepseek/deepseek-v4-pro-0813",
       "display": "DeepSeek V4 Pro 0813",
       "provider": "deepseek",
-      "input_mtok": 0.66,
-      "output_mtok": 1.98,
+      "input_mtok": 1.32,
+      "output_mtok": 3.96,
       "context": 1048576,
       "source": "openrouter",
       "indexEligible": false,
@@ -1905,9 +1905,7 @@
       "family": "google-pro",
       "selectionOrder": 100,
       "identityReviewed": true,
-      "selectedSlots": [
-        "google-pro"
-      ],
+      "selectedSlots": [],
       "apiId": "gemini-3.1-pro-preview",
       "promotionVerified": true
     },
@@ -2144,7 +2142,7 @@
       "input_mtok": 2.0,
       "output_mtok": 10.0,
       "context": 1048576,
-      "source": "openrouter",
+      "source": "firstparty",
       "indexEligible": false,
       "inputModalities": [
         "audio",
@@ -2161,8 +2159,19 @@
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
       "routedId": "google/gemini-4-argon",
-      "sourceUrl": "https://openrouter.ai/google/gemini-4-argon",
-      "maxOutputTokens": 65536
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing",
+      "maxOutputTokens": 65536,
+      "checked": "2026-10-14",
+      "rateNote": "Standard API: $2 input / $10 output per million tokens through 2026-11-30; $4 / $20 from 2026-12-01. Output includes thinking. Implicit caching only. Default synchronous output is capped at 65,536 tokens; background long decode shares the 1,048,576-token input/output window.",
+      "verificationStatus": "fresh",
+      "family": "google-argon",
+      "selectionOrder": 200,
+      "identityReviewed": true,
+      "selectedSlots": [
+        "google-argon"
+      ],
+      "apiId": "gemini-4-argon",
+      "promotionVerified": true
     },
     {
       "key": "google/gemini-nano-banana-2.1",
@@ -2296,8 +2305,8 @@
       "key": "google/gemma-4-26b-a4b-it",
       "display": "Gemma 4 26B A4B",
       "provider": "google",
-      "input_mtok": 0.0765,
-      "output_mtok": 0.255,
+      "input_mtok": 0.09,
+      "output_mtok": 0.3,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -7239,9 +7248,7 @@
       "family": "qwen-frontier",
       "selectionOrder": 100,
       "identityReviewed": false,
-      "selectedSlots": [
-        "qwen-frontier"
-      ],
+      "selectedSlots": [],
       "promotionVerified": false
     },
     {
@@ -7372,7 +7379,15 @@
       "releaseStage": "stable",
       "routedId": "qwen/qwen3.8-max-0902",
       "sourceUrl": "https://openrouter.ai/qwen/qwen3.8-max-0902",
-      "maxOutputTokens": 131072
+      "maxOutputTokens": 131072,
+      "family": "qwen-frontier",
+      "selectionOrder": 200,
+      "identityReviewed": true,
+      "selectedSlots": [
+        "qwen-frontier"
+      ],
+      "apiId": "qwen3.8-max-0902",
+      "promotionVerified": false
     },
     {
       "key": "qwen/qwen3.8-max-prime",

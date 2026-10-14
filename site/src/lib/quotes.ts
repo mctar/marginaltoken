@@ -15,10 +15,52 @@ export type Quote = {
   context?: number
   maxOutput?: number
 }
+
+export function datedBillingPlans(
+  plans: BillingPlan[],
+  now = Date.now(),
+): BillingPlan[] {
+  const today = new Date(now).toISOString().slice(0, 10)
+  return plans.flatMap((plan) => {
+    const { scheduledRates = [], ...base } = plan
+    const schedule = [...scheduledRates].sort((a, b) =>
+      a.effectiveFrom.localeCompare(b.effectiveFrom),
+    )
+    const active = schedule.filter((rate) => rate.effectiveFrom <= today).at(-1)
+    const current = active
+      ? {
+          ...base,
+          ...active,
+          validThrough: undefined,
+          label: `${base.label} · from ${active.effectiveFrom}`,
+        }
+      : {
+          ...base,
+          label: base.validThrough
+            ? `${base.label} · through ${base.validThrough}`
+            : base.label,
+        }
+    const available = !current.validThrough || today <= current.validThrough
+    return [
+      ...(available ? [current] : []),
+      ...schedule
+        .filter((rate) => rate.effectiveFrom > today)
+        .map((rate) => ({
+          ...base,
+          ...rate,
+          validThrough: undefined,
+          id: `${base.id}-from-${rate.effectiveFrom}`,
+          label: `${base.label} · from ${rate.effectiveFrom}`,
+        })),
+    ]
+  })
+}
+
 export function quotesFor(
   model: PriceModel,
   decisions: DecisionsFeed | null,
   offers: OffersFeed | null,
+  now = Date.now(),
 ): Quote[] {
   const boundaryText = model.rateNote?.match(
     /up to ([\d,]+) (?:input |prompt )?tokens/i,
@@ -44,15 +86,16 @@ export function quotesFor(
     },
   ]
   const billing = decisionFor(model, decisions)?.billing
-  const standard = billing?.plans.find((p) => p.id === 'standard')
+  const plans = datedBillingPlans(billing?.plans ?? [], now)
+  const standard = plans.find((p) => p.id === 'standard')
   const inconsistent =
     model.source === 'firstparty' &&
     model.verificationStatus === 'fresh' &&
     standard &&
     (Math.abs(standard.input_mtok - model.input_mtok) > 0.0001 ||
       Math.abs(standard.output_mtok - model.output_mtok) > 0.0001)
-  if (billing && currentVerification(billing) && !inconsistent)
-    for (const plan of billing.plans)
+  if (billing && currentVerification(billing, now) && !inconsistent)
+    for (const plan of plans)
       quotes.push({
         id: 'lab:' + plan.id,
         plan:
@@ -70,14 +113,14 @@ export function quotesFor(
                     }),
               }
             : plan,
-        source: `Published lab plan${billing.status === 'last_good' ? ' · Last good' : ''}`,
+        source: `${plan.effectiveFrom && plan.effectiveFrom > new Date(now).toISOString().slice(0, 10) ? 'Scheduled' : 'Published'} lab plan${billing.status === 'last_good' ? ' · Last good' : ''}`,
         sourceUrl: billing.sourceUrl,
         verifiedAt: billing.verifiedAt,
-        context: model.context,
-        maxOutput: model.maxOutputTokens,
+        context: plan.contextWindowTokens ?? model.context,
+        maxOutput: plan.maximumOutputTokens ?? model.maxOutputTokens,
       })
   for (const offer of (offers &&
-  Date.now() - Date.parse(offers.generatedAt) <= 7 * 86400000
+  now - Date.parse(offers.generatedAt) <= 7 * 86400000
     ? offers
     : null
   )?.models.find((row) => row.key === model.key)?.offers ?? [])

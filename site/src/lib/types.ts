@@ -7,7 +7,13 @@ export type PriceModel = {
   selectedSlots?: string[]
   apiId?: string
   routedId?: string
-  lifecycle?: { status: string; date: string; successor?: string; detail?: string; sourceUrl: string }
+  lifecycle?: {
+    status: string
+    date: string
+    successor?: string
+    detail?: string
+    sourceUrl: string
+  }
   display: string
   provider: string
   input_mtok: number
@@ -253,7 +259,10 @@ export type OffersFeed = {
   models: OfferModel[]
 }
 
-export type DeploymentLifecycle = 'nim' | 'certified-feature' | 'certified-production'
+export type DeploymentLifecycle =
+  | 'nim'
+  | 'certified-feature'
+  | 'certified-production'
 
 export type DeploymentProfile = {
   id: string
@@ -331,6 +340,19 @@ export type BillingPlan = {
   cache_storage_mtok_hour?: number
   minimumPromptTokens?: number
   maximumPromptTokens?: number
+  validThrough?: string
+  effectiveFrom?: string
+  scheduledRates?: Array<{
+    effectiveFrom: string
+    input_mtok: number
+    output_mtok: number
+    cached_input_mtok: number
+  }>
+  cacheMode?: 'implicit'
+  minimumCachePromptTokens?: number
+  contextWindowTokens?: number
+  maximumOutputTokens?: number
+  notes?: string
 }
 
 export type DecisionModel = {

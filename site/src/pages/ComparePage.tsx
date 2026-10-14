@@ -623,6 +623,7 @@ export default function ComparePage({
                     : ''}
                   . Choose the context price tier that applies to your prompt.
                 </p>
+                {plan.notes && <p className="decision-note">{plan.notes}</p>}
                 <details className="decision-details">
                   <summary>Token usage & rate adjustments</summary>
                   <div className="assumption-fields">

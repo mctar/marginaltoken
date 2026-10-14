@@ -13,6 +13,9 @@ import ModelPage, { MissingModelPage } from './pages/ModelPage'
 import SpreadsPage from './pages/SpreadsPage'
 import TapePage from './pages/TapePage'
 import NotesPage from './pages/NotesPage'
+import PlanPage from './pages/PlanPage'
+import WatchPage from './pages/WatchPage'
+import { canonicalModelKey } from './lib/register'
 import { marketNotes } from './lib/market-notes'
 
 type State =
@@ -20,11 +23,13 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ready'; data: FeedData }
 
-type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/' | '/open/' | '/notes/'
+type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/' | '/open/' | '/notes/' | '/plan/' | '/watch/'
 
 function routeFor(pathname: string): Route {
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
   if (normalized === '/open/') return '/open/'
+  if (normalized === '/plan/') return '/plan/'
+  if (normalized === '/watch/') return '/watch/'
   if (normalized === '/tape/') return '/tape/'
   if (normalized === '/spreads/') return '/spreads/'
   if (normalized === '/compare/') return '/compare/'
@@ -39,7 +44,7 @@ function modelKeyFor(pathname: string): string | null {
   const match = pathname.match(/^\/model\/(.+?)\/?$/)
   if (!match) return null
   try {
-    return match[1].split('/').map(decodeURIComponent).join('/')
+    return canonicalModelKey(match[1].split('/').map(decodeURIComponent).join('/'))
   } catch {
     return null
   }
@@ -53,7 +58,7 @@ export default function App() {
   useEffect(() => {
     if (route === '/notes/') return
     loadFeed(
-      route === '/model/' || route === '/spreads/' || route === '/infrastructure/' || route === '/compare/',
+      route === '/model/' || route === '/spreads/' || route === '/infrastructure/' || route === '/compare/' || route === '/plan/' || route === '/watch/',
       route === '/infrastructure/',
     )
       .then((data) => setState({ status: 'ready', data }))
@@ -95,20 +100,24 @@ export default function App() {
       {route === '/open/' && <OpenPage prices={data.prices} decisions={data.decisions ?? null} />}
       {route === '/spreads/' && <SpreadsPage prices={data.prices} offers={data.offers} />}
       {route === '/compare/' && <ComparePage prices={data.prices} meta={data.meta} decisions={data.decisions ?? null} offers={data.offers} />}
+      {route === '/plan/' && <PlanPage data={data} />}
+      {route === '/watch/' && <WatchPage data={data} />}
       {route === '/infrastructure/' && (
-        <InfrastructurePage prices={data.prices} offers={data.offers} deployment={data.deployment} meta={data.meta} />
+        <InfrastructurePage decisions={data.decisions ?? null} prices={data.prices} offers={data.offers} deployment={data.deployment} meta={data.meta} />
       )}
       {route === '/methodology/' && <MethodologyPage meta={data.meta} provenance={data.provenance} />}
       {route === '/model/' && (model ? (
         <ModelPage
           model={model}
+          history={data.history}
+          changes={data.changes}
           decision={data.decisions?.models.find((row) => row.key === model.key)}
           models={data.prices.models}
           asOf={data.meta.asOf}
           offerModel={offerModel}
           offersAsOf={data.offers?.asOf ?? null}
         />
-      ) : <MissingModelPage />)}
+      ) : <MissingModelPage modelKey={modelKey} history={data.history} changes={data.changes} asOf={data.prices.asOf}/>)}
       {route === '/' && <FrontPage data={data} />}
       <Footer generatedAt={data.meta.generatedAt} modelCount={data.meta.modelCount} />
     </div>

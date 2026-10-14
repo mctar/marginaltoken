@@ -1,5 +1,13 @@
 export type PriceModel = {
   key: string
+  family?: string
+  selectionOrder?: number
+  promotionVerified?: boolean
+  identityReviewed?: boolean
+  selectedSlots?: string[]
+  apiId?: string
+  routedId?: string
+  lifecycle?: { status: string; date: string; successor?: string; detail?: string; sourceUrl: string }
   display: string
   provider: string
   input_mtok: number
@@ -30,6 +38,11 @@ export type PricesFeed = {
 }
 
 export type HistoryPoint = {
+  verificationStatus?: string
+  source?: string
+  sourceUrl?: string
+  checked?: string
+  rateNote?: string
   key: string
   date: string
   input_mtok: number

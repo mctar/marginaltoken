@@ -71,3 +71,10 @@ test('maps prices consistently onto a base-ten logarithmic axis', () => {
   assert.equal(logPricePosition(0), 0)
   assert.equal(logPricePosition(1_000), 100)
 })
+
+test('retains a previously selected successor while its quote verification recovers', () => {
+  const baseline={...model('openai/gpt-6.1-sol'),family:'openai-sol',selectionOrder:100,promotionVerified:true}
+  const successor={...model('openai/future-sol'),family:'openai-sol',selectionOrder:200,promotionVerified:false,selectedSlots:['openai-sol']}
+  const selected=selectShortlist([baseline,successor]).flatMap((column) => column.selections).find((slot) => slot.id==='openai-sol')
+  assert.equal(selected?.model?.key,successor.key)
+})

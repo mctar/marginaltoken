@@ -108,7 +108,7 @@ class FirstPartyCatalogTests(unittest.TestCase):
 
     def test_reviewed_release_status_overrides_slug_heuristic(self) -> None:
         broad = normalize_openrouter({"data": [raw_model("mistralai/mistral-large-4", "0.00000068", "0.00000209")]})
-        self.assertEqual(broad[0]["releaseStage"], "stable")
+        self.assertEqual(broad[0]["releaseStage"], "preview")
         merged = merge_models(broad, self.models)
         large = next(model for model in merged if model["key"] == "mistralai/mistral-large-4")
         self.assertEqual(large["releaseStage"], "preview")

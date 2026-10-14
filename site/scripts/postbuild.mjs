@@ -1,19 +1,21 @@
 import { copyFile, cp, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { writeFeeds } from './feeds.mjs'
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url))
 const siteDir = path.dirname(scriptsDir)
 const rootDir = path.dirname(siteDir)
 const distDir = path.join(siteDir, 'dist')
+const dataDir = process.env.MARGINALTOKEN_DATA_DIR || path.join(rootDir,'data')
 
-await cp(path.join(rootDir, 'data'), path.join(distDir, 'data'), { recursive: true })
+await cp(dataDir, path.join(distDir, 'data'), { recursive: true })
 await copyFile(path.join(rootDir, 'CNAME'), path.join(distDir, 'CNAME'))
 await writeFile(path.join(distDir, '.nojekyll'), '')
 
 const shell = await readFile(path.join(distDir, 'index.html'), 'utf8')
 
-for (const route of ['tape', 'methodology', 'model']) {
+for (const route of ['tape', 'methodology', 'model', 'plan', 'watch']) {
   const routeDir = path.join(distDir, route)
   await mkdir(routeDir, { recursive: true })
   await copyFile(path.join(distDir, 'index.html'), path.join(routeDir, 'index.html'))
@@ -82,7 +84,15 @@ const spreadsDir = path.join(distDir, 'spreads')
 await mkdir(spreadsDir, { recursive: true })
 await writeFile(path.join(spreadsDir, 'index.html'), spreadsHtml)
 
-const prices = JSON.parse(await readFile(path.join(rootDir, 'data', 'prices.json'), 'utf8'))
+const prices = JSON.parse(await readFile(path.join(dataDir, 'prices.json'), 'utf8'))
+const history = JSON.parse(await readFile(path.join(dataDir, 'history.json'), 'utf8'))
+const changes = JSON.parse(await readFile(path.join(dataDir, 'changes.json'), 'utf8'))
+const register = JSON.parse(await readFile(path.join(rootDir, 'collector/model-register.json'), 'utf8'))
+await copyFile(path.join(rootDir,'collector/hosting-reviewed.json'),path.join(distDir,'data/hosting.json'))
+// A collector-produced register includes the active basket. Cold builds publish
+// reviewed identities and policy without pretending they have freshly promoted.
+try { await readFile(path.join(dataDir,'model-register.json')) }
+catch { await writeFile(path.join(distDir,'data/model-register.json'),JSON.stringify(register,null,2)+'\n') }
 const escapeAttribute = (value) => String(value)
   .replaceAll('&', '&amp;')
   .replaceAll('"', '&quot;')
@@ -103,6 +113,10 @@ const editorialShell = (title, description, url) => shell
   .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${escapeAttribute(url)}" />`)
   .replace('<meta name="twitter:title" content="The Marginal Token" />', `<meta name="twitter:title" content="${escapeAttribute(title)}" />`)
 const notesDir = path.join(distDir, 'notes')
+for(const [route,title,description] of [['plan','Plan AI workload costs','Mixed fleets, local usage repricing and measured capability within your budget.'],['watch','Watch AI workload costs','Browser-saved workloads and public feeds for price and lifecycle changes.']]) {
+  await writeFile(path.join(distDir,route,'index.html'),editorialShell(`${title} — The Marginal Token`,description,`https://marginaltoken.com/${route}/`))
+}
+await writeFeeds(distDir,{notes:marketNotes,changes:changes.changes,register,generatedAt:prices.generatedAt,keys:[...prices.models.map((m) => m.key),...history.points.map((p) => p.key)]})
 await mkdir(notesDir, { recursive: true })
 await writeFile(path.join(notesDir, 'index.html'), editorialShell(
   'Market notes — The Marginal Token',
@@ -134,14 +148,21 @@ for (const note of marketNotes) {
   await writeFile(path.join(notesDir, note.slug, 'index.html'), noteHtml)
 }
 
-for (const model of prices.models) {
+const currentKeys=new Set(prices.models.map((m) => m.key))
+const archived=new Map()
+for(const point of [...history.points].sort((a,b) => a.date.localeCompare(b.date))) {
+  if(currentKeys.has(point.key)) continue
+  const event=changes.changes.find((e) => e.key===point.key)
+  archived.set(point.key,{...point,display:event?.display ?? point.key,archived:true})
+}
+for (const model of [...prices.models,...archived.values()]) {
   const segments = model.key.split('/')
   if (segments.some((segment) => !segment || segment === '.' || segment === '..')) continue
 
   const routePath = `/model/${segments.map(encodeURIComponent).join('/')}/`
   const canonicalUrl = `https://marginaltoken.com${routePath}`
-  const title = `${model.display} pricing & model card — The Marginal Token`
-  const description = `Current standard API pricing for ${model.display}: $${model.input_mtok} input and $${model.output_mtok} output per million tokens.`
+  const title = `${model.display} ${model.archived ? 'archived prices' : 'pricing & model card'} — The Marginal Token`
+  const description = model.archived ? `Archived quote history for ${model.display}. Last observed ${model.date}; this listing has no current tape quote.` : `Current standard API pricing for ${model.display}: $${model.input_mtok} input and $${model.output_mtok} output per million tokens.`
   let modelHtml = shell
     .replace('<title>The Marginal Token</title>', `<title>${escapeAttribute(title)}</title>`)
   modelHtml = replaceMeta(

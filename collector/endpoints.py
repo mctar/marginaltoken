@@ -29,6 +29,11 @@ from pathlib import Path
 from typing import Any, Callable
 
 try:
+    from collector.register import canonical_key as canonical_key_for_route
+except ModuleNotFoundError:
+    from register import canonical_key as canonical_key_for_route
+
+try:
     from collector.collect import (
         CollectorError,
         OPENROUTER_MODELS_URL,
@@ -141,7 +146,7 @@ def details_url(value: Any) -> str | None:
 def offer_targets(payload: dict[str, Any]) -> list[dict[str, str]]:
     """Return safe endpoint targets for the standard-rate models on the Tape."""
 
-    normalized_keys = {model["key"] for model in normalize_openrouter(payload)}
+    normalized_keys = {model.get("routedId", model["key"]) for model in normalize_openrouter(payload)}
     targets: list[dict[str, str]] = []
     seen: set[str] = set()
     for raw in payload["data"]:
@@ -158,7 +163,7 @@ def offer_targets(payload: dict[str, Any]) -> list[dict[str, str]]:
             continue
         canonical = raw.get("canonical_slug")
         canonical_key = canonical.strip() if isinstance(canonical, str) and "/" in canonical else key
-        targets.append({"key": key, "canonicalKey": canonical_key, "sourceUrl": source_url})
+        targets.append({"key": canonical_key_for_route(key), "canonicalKey": canonical_key, "sourceUrl": source_url})
         seen.add(key)
     return sorted(targets, key=lambda target: target["key"])
 

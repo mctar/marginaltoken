@@ -1,3 +1,5 @@
+import HostingPanel from '../components/HostingPanel'
+import ModelHistory from '../components/ModelHistory'
 import { useState } from 'react'
 import OfferPanel from '../components/OfferPanel'
 import ShareImageButton from '../components/ShareImageButton'
@@ -8,7 +10,7 @@ import { contextSize, longDate, price, providerName } from '../lib/format'
 import { capabilityTags, modalityList, modelPath } from '../lib/models'
 import { createModelShareImage } from '../lib/share-image'
 import { shareImageFilename } from '../lib/share'
-import type { DecisionModel, OfferModel, PriceModel } from '../lib/types'
+import type { DecisionModel, OfferModel, PriceModel, HistoryFeed, ChangesFeed } from '../lib/types'
 
 async function copyText(value: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
@@ -32,7 +34,7 @@ function modelSource(model: PriceModel): { href: string; label: string } {
   if (model.source === 'firstparty' && model.sourceUrl) {
     return { href: model.sourceUrl, label: 'First-party pricing' }
   }
-  return { href: `https://openrouter.ai/${model.key}`, label: 'OpenRouter listing' }
+  return { href: model.sourceUrl ?? `https://openrouter.ai/${model.routedId ?? model.key}`, label: 'OpenRouter listing' }
 }
 
 export default function ModelPage({
@@ -41,7 +43,7 @@ export default function ModelPage({
   asOf,
   offerModel,
   offersAsOf,
-  decision,
+  decision, history, changes,
 }: {
   model: PriceModel
   models: PriceModel[]
@@ -49,6 +51,8 @@ export default function ModelPage({
   offerModel: OfferModel | null
   offersAsOf: string | null
   decision?: DecisionModel
+  history: HistoryFeed
+  changes: ChangesFeed
 }) {
   const [shareStatus, setShareStatus] = useState('')
   const tags = capabilityTags(model)
@@ -200,6 +204,8 @@ export default function ModelPage({
           )}
         </footer>
       </article>
+      <HostingPanel model={model} offerModel={offerModel} />
+      <ModelHistory modelKey={model.key} model={model} history={history} changes={changes} asOf={asOf} />
 
       {decision?.weights && decision.weights.repository === model.huggingFaceId && <section className="model-weights decision-entry"><strong>{weightsLabel(decision.weights)}</strong><a href={decision.weights.licenseUrl}>{decision.weights.licenseName} · license terms →</a><span>{decision.weights.gated ? 'Gated repository · ' : ''}Verified {decision.weights.verifiedAt.slice(0,10)}</span><a href="/open/">Explore open models →</a></section>}
       {offerModel && offersAsOf && <OfferPanel model={model} offerModel={offerModel} asOf={offersAsOf} />}
@@ -236,6 +242,7 @@ export default function ModelPage({
                   Compare both →
                 </a>
               </article>
+
             ))}
           </div>
         ) : (
@@ -254,15 +261,16 @@ export default function ModelPage({
   )
 }
 
-export function MissingModelPage() {
+export function MissingModelPage({modelKey,history,changes,asOf}: {modelKey?:string|null;history?:HistoryFeed;changes?:ChangesFeed;asOf?:string}) {
   return (
     <main id="main" className="model-page mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
       <header className="page-heading">
         <p className="section-kicker">Model card</p>
-        <h1>Model not found</h1>
+        <h1>{modelKey && history?.points.some((p) => p.key===modelKey) ? 'Archived model listing' : 'Model not found'}</h1>
         <p>This listing is not in the current price file. It may have moved or been delisted.</p>
       </header>
       <a className="model-breadcrumb model-missing-link" href="/tape/">Browse The Tape →</a>
+      {modelKey && history && changes && asOf && <ModelHistory modelKey={modelKey} history={history} changes={changes} asOf={asOf}/>}
     </main>
   )
 }

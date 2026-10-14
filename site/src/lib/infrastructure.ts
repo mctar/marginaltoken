@@ -10,6 +10,19 @@ export type InfrastructureAssumptions = {
   outputTokensPerSecond: number
   utilizationPct: number
   licensePerGpuYear: number
+  costMode?: 'rent' | 'owned'
+  gpuPurchase?: number
+  amortizationMonths?: number
+  powerWatts?: number
+  powerPrice?: number
+  staffHours?: number
+  staffHourly?: number
+  operatingMonthly?: number
+  standbyReplicas?: number
+  gpuMemoryGB?: number
+  weightsGB?: number
+  kvGB?: number
+  overheadPct?: number
 }
 
 export type ApiQuote = {
@@ -31,6 +44,16 @@ export type InfrastructureResult = {
   breakEvenMillions: number | null
   breakEvenWithinCapacity: boolean
   saving: number
+  complete: boolean
+  problems: string[]
+  standbyReplicas: number
+  fixedMonthly: number
+  memoryRequiredGB: number | null
+  memoryAvailableGB: number | null
+  memoryFits: boolean | null
+  computeMonthly: number
+  powerMonthly: number
+  softwareMonthly: number
 }
 
 export const defaultInfrastructureAssumptions: InfrastructureAssumptions = {
@@ -112,15 +135,29 @@ export function calculateInfrastructure(
   const replicas = assumptions.outputMillions > 0 && outputCapacityPerReplica > 0
     ? Math.max(1, Math.ceil(assumptions.outputMillions / outputCapacityPerReplica))
     : 1
-  const costPerReplica = assumptions.gpusPerReplica
-    * (assumptions.gpuHourly * 730 + assumptions.licensePerGpuYear / 12)
-  const runMonthly = costPerReplica * replicas
+  const problems: string[] = []
+  if (assumptions.inputMillions > 0 && assumptions.outputMillions === 0) problems.push('Input-only capacity requires a prefill measurement. This planner sizes generated-token throughput.')
+  if (!Number.isInteger(assumptions.gpusPerReplica) || assumptions.gpusPerReplica < 1) problems.push('GPU count must be a positive whole number.')
+  if (assumptions.outputMillions > 0 && outputCapacityPerReplica <= 0) problems.push('Positive output demand requires positive throughput and utilization.')
+  if (assumptions.costMode === 'owned' && !(assumptions.amortizationMonths && assumptions.amortizationMonths > 0)) problems.push('Owned hardware needs a positive amortization period.')
+  const computePerGpu = assumptions.costMode === 'owned'
+    ? (assumptions.gpuPurchase ?? 0) / Math.max(1, assumptions.amortizationMonths ?? 1)
+    : assumptions.gpuHourly * 730
+  const powerPerGpu = (assumptions.powerWatts ?? 0) / 1000 * 730 * (assumptions.powerPrice ?? 0)
+  const costPerReplica = assumptions.gpusPerReplica * (computePerGpu + powerPerGpu + assumptions.licensePerGpuYear / 12)
+  const standbyReplicas = Math.max(0,Math.floor(assumptions.standbyReplicas ?? 0))
+  const fixedMonthly = (assumptions.staffHours ?? 0) * (assumptions.staffHourly ?? 0) + (assumptions.operatingMonthly ?? 0)
+  const runMonthly = costPerReplica * (replicas + standbyReplicas) + fixedMonthly
+  const memoryAvailableGB = assumptions.gpuMemoryGB && assumptions.gpuMemoryGB > 0 ? assumptions.gpuMemoryGB * assumptions.gpusPerReplica : null
+  const memoryRequiredGB = assumptions.weightsGB && assumptions.weightsGB > 0 ? (assumptions.weightsGB + (assumptions.kvGB ?? 0)) * (1 + (assumptions.overheadPct ?? 0)/100) : null
+  const memoryFits = memoryAvailableGB !== null && memoryRequiredGB !== null ? memoryAvailableGB >= memoryRequiredGB : null
+  if (memoryFits === false) problems.push('Weights, KV cache and overhead exceed the entered aggregate GPU memory.')
   const inputShare = assumptions.inputMillions / Math.max(1, assumptions.inputMillions + assumptions.outputMillions)
   const outputShare = 1 - inputShare
   const blendedApiRate = selectedQuote.input_mtok * inputShare + selectedQuote.output_mtok * outputShare
-  const breakEvenMillions = blendedApiRate > 0 ? costPerReplica / blendedApiRate : null
+  const breakEvenMillions = blendedApiRate > 0 ? (costPerReplica * (1 + standbyReplicas) + fixedMonthly) / blendedApiRate : null
   const totalCapacityMillions = outputShare > 0 ? outputCapacityPerReplica / outputShare : Number.POSITIVE_INFINITY
-  const breakEvenWithinCapacity = breakEvenMillions !== null && breakEvenMillions <= totalCapacityMillions
+  const breakEvenWithinCapacity = outputShare > 0 && !problems.length && breakEvenMillions !== null && breakEvenMillions <= totalCapacityMillions
   return {
     apiMonthly: selectedQuote.monthly,
     runMonthly,
@@ -132,6 +169,16 @@ export function calculateInfrastructure(
     breakEvenMillions,
     breakEvenWithinCapacity,
     saving: selectedQuote.monthly - runMonthly,
+    complete: problems.length === 0,
+    problems,
+    standbyReplicas,
+    fixedMonthly,
+    memoryAvailableGB,
+    memoryRequiredGB,
+    memoryFits,
+    computeMonthly: assumptions.gpusPerReplica * computePerGpu * (replicas + standbyReplicas),
+    powerMonthly: assumptions.gpusPerReplica * powerPerGpu * (replicas + standbyReplicas),
+    softwareMonthly: assumptions.gpusPerReplica * assumptions.licensePerGpuYear / 12 * (replicas + standbyReplicas),
   }
 }
 
@@ -151,6 +198,8 @@ export function infrastructurePath(
   params.set('throughput', String(assumptions.outputTokensPerSecond))
   params.set('utilization', String(assumptions.utilizationPct))
   params.set('license', String(assumptions.licensePerGpuYear))
+  for (const key of ['costMode','gpuPurchase','amortizationMonths','powerWatts','powerPrice','staffHours','staffHourly','operatingMonthly','standbyReplicas','gpuMemoryGB','weightsGB','kvGB','overheadPct'] as const)
+    if (assumptions[key] !== undefined) params.set(key,String(assumptions[key]))
   if (deployment?.hardware) params.set('hardware', deployment.hardware)
   if (deployment?.profile) params.set('profile', deployment.profile)
   return `/infrastructure/?${params.toString()}`

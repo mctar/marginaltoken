@@ -50,6 +50,50 @@ def tier(label, vals, **extra):
         if value is not None: result[field] = value
     return result
 
+def argon_billing(segment):
+    """Read Argon's dated tariffs without treating a future rate as a context tier."""
+    date_pattern = r'([A-Z][a-z]+ \d{1,2}, \d{4})'
+    def dated_rates(cell):
+        plain = re.findall(r'\$\s*([0-9]+(?:\.[0-9]+)?)', cell)
+        if len(plain) == 1 and not re.search(r'through|starting', cell):
+            return {'current': (float(plain[0]), None)}
+        matches = re.findall(r'\$([0-9.]+)\s+(through|starting)\s+' + date_pattern, cell)
+        if len(matches) != 2 or len(plain) != 2:
+            raise ValueError('Argon dated price is missing or ambiguous')
+        rates = {kind: (float(value), datetime.strptime(date, '%B %d, %Y').date())
+                 for value, kind, date in matches}
+        if set(rates) != {'through', 'starting'} or rates['starting'][1] != rates['through'][1] + timedelta(days=1):
+            raise ValueError('Argon price dates do not form consecutive periods')
+        return rates
+    plans = []
+    for mode in ['Standard', 'Batch', 'Flex', 'Priority']:
+        match = re.search(rf'\| {mode} \|(?P<body>.*?)(?=\| (?:Standard|Batch|Flex|Priority) \||\Z)', segment, re.S)
+        if not match: raise ValueError(f'Argon {mode} billing section missing')
+        body = match.group('body')
+        inp = re.search(r'Input price(.*?)Output price', body, re.S)
+        output = re.search(r'Output price \(including thinking tokens\)(.*?)Context caching price', body, re.S)
+        cache = re.search(r'Context caching price(.*?)(?:Grounding|Used to improve)', body, re.S)
+        if not inp or not output or not cache or 'Implicit caching only (explicit caching is not supported)' not in cache.group(1):
+            raise ValueError(f'Argon {mode} billing columns or cache policy changed')
+        rates = [dated_rates(cell.group(1)) for cell in [inp, output, cache]]
+        metadata = {'id': mode.lower(), 'label': mode, 'cacheMode': 'implicit',
+                    'minimumCachePromptTokens': 4096, 'contextWindowTokens': 1048576, 'maximumOutputTokens': 65536,
+                    'notes': 'Implicit cache hits only; explicit cache writes and storage are unsupported. Thinking is billed as output. Calculator uses the 65,536-token synchronous output limit; input and generated tokens share the 1,048,576-token window.'}
+        fields = ['input_mtok', 'output_mtok', 'cached_input_mtok']
+        if all('current' in r for r in rates):
+            plans.append({**metadata, **{field: r['current'][0] for field, r in zip(fields, rates)}})
+            continue
+        if any('current' in r for r in rates):
+            raise ValueError('Argon mixes dated and undated price columns')
+        if any(r['through'][1] != rates[0]['through'][1] or r['starting'][1] != rates[0]['starting'][1] for r in rates):
+            raise ValueError('Argon input, output and cache dates disagree')
+        current = {field: r['through'][0] for field, r in zip(fields, rates)}
+        future = {field: r['starting'][0] for field, r in zip(fields, rates)}
+        plans.append({**metadata, **current,
+                      'validThrough': rates[0]['through'][1].isoformat(),
+                      'scheduledRates': [{'effectiveFrom': rates[0]['starting'][1].isoformat(), **future}]})
+    return plans
+
 def parse_billing(provider, source, models):
     result = {}
     if provider == 'openai':
@@ -109,8 +153,12 @@ def parse_billing(provider, source, models):
             m = re.search(rf'{re.escape(display)}\s*\|\s*{re.escape(name)}\b', text)
             if not m: continue
             segment = text[m.start():m.start()+9000]
-            end = re.search(r'\| (?:Gemini [\d]|Gemma |Imagen )',segment[len(display)+len(name)+10:])
-            if end: segment = segment[:end.start()+len(display)+len(name)+10]
+            offset = m.end() - m.start()
+            end = re.search(r'\| (?:Gemini [^|]+|Gemma [^|]+|Imagen [^|]+) \| (?:gemini|gemma|imagen)-[^\s|]+ \|',segment[offset:])
+            if end: segment = segment[:end.start()+offset]
+            if name == 'gemini-4-argon':
+                result[model['key']] = argon_billing(segment)
+                continue
             plans=[]
             for mode in ['Standard','Batch']:
                 m = re.search(rf'\| {mode} \|(?P<body>.*?)(?=\| (?:Batch|Flex|Priority|Gemini [\d]) \||\Z)',segment,re.S)
@@ -163,7 +211,11 @@ def collect(root=ROOT, now=None):
     billing={}
     for provider in ['anthropic','openai','google']:
         previous=cache['billing'].get(provider)
-        if previous and age(previous)<timedelta(hours=24):entry=previous
+        # A newly reviewed model or parser revision must not wait out a cache
+        # containing no billing record for it.
+        required = {'google/gemini-4-argon'} & {m['key'] for m in models}
+        needs_argon = provider == 'google' and bool(required - set((previous or {}).get('plans', {})))
+        if previous and age(previous)<timedelta(hours=24) and not needs_argon:entry=previous
         else:
             try:
                 source=fetch_source(PROVIDER_URLS[provider]).text

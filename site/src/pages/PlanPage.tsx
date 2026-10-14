@@ -107,6 +107,7 @@ function ModelQuote({
         · {quote.verifiedAt?.slice(0, 10) ?? model.checked ?? data.prices.asOf}{' '}
         · <a href={modelPath(model.key)}>Model card</a>
       </p>
+      {quote.plan.notes && <p className="decision-note">{quote.plan.notes}</p>}
     </div>
   )
 }

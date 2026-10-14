@@ -21,7 +21,11 @@ export function currentVerification(
 }
 
 export type OpennessFilter =
-  'all' | 'weights' | 'permissive' | 'custom' | 'unknown'
+  | 'all'
+  | 'weights'
+  | 'permissive'
+  | 'custom'
+  | 'unknown'
 export function decisionFor(
   model: PriceModel,
   feed?: DecisionsFeed | null,
@@ -60,54 +64,85 @@ export function validDecisions(value: unknown): value is DecisionsFeed {
   const f = value as DecisionsFeed | null
   return Boolean(
     f &&
-    f.version === 1 &&
-    typeof f.asOf === 'string' &&
-    Array.isArray(f.models) &&
-    f.models.every(
-      (m) =>
-        m &&
-        typeof m === 'object' &&
-        typeof m.key === 'string' &&
-        (!m.weights ||
-          (typeof m.weights.repository === 'string' &&
-            typeof m.weights.verifiedAt === 'string' &&
-            typeof m.weights.license === 'string' &&
-            typeof m.weights.licenseName === 'string' &&
-            typeof m.weights.weightsAvailable === 'boolean' &&
-            typeof m.weights.gated === 'boolean' &&
-            ['permissive', 'custom', 'unknown'].includes(
-              m.weights.licenseClass,
-            ) &&
-            ['fresh', 'last_good', 'stale'].includes(m.weights.status) &&
-            /^https:\/\/huggingface\.co\//.test(m.weights.sourceUrl) &&
-            /^https:\/\/huggingface\.co\//.test(m.weights.licenseUrl))) &&
-        (!m.billing ||
-          (typeof m.billing.verifiedAt === 'string' &&
-            Array.isArray(m.billing.plans) &&
-            /^https:\/\//.test(m.billing.sourceUrl) &&
-            ['fresh', 'last_good', 'stale'].includes(m.billing.status) &&
-            m.billing.plans.every(
-              (p) =>
-                p &&
-                typeof p === 'object' &&
-                typeof p.id === 'string' &&
-                typeof p.label === 'string' &&
-                [p.input_mtok, p.output_mtok].every(
-                  (n) => Number.isFinite(n) && n >= 0,
-                ) &&
-                [
-                  p.reasoning_mtok,
-                  p.cached_input_mtok,
-                  p.cache_write_mtok,
-                  p.cacheWriteHour_mtok,
-                  p.cache_storage_mtok_hour,
-                  p.minimumPromptTokens,
-                  p.maximumPromptTokens,
-                ].every(
-                  (n) => n === undefined || (Number.isFinite(n) && n >= 0),
-                ),
-            ))),
-    ),
+      f.version === 1 &&
+      typeof f.asOf === 'string' &&
+      Array.isArray(f.models) &&
+      f.models.every(
+        (m) =>
+          m &&
+          typeof m === 'object' &&
+          typeof m.key === 'string' &&
+          (!m.weights ||
+            (typeof m.weights.repository === 'string' &&
+              typeof m.weights.verifiedAt === 'string' &&
+              typeof m.weights.license === 'string' &&
+              typeof m.weights.licenseName === 'string' &&
+              typeof m.weights.weightsAvailable === 'boolean' &&
+              typeof m.weights.gated === 'boolean' &&
+              ['permissive', 'custom', 'unknown'].includes(
+                m.weights.licenseClass,
+              ) &&
+              ['fresh', 'last_good', 'stale'].includes(m.weights.status) &&
+              /^https:\/\/huggingface\.co\//.test(m.weights.sourceUrl) &&
+              /^https:\/\/huggingface\.co\//.test(m.weights.licenseUrl))) &&
+          (!m.billing ||
+            (typeof m.billing.verifiedAt === 'string' &&
+              Array.isArray(m.billing.plans) &&
+              /^https:\/\//.test(m.billing.sourceUrl) &&
+              ['fresh', 'last_good', 'stale'].includes(m.billing.status) &&
+              m.billing.plans.every(
+                (p) =>
+                  p &&
+                  typeof p === 'object' &&
+                  typeof p.id === 'string' &&
+                  typeof p.label === 'string' &&
+                  [p.input_mtok, p.output_mtok].every(
+                    (n) => Number.isFinite(n) && n >= 0,
+                  ) &&
+                  [
+                    p.reasoning_mtok,
+                    p.cached_input_mtok,
+                    p.cache_write_mtok,
+                    p.cacheWriteHour_mtok,
+                    p.cache_storage_mtok_hour,
+                    p.minimumPromptTokens,
+                    p.maximumPromptTokens,
+                    p.minimumCachePromptTokens,
+                    p.contextWindowTokens,
+                    p.maximumOutputTokens,
+                  ].every(
+                    (n) => n === undefined || (Number.isFinite(n) && n >= 0),
+                  ) &&
+                  [p.validThrough, p.effectiveFrom].every(
+                    (d) => d === undefined || validBillingDate(d),
+                  ) &&
+                  (p.notes === undefined || typeof p.notes === 'string') &&
+                  (p.cacheMode === undefined || p.cacheMode === 'implicit') &&
+                  (p.scheduledRates === undefined ||
+                    (Array.isArray(p.scheduledRates) &&
+                      p.scheduledRates.every(
+                        (r) =>
+                          r &&
+                          validBillingDate(r.effectiveFrom) &&
+                          [
+                            r.input_mtok,
+                            r.output_mtok,
+                            r.cached_input_mtok,
+                          ].every((n) => Number.isFinite(n) && n >= 0),
+                      ) &&
+                      new Set(p.scheduledRates.map((r) => r.effectiveFrom))
+                        .size === p.scheduledRates.length)),
+              ))),
+      ),
+  )
+}
+
+function validBillingDate(value: string): boolean {
+  return (
+    typeof value === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    Number.isFinite(Date.parse(value)) &&
+    new Date(value).toISOString().slice(0, 10) === value
   )
 }
 

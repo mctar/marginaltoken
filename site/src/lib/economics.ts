@@ -127,6 +127,22 @@ export function calculateBill(
   const problems: string[] = []
   if (readFraction + writeFraction > 1 + 1e-12)
     problems.push('Cache reads and writes must total at most 100% of input.')
+  if (
+    plan.cacheMode === 'implicit' &&
+    (writeFraction > 0 ||
+      nonNegativeNumber(assumption.storageMillionTokenHours) > 0)
+  )
+    problems.push(
+      'This plan supports implicit cache hits only; explicit cache writes and storage are unsupported.',
+    )
+  if (
+    readFraction > 0 &&
+    plan.minimumCachePromptTokens !== undefined &&
+    input < plan.minimumCachePromptTokens
+  )
+    problems.push(
+      `Implicit caching requires a prompt of at least ${plan.minimumCachePromptTokens.toLocaleString('en-US')} tokens.`,
+    )
   if (readFraction > 0 && plan.cached_input_mtok === undefined)
     problems.push(
       'Cache read price is unreported for this quote. Choose a published plan or enter a rate.',

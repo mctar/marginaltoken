@@ -46,7 +46,13 @@ export function selectShortlist(
           ...models.filter(
             (m) =>
               m.selectedSlots?.includes(slot.id) &&
-              m.provider === slot.provider,
+              m.provider === slot.provider &&
+              (m.selectionOrder ??
+                register.models[m.key as keyof typeof register.models]?.order ??
+                0) >=
+                (register.models[
+                  slot.candidates[0] as keyof typeof register.models
+                ]?.order ?? 0),
           ),
           ...models
             .filter(

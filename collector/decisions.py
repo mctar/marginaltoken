@@ -6,7 +6,8 @@ retain dated last-good records; consumers must disclose that status. This feed
 never changes the standard price tape or frontier basket.
 """
 from __future__ import annotations
-import json, re, urllib.request
+import hashlib, json, re, urllib.request
+from urllib.parse import quote, unquote, urlsplit
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -18,8 +19,25 @@ except ModuleNotFoundError:
     from official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, _money_values
 ROOT = Path(__file__).resolve().parent.parent
 PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by-4.0', 'cc0-1.0'}
+WEIGHTS_SCHEMA = 2
+WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
 
-def weights_record(repository, payload, now):
+def license_file(repository, payload):
+    """Accept a card link only when it names a file in this exact repository."""
+    files = {s.get('rfilename', '') for s in payload.get('siblings', []) if isinstance(s, dict)}
+    card = payload.get('cardData') or {}
+    link = card.get('license_link')
+    if isinstance(link, str):
+        parsed = urlsplit(link)
+        prefix = f'/{repository}/blob/main/'
+        candidate = unquote(parsed.path[len(prefix):]) if parsed.path.startswith(prefix) else ''
+        if (parsed.scheme == 'https' and parsed.netloc == 'huggingface.co'
+                and not parsed.query and not parsed.fragment and candidate in files
+                and all(part not in ('', '.', '..') for part in candidate.split('/'))):
+            return candidate
+    return next((name for name in ('LICENSE', 'LICENSE.txt', 'LICENSE.md', 'LICENSE-TEXT') if name in files), None)
+
+def weights_record(repository, payload, now, license_bytes=None):
     if str(payload.get('id', '')).lower() != repository.lower():
         raise ValueError('Repository identity does not match')
     files = [s.get('rfilename', '') for s in payload.get('siblings', []) if isinstance(s, dict)]
@@ -29,11 +47,18 @@ def weights_record(repository, payload, now):
     tags = [t.split(':', 1)[1] for t in payload.get('tags', []) if isinstance(t, str) and t.startswith('license:')]
     license_id = tags[0] if len(tags) == 1 else 'unknown'
     card = payload.get('cardData') or {}
+    filename = license_file(repository, payload)
+    name = str(card.get('license_name') or license_id)
+    review = WEIGHTS_REVIEWS.get(repository)
+    if (review and review['licenseId'] == license_id and review['licenseFile'] == filename
+            and license_bytes is not None and hashlib.sha256(license_bytes).hexdigest() == review['licenseSha256']):
+        name = review['licenseName']
     return {'repository': repository, 'sourceUrl': f'https://huggingface.co/{repository}',
-            'licenseUrl': f'https://huggingface.co/{repository}/blob/main/LICENSE' if 'LICENSE' in files else f'https://huggingface.co/{repository}',
-            'license': license_id, 'licenseName': str(card.get('license_name') or license_id),
+            'licenseUrl': f'https://huggingface.co/{repository}/blob/main/{quote(filename, safe="/")}' if filename else f'https://huggingface.co/{repository}',
+            'license': license_id, 'licenseName': name,
             'licenseClass': 'permissive' if license_id in PERMISSIVE else 'unknown' if license_id == 'unknown' else 'custom',
-            'gated': bool(payload.get('gated')), 'verifiedAt': now, 'status': 'fresh', 'weightsAvailable': True}
+            'gated': bool(payload.get('gated')), 'verifiedAt': now, 'status': 'fresh', 'weightsAvailable': True,
+            'metadataSchema': WEIGHTS_SCHEMA}
 
 def prices(cells):
     result = []
@@ -197,11 +222,18 @@ def collect(root=ROOT, now=None):
     repositories=sorted({m['huggingFaceId'] for m in models if isinstance(m.get('huggingFaceId'),str) and re.fullmatch(r'[\w.-]+/[\w.-]+',m['huggingFaceId'])})
     def get_weights(repo):
         previous=cache['weights'].get(repo)
-        if previous and age(previous)<timedelta(days=1):return repo,previous
+        if previous and previous.get('metadataSchema') == WEIGHTS_SCHEMA and age(previous)<timedelta(days=1):return repo,previous
         try:
             request=urllib.request.Request('https://huggingface.co/api/models/'+repo,headers={'User-Agent':'MarginalToken/1.0'})
             with urllib.request.urlopen(request,timeout=12) as r:payload=json.loads(r.read(4*1024*1024))
-            return repo,weights_record(repo,payload,stamp)
+            license_bytes = None
+            review = WEIGHTS_REVIEWS.get(repo)
+            filename = license_file(repo, payload)
+            revision = payload.get('sha', '')
+            if review and filename == review['licenseFile'] and re.fullmatch(r'[0-9a-f]{40}', revision):
+                request = urllib.request.Request(f'https://huggingface.co/{repo}/raw/{revision}/{quote(filename, safe="/")}', headers={'User-Agent':'MarginalToken/1.0'})
+                with urllib.request.urlopen(request,timeout=12) as r:license_bytes=r.read(256*1024)
+            return repo,weights_record(repo,payload,stamp,license_bytes)
         except Exception:
             if previous:return repo,{**previous,'status':'stale' if age(previous)>timedelta(days=7) else 'last_good'}
             return repo,None

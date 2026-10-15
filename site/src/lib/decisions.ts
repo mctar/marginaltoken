@@ -60,6 +60,18 @@ export function matchesOpenness(
     return !verified || weights?.licenseClass === 'unknown'
   return verified && weights?.licenseClass === filter
 }
+
+export function openModels(
+  models: PriceModel[],
+  feed?: DecisionsFeed | null,
+  includePreviews = false,
+): PriceModel[] {
+  return models.filter((model) => {
+    const stage = model.releaseStage ?? 'stable'
+    return (stage === 'stable' || (includePreviews && stage === 'preview')) &&
+      matchesOpenness(model, 'weights', feed)
+  })
+}
 export function validDecisions(value: unknown): value is DecisionsFeed {
   const f = value as DecisionsFeed | null
   return Boolean(

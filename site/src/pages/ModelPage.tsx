@@ -1,5 +1,6 @@
 import HostingPanel from '../components/HostingPanel'
 import ModelHistory from '../components/ModelHistory'
+import WeightsReview from '../components/WeightsReview'
 import { useState } from 'react'
 import OfferPanel from '../components/OfferPanel'
 import ShareImageButton from '../components/ShareImageButton'
@@ -207,7 +208,8 @@ export default function ModelPage({
       <HostingPanel model={model} offerModel={offerModel} />
       <ModelHistory modelKey={model.key} model={model} history={history} changes={changes} asOf={asOf} />
 
-      {decision?.weights && decision.weights.repository === model.huggingFaceId && <section className="model-weights decision-entry"><strong>{weightsLabel(decision.weights)}</strong><a href={decision.weights.licenseUrl}>{decision.weights.licenseName} · license terms →</a><span>{decision.weights.gated ? 'Gated repository · ' : ''}Verified {decision.weights.verifiedAt.slice(0,10)}</span><a href="/open/">Explore open models →</a></section>}
+      {decision?.weights && decision.weights.repository === model.huggingFaceId && <section className="model-weights decision-entry"><strong>{weightsLabel(decision.weights)}</strong><a href={decision.weights.licenseUrl}>{decision.weights.licenseName} · license terms →</a><span>{decision.weights.gated ? 'Gated repository · ' : ''}Verified {decision.weights.verifiedAt.slice(0,10)}</span><a href={model.releaseStage === 'preview' ? '/open/?previews=1' : '/open/'}>Explore open models →</a></section>}
+      <WeightsReview repository={model.huggingFaceId} />
       {offerModel && offersAsOf && <OfferPanel model={model} offerModel={offerModel} asOf={offersAsOf} />}
 
       <section className="model-alternatives" aria-labelledby="cheaper-matches-title">

@@ -3,6 +3,7 @@ import { comparisonPath } from '../lib/compare'
 import {
   decisionFor,
   matchesOpenness,
+  openModels,
   openShortlist,
   weightsLabel,
 } from '../lib/decisions'
@@ -23,6 +24,7 @@ export default function OpenPage({
     params.get('license') === 'permissive' ? 'permissive' : 'weights',
   )
   const [tools, setTools] = useState(params.get('tools') === '1')
+  const [includePreviews, setIncludePreviews] = useState(params.get('previews') === '1')
   const [selected, setSelected] = useState<string[]>(() =>
     params
       .getAll('model')
@@ -32,10 +34,9 @@ export default function OpenPage({
   const available = prices.models.filter((m) =>
     matchesOpenness(m, 'weights', decisions),
   )
-  const rows = available
+  const rows = openModels(prices.models, decisions, includePreviews)
     .filter(
       (m) =>
-        (m.releaseStage ?? 'stable') === 'stable' &&
         matchesOpenness(
           m,
           license === 'permissive' ? 'permissive' : 'weights',
@@ -55,13 +56,14 @@ export default function OpenPage({
     if (query) p.set('q', query)
     if (license === 'permissive') p.set('license', license)
     if (tools) p.set('tools', '1')
+    if (includePreviews) p.set('previews', '1')
     selected.forEach((k) => p.append('model', k))
     window.history.replaceState(
       null,
       '',
       '/open/' + (p.size ? '?' + p.toString() : ''),
     )
-  }, [query, license, tools, selected])
+  }, [query, license, tools, includePreviews, selected])
   const toggle = (key: string) =>
     setSelected((a) =>
       a.includes(key)
@@ -79,9 +81,9 @@ export default function OpenPage({
         <p className="section-kicker">Weights, terms, and routes</p>
         <h1>The open shelf.</h1>
         <p>
-          Find production models with verified weight repositories, check their
-          terms, and compare the cost of using them. Prices below are hosted API
-          quotes.
+          Find models with verified weight repositories, check their terms, and
+          compare the cost of using them. The table starts with stable releases;
+          previews are optional. Prices below are hosted API quotes.
         </p>
       </header>
       <div className="open-summary">
@@ -180,6 +182,14 @@ export default function OpenPage({
         <label className="decision-check">
           <input
             type="checkbox"
+            checked={includePreviews}
+            onChange={(e) => setIncludePreviews(e.target.checked)}
+          />
+          Include previews
+        </label>
+        <label className="decision-check">
+          <input
+            type="checkbox"
             checked={tools}
             onChange={(e) => setTools(e.target.checked)}
           />
@@ -189,7 +199,7 @@ export default function OpenPage({
       </section>
       <div className="open-comparison">
         <p aria-live="polite">
-          {rows.length} stable listings · {selected.length} selected
+          {rows.length} {includePreviews ? 'stable and preview' : 'stable'} listings · {selected.length} selected
         </p>
         <a
           className="decision-button"
@@ -285,7 +295,7 @@ export default function OpenPage({
             {rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="empty-tape">
-                  No verified stable listings match these requirements.
+                  No verified {includePreviews ? 'stable or preview' : 'stable'} listings match these requirements.
                 </td>
               </tr>
             )}

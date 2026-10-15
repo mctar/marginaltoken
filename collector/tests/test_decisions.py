@@ -1,7 +1,59 @@
+import hashlib
 import unittest
-from collector.decisions import weights_record, parse_billing
+from unittest.mock import patch
+from collector.decisions import weights_record, parse_billing, license_file
 
 class DecisionsTests(unittest.TestCase):
+    def test_license_links_stay_in_the_exact_repository_and_require_a_listed_file(self):
+        payload={'id':'x/model','tags':['license:other'],'siblings':[{'rfilename':'model.safetensors'},{'rfilename':'terms/LICENSE.txt'}]}
+        payload['cardData']={'license_link':'https://huggingface.co/x/model/blob/main/terms/LICENSE.txt'}
+        self.assertEqual(license_file('x/model',payload),'terms/LICENSE.txt')
+        for link in ['https://huggingface.co/y/other/blob/main/terms/LICENSE.txt',
+                     'https://example.com/x/model/blob/main/terms/LICENSE.txt',
+                     'https://huggingface.co@evil.test/x/model/blob/main/terms/LICENSE.txt',
+                     'https://huggingface.co/x/model/blob/main/MISSING',
+                     'https://huggingface.co/x/model/blob/main/../terms/LICENSE.txt']:
+            with self.subTest(link=link):
+                payload['cardData']['license_link']=link
+                self.assertIsNone(license_file('x/model',payload))
+                self.assertEqual(weights_record('x/model',payload,'now')['licenseUrl'],'https://huggingface.co/x/model')
+        payload['siblings'].append({'rfilename':'LICENSE.txt'})
+        self.assertEqual(license_file('x/model',payload),'LICENSE.txt')
+
+    def test_reviewed_name_requires_matching_license_bytes_and_keeps_custom_classification(self):
+        terms=b'Example Model License 1.0\nCustom terms.'
+        payload={'id':'x/model','tags':['license:other'],'siblings':[{'rfilename':'model.safetensors'},{'rfilename':'LICENSE.txt'}]}
+        review={'licenseId':'other','licenseFile':'LICENSE.txt','licenseName':'Example Model License 1.0','licenseSha256':hashlib.sha256(terms).hexdigest()}
+        with patch('collector.decisions.WEIGHTS_REVIEWS',{'x/model':review}):
+            verified=weights_record('x/model',payload,'now',terms)
+            self.assertEqual(verified['licenseName'],'Example Model License 1.0')
+            self.assertEqual(verified['licenseClass'],'custom')
+            self.assertEqual(weights_record('x/model',payload,'now',b'Changed terms')['licenseName'],'other')
+            self.assertEqual(weights_record('x/model',payload,'now')['licenseName'],'other')
+            payload['tags']=['license:mit']
+            self.assertEqual(weights_record('x/model',payload,'now',terms)['licenseName'],'mit')
+
+    def test_old_unexpired_weights_cache_refreshes_and_reads_license_at_payload_revision(self):
+        import io,json,tempfile
+        from pathlib import Path
+        from datetime import datetime,timezone
+        from collector.decisions import collect, WEIGHTS_SCHEMA
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'data').mkdir();(root/'collector/state').mkdir(parents=True)
+            (root/'data/prices.json').write_text(json.dumps({'models':[{'key':'x/model','provider':'x','huggingFaceId':'x/model'}]}))
+            payload={'id':'x/model','sha':'a'*40,'tags':['license:other'],'siblings':[{'rfilename':'model.safetensors'},{'rfilename':'LICENSE.txt'}]}
+            previous=weights_record('x/model',payload,'2026-10-15T00:00:00Z');previous.pop('metadataSchema')
+            (root/'collector/state/decisions-cache.json').write_text(json.dumps({'weights':{'x/model':previous},'billing':{}}))
+            terms=b'Example Model License 1.0'
+            review={'licenseId':'other','licenseFile':'LICENSE.txt','licenseName':'Example Model License 1.0','licenseSha256':hashlib.sha256(terms).hexdigest()}
+            with patch('collector.decisions.WEIGHTS_REVIEWS',{'x/model':review}),patch('collector.decisions.fetch_source',side_effect=OSError('offline')),patch('collector.decisions.urllib.request.urlopen',side_effect=[io.BytesIO(json.dumps(payload).encode()),io.BytesIO(terms)]) as fetch:
+                collect(root,datetime(2026,10,15,1,tzinfo=timezone.utc))
+            self.assertEqual(fetch.call_count,2)
+            self.assertIn('/raw/'+'a'*40+'/LICENSE.txt',fetch.call_args_list[1].args[0].full_url)
+            record=json.loads((root/'data/decisions.json').read_text())['models'][0]['weights']
+            self.assertEqual(record['licenseName'],'Example Model License 1.0')
+            self.assertEqual(record['metadataSchema'],WEIGHTS_SCHEMA)
+
     def test_exact_repository_and_weight_file_required(self):
         with self.assertRaises(ValueError):weights_record('x/model',{'id':'x/other','siblings':[{'rfilename':'model.safetensors'}]},'now')
         with self.assertRaises(ValueError):weights_record('x/model',{'id':'x/model','siblings':[{'rfilename':'config.json'},{'rfilename':'optimizer.bin'}]},'now')

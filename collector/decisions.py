@@ -20,6 +20,7 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parent.parent
 PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by-4.0', 'cc0-1.0'}
 WEIGHTS_SCHEMA = 2
+ANTHROPIC_BILLING_SCHEMA = 1
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
 
 def license_file(repository, payload):
@@ -96,7 +97,9 @@ def opus_fast_plan(text, standard):
             'notes': 'Optional faster inference of the same Opus 5.5 model. Claude API: speed="fast"; access is available in Start, Build and Scale tiers. Also available on Azure-hosted Microsoft Foundry. No Batch or Priority Tier combination. Cache and data-residency modifiers stack on Fast rates; switching speeds invalidates the prompt cache. Cache-use assumptions must describe requests at this speed.'}
     # Derive only the cache rates present in the independently parsed Standard
     # row, and only while the source explicitly confirms the multiplier rule.
-    if re.search(r'Prompt caching multipliers\s*\|?\s*apply on top of fast mode pricing', body):
+    cache_rule = re.sub(r'\[Prompt caching multipliers\]\(https://platform\.claude\.com/docs/en/about-claude/pricing#prompt-caching\)',
+                        'Prompt caching multipliers', body)
+    if re.search(r'Prompt caching multipliers\s*\|?\s*apply on top of fast mode pricing', cache_rule):
         multiplier = inp / standard['input_mtok']
         for field in ['cached_input_mtok', 'cache_write_mtok', 'cacheWriteHour_mtok']:
             if field in standard:
@@ -297,7 +300,8 @@ def collect(root=ROOT, now=None):
         required = {'google/gemini-4-argon'} & {m['key'] for m in models}
         needs_argon = provider == 'google' and bool(required - set((previous or {}).get('plans', {})))
         needs_fast = (provider == 'anthropic' and any(m['key'] == 'anthropic/claude-opus-5.5' for m in models)
-                      and not any(p['id'] == 'fast' for p in (previous or {}).get('plans', {}).get('anthropic/claude-opus-5.5', [])))
+                      and ((previous or {}).get('parserSchema') != ANTHROPIC_BILLING_SCHEMA
+                           or not any(p['id'] == 'fast' for p in (previous or {}).get('plans', {}).get('anthropic/claude-opus-5.5', []))))
         if previous and age(previous)<timedelta(hours=24) and not needs_argon and not needs_fast:entry=previous
         else:
             try:
@@ -305,6 +309,7 @@ def collect(root=ROOT, now=None):
                 entries=parse_billing(provider,source,[m for m in models if m['provider']==provider])
                 if not entries:raise ValueError('No billing plans parsed')
                 entry={'plans':entries,'sourceUrl':PROVIDER_PUBLIC_URLS.get(provider,PROVIDER_URLS[provider]),'verifiedAt':stamp,'status':'fresh'}
+                if provider == 'anthropic':entry['parserSchema'] = ANTHROPIC_BILLING_SCHEMA
             except Exception:
                 entry={**previous,'status':'stale' if age(previous)>timedelta(days=7) else 'last_good'} if previous else None
         if entry:

@@ -78,6 +78,32 @@ Batch processing
         for field in ['cached_input_mtok', 'cache_write_mtok', 'cacheWriteHour_mtok']:
             self.assertNotIn(field, fast)
 
+    def test_publisher_markdown_link_preserves_fast_cache_multiplier_rule(self):
+        linked = SOURCE.replace('Prompt caching multipliers |',
+                                '[Prompt caching multipliers](https://platform.claude.com/docs/en/about-claude/pricing#prompt-caching)')
+        fast = parse_billing('anthropic', linked, [MODEL])[MODEL['key']][-1]
+        self.assertEqual([fast[f] for f in ['cached_input_mtok', 'cache_write_mtok', 'cacheWriteHour_mtok']], [.4, 10, 16])
+        negated = linked.replace(') apply on top', ') do not apply on top')
+        self.assertNotIn('cached_input_mtok', parse_billing('anthropic', negated, [MODEL])[MODEL['key']][-1])
+
+    def test_cached_fast_without_cache_rates_refreshes_once_for_parser_revision(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'data').mkdir()
+            state = root / 'collector/state'
+            state.mkdir(parents=True)
+            (root / 'data/prices.json').write_text(json.dumps({'models': [MODEL]}))
+            previous = {'plans': {MODEL['key']: [{'id': 'fast', 'label': 'Fast', 'input_mtok': 8, 'output_mtok': 40}]},
+                        'sourceUrl': 'https://platform.claude.com/docs/en/about-claude/pricing', 'verifiedAt': '2026-10-16T00:00:00Z', 'status': 'fresh'}
+            (state / 'decisions-cache.json').write_text(json.dumps({'weights': {}, 'billing': {'anthropic': previous}}))
+            with patch('collector.decisions.fetch_source', return_value=SimpleNamespace(text=SOURCE)) as fetch:
+                collect(root, datetime(2026, 10, 16, 1, tzinfo=timezone.utc))
+                collect(root, datetime(2026, 10, 16, 2, tzinfo=timezone.utc))
+            anthropic_calls = [call for call in fetch.call_args_list if 'claude' in call.args[0]]
+            self.assertEqual(len(anthropic_calls), 1)
+            plans = json.loads((root / 'data/decisions.json').read_text())['models'][0]['billing']['plans']
+            self.assertEqual(plans[-1]['cached_input_mtok'], .4)
+
     def test_existing_unexpired_cache_gains_fast_then_failed_refresh_retains_dated_rates(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

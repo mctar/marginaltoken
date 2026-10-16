@@ -50,7 +50,7 @@ def weights_record(repository, payload, now, license_bytes=None):
     filename = license_file(repository, payload)
     name = str(card.get('license_name') or license_id)
     review = WEIGHTS_REVIEWS.get(repository)
-    if (review and review['licenseId'] == license_id and review['licenseFile'] == filename
+    if (review and review.get('licenseSha256') and review['licenseId'] == license_id and review['licenseFile'] == filename
             and license_bytes is not None and hashlib.sha256(license_bytes).hexdigest() == review['licenseSha256']):
         name = review['licenseName']
     return {'repository': repository, 'sourceUrl': f'https://huggingface.co/{repository}',
@@ -74,6 +74,34 @@ def tier(label, vals, **extra):
     for field, value in [('cached_input_mtok', vals[1]), ('cache_write_mtok', vals[2])]:
         if value is not None: result[field] = value
     return result
+
+def opus_fast_plan(text, standard):
+    """Read the reviewed Opus speed option without inventing missing cache rates."""
+    section = re.search(r'Fast mode pricing(.*?)(?=Batch processing|\Z)', text, re.S)
+    if not section:
+        return None
+    body = section.group(1)
+    if not re.search(r'\| Model \| Input \| Output \|', body):
+        return None
+    rows = re.findall(r'\| Claude Opus 5\.5 \| ([^|]+) \| ([^|]+) \|', body)
+    if len(rows) != 1:
+        return None
+    rates = [re.fullmatch(r'\s*\$\s*(\d+(?:\.\d+)?)\s*(?:USD\s*)?/\s*MTok\s*', cell) for cell in rows[0]]
+    if not all(rates):
+        return None
+    inp, output = (float(value.group(1)) for value in rates)
+    if inp <= 0 or output <= 0 or standard['input_mtok'] <= 0:
+        return None
+    plan = {'id': 'fast', 'label': 'Fast', 'input_mtok': inp, 'output_mtok': output,
+            'notes': 'Optional faster inference of the same Opus 5.5 model. Claude API: speed="fast"; access is available in Start, Build and Scale tiers. Also available on Azure-hosted Microsoft Foundry. No Batch or Priority Tier combination. Cache and data-residency modifiers stack on Fast rates; switching speeds invalidates the prompt cache. Cache-use assumptions must describe requests at this speed.'}
+    # Derive only the cache rates present in the independently parsed Standard
+    # row, and only while the source explicitly confirms the multiplier rule.
+    if re.search(r'Prompt caching multipliers\s*\|?\s*apply on top of fast mode pricing', body):
+        multiplier = inp / standard['input_mtok']
+        for field in ['cached_input_mtok', 'cache_write_mtok', 'cacheWriteHour_mtok']:
+            if field in standard:
+                plan[field] = round(standard[field] * multiplier, 8)
+    return plan
 
 def argon_billing(segment):
     """Read Argon's dated tariffs without treating a future rate as a context tier."""
@@ -145,24 +173,40 @@ def parse_billing(provider, source, models):
             if plans: result[model['key']] = plans
     elif provider == 'anthropic':
         text = visible_text(source); start = text.find('The following table shows pricing for all Claude models:')
-        end = text.find('Batch processing', start)
+        boundaries = [text.find(label, start) for label in ['Cloud platform pricing', 'Feature-specific pricing', 'Fast mode pricing', 'Batch processing']]
+        end = min((position for position in boundaries if position >= 0), default=-1)
         if start < 0 or end < 0: raise ValueError('Claude pricing table missing')
         table = text[start:end]
-        if not re.search(r'Base input tokens\s*\|\s*5m cache writes\s*\|\s*1h cache writes\s*\|\s*Cache hits and refreshes\s*\|\s*Output tokens', table):
+        header = table.split(' | Claude ', 1)[0]
+        reordered = bool(re.search(r'Name\s*\|\s*Input\s*\|\s*Output\s*\|\s*5m writes\s*\|\s*1h writes\s*\|\s*Hits and refreshes', header))
+        if not reordered and not re.search(r'Base input tokens\s*\|\s*5m cache writes\s*\|\s*1h cache writes\s*\|\s*Cache hits and refreshes\s*\|\s*Output tokens', header):
             raise ValueError('Claude billing columns changed')
         for model in models:
             display = model['display']; pattern = rf'\|\s*{re.escape(display)}(?:\s*\([^|]*\))?\s*\|'
             matches = list(re.finditer(pattern, table)); plans = []
-            for i,m in enumerate(matches):
+            for m in matches:
                 nextrow = table.find(' | Claude ', m.end()); segment = table[m.start():nextrow if nextrow>=0 else len(table)]
                 vals = [float(v) for v in _money_values(segment)]
-                if len(vals) != 5: continue
-                name = 'Standard' if i == 0 else 'Standard long context'
-                p = tier(name, [vals[0], vals[3], vals[1], vals[4]], cacheWriteHour_mtok=vals[2])
-                if p:
-                    if 'over 100,000 tokens' in segment: p['minimumPromptTokens'] = 100001
-                    elif 'up to 100,000 tokens' in segment: p['maximumPromptTokens'] = 100000
-                    plans.append(p)
+                blocks = [(vals, segment)] if len(vals) == 5 else []
+                # The current table puts both Haiku tariffs in one named row.
+                if model['key'] == 'anthropic/claude-haiku-5.5' and len(vals) == 10:
+                    money = list(re.finditer(r'\$\s*[0-9]+(?:\.[0-9]+)?\s*(?:\|\s*)*/\s*(?:\|\s*)*MTok', segment, re.I))
+                    boundary = money[5].start()
+                    blocks = [(vals[:5], segment[:boundary]), (vals[5:], segment[boundary:])]
+                for values, block in blocks:
+                    short = 'up to 100,000 tokens' in block
+                    long = 'over 100,000 tokens' in block
+                    if short and long: continue
+                    if model['key'] == 'anthropic/claude-haiku-5.5' and not (short or long): continue
+                    name = 'Standard long context' if long else 'Standard'
+                    inp, output, write, hour, hit = values if reordered else [values[0], values[4], values[1], values[2], values[3]]
+                    p = tier(name, [inp, hit, write, output], cacheWriteHour_mtok=hour)
+                    if p:
+                        if long: p['minimumPromptTokens'] = 100001
+                        elif short: p['maximumPromptTokens'] = 100000
+                        plans.append(p)
+            if len({p['id'] for p in plans}) != len(plans): plans = []
+            plans.sort(key=lambda p: p['id'] != 'standard')
             # Batch plus cache is supported by Claude; multipliers stack.
             if plans and '50% discount on both input and output tokens' in text and 'Prompt caching and batch processing discounts apply' in text:
                 for p in list(plans):
@@ -170,6 +214,11 @@ def parse_billing(provider, source, models):
                     for f in ['input_mtok','output_mtok','cached_input_mtok','cache_write_mtok','cacheWriteHour_mtok']:
                         if f in b: b[f] *= .5
                     plans.append(b)
+            # Fast is a serving option, never a successor or a discounted Batch
+            # variant. Only this explicitly reviewed model is eligible.
+            if model['key'] == 'anthropic/claude-opus-5.5' and plans:
+                fast = opus_fast_plan(text, plans[0])
+                if fast: plans.append(fast)
             if plans: result[model['key']] = plans
     elif provider == 'google':
         text = visible_text(source)
@@ -230,7 +279,7 @@ def collect(root=ROOT, now=None):
             review = WEIGHTS_REVIEWS.get(repo)
             filename = license_file(repo, payload)
             revision = payload.get('sha', '')
-            if review and filename == review['licenseFile'] and re.fullmatch(r'[0-9a-f]{40}', revision):
+            if review and review.get('licenseSha256') and filename == review['licenseFile'] and re.fullmatch(r'[0-9a-f]{40}', revision):
                 request = urllib.request.Request(f'https://huggingface.co/{repo}/raw/{revision}/{quote(filename, safe="/")}', headers={'User-Agent':'MarginalToken/1.0'})
                 with urllib.request.urlopen(request,timeout=12) as r:license_bytes=r.read(256*1024)
             return repo,weights_record(repo,payload,stamp,license_bytes)
@@ -247,7 +296,9 @@ def collect(root=ROOT, now=None):
         # containing no billing record for it.
         required = {'google/gemini-4-argon'} & {m['key'] for m in models}
         needs_argon = provider == 'google' and bool(required - set((previous or {}).get('plans', {})))
-        if previous and age(previous)<timedelta(hours=24) and not needs_argon:entry=previous
+        needs_fast = (provider == 'anthropic' and any(m['key'] == 'anthropic/claude-opus-5.5' for m in models)
+                      and not any(p['id'] == 'fast' for p in (previous or {}).get('plans', {}).get('anthropic/claude-opus-5.5', [])))
+        if previous and age(previous)<timedelta(hours=24) and not needs_argon and not needs_fast:entry=previous
         else:
             try:
                 source=fetch_source(PROVIDER_URLS[provider]).text

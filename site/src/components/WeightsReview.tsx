@@ -1,6 +1,9 @@
 import reviews from '../../../collector/weights-reviewed.json'
 
-type Review = (typeof reviews.repositories)['stepfun-ai/Step-5-Preview']
+type Review = Pick<(typeof reviews.repositories)['stepfun-ai/Step-5-Preview'],
+  'reviewedAt' | 'availability' | 'totalParametersBillion' | 'activeParametersBillion' |
+  'configurations' | 'caveat' | 'licenseSummary' | 'deploymentSource' | 'licenseSource' |
+  'licenseName' | 'bf16Repository'> & { nvfp4Repository?: string }
 const byRepository: Record<string, Review> = reviews.repositories
 
 export default function WeightsReview({ repository }: { repository?: string }) {
@@ -29,6 +32,7 @@ export default function WeightsReview({ repository }: { repository?: string }) {
         <a href={review.deploymentSource}>Publisher deployment examples →</a>
         <a href={review.licenseSource}>{review.licenseName} · reviewed terms →</a>
         <a href={`https://huggingface.co/${review.bf16Repository}`}>BF16 weights →</a>
+        {review.nvfp4Repository && <a href={`https://huggingface.co/${review.nvfp4Repository}`}>NVFP4 weights →</a>}
       </div>
     </section>
   )

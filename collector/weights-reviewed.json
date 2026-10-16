@@ -26,6 +26,29 @@
       "deploymentSource": "https://huggingface.co/stepfun-ai/Step-5-Preview/blob/364b3b03fed2477aa0953fe855a2c4c8c48ee3cc/README.md#deployment",
       "bf16Repository": "stepfun-ai/Step-5-Preview-BF16",
       "caveat": "Publisher deployment examples. Usable context, concurrency and memory depend on the checkpoint, runtime and KV cache. These are not measured throughput guarantees or verified NIM profiles. The full BF16 Transformers file-shard workflow has not been validated end to end by the publisher."
+    },
+    "meta-models/Muse-Spark-Open-816B-A42B": {
+      "reviewedAt": "2026-10-16",
+      "licenseId": "other",
+      "licenseName": "Muse Model License",
+      "licenseFile": "LICENSE.md",
+      "revision": "0fb02478b02565b2ce7fc57e6051c91172774ac9",
+      "licenseSource": "https://huggingface.co/meta-models/Muse-Spark-Open-816B-A42B/blob/0fb02478b02565b2ce7fc57e6051c91172774ac9/LICENSE.md",
+      "licenseEvidence": "Public license HTML reviewed; raw-file downloads require gated access. This dated review does not override the automatically collected license name.",
+      "licenseSummary": "The custom Muse Model License requires attribution and compliance with its Usage Policy. Model-as-a-service businesses whose aggregate gross revenue, including affiliates, exceeds $20 million in any consecutive 12 months must notify Meta and enter a separate written agreement before offering these weights or derivatives. The clause exempts internal use, research, commercial activity outside model-as-a-service, and features of an own product that is not model-as-a-service.",
+      "availability": "Released on 15 October 2026. Meta lists BF16 and NVFP4 checkpoints; downloading the weights requires approval for the gated repository.",
+      "totalParametersBillion": 816,
+      "activeParametersBillion": 42,
+      "configurations": [
+        {
+          "precision": "NVFP4",
+          "hardware": "4 × Blackwell Ultra GPUs or 8 × H200"
+        }
+      ],
+      "deploymentSource": "https://dev.meta.ai/resources/blog/build-with-muse-spark-open",
+      "bf16Repository": "meta-models/Muse-Spark-Open-816B-A42B",
+      "nvfp4Repository": "meta-models/Muse-Spark-Open-816B-A42B-NVFP4",
+      "caveat": "Meta’s deployment example, not a universal minimum or a measured cost estimate. Usable context, concurrency, runtime support and memory allocation affect capacity. Hosted API quotes describe a separate offer; GPU and operating costs need workload measurements."
     }
   }
 }

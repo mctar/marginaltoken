@@ -25,7 +25,7 @@ const openTitle = 'Open model weights & licenses — The Marginal Token'
 const openDescription = 'Explore verified model weight repositories, license terms, hosted API prices, and workload cost comparisons.'
 const openUrl = 'https://marginaltoken.com/open/'
 const openHtml = shell.replace('<title>The Marginal Token</title>', `<title>${openTitle}</title>`)
-  .replaceAll('content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."', `content="${openDescription}"`)
+  .replaceAll('content="Independent AI model prices, weekly release reviews, and practical tools for comparing API and self-hosting costs."', `content="${openDescription}"`)
   .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${openUrl}" />`)
   .replace('<meta property="og:title" content="The Marginal Token" />', `<meta property="og:title" content="${openTitle}" />`)
   .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${openUrl}" />`)
@@ -39,7 +39,7 @@ const infrastructureUrl = 'https://marginaltoken.com/infrastructure/'
 let infrastructureHtml = shell
   .replace('<title>The Marginal Token</title>', `<title>${infrastructureTitle}</title>`)
   .replaceAll(
-    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    'content="Independent AI model prices, weekly release reviews, and practical tools for comparing API and self-hosting costs."',
     `content="${infrastructureDescription}"`,
   )
   .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${infrastructureUrl}" />`)
@@ -56,7 +56,7 @@ const compareUrl = 'https://marginaltoken.com/compare/'
 let compareHtml = shell
   .replace('<title>The Marginal Token</title>', `<title>${compareTitle}</title>`)
   .replaceAll(
-    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    'content="Independent AI model prices, weekly release reviews, and practical tools for comparing API and self-hosting costs."',
     `content="${compareDescription}"`,
   )
   .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${compareUrl}" />`)
@@ -73,7 +73,7 @@ const spreadsUrl = 'https://marginaltoken.com/spreads/'
 let spreadsHtml = shell
   .replace('<title>The Marginal Token</title>', `<title>${spreadsTitle}</title>`)
   .replaceAll(
-    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    'content="Independent AI model prices, weekly release reviews, and practical tools for comparing API and self-hosting costs."',
     `content="${spreadsDescription}"`,
   )
   .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${spreadsUrl}" />`)
@@ -107,7 +107,7 @@ const replaceMeta = (html, selector, from, to) => {
 const marketNotes = JSON.parse(await readFile(path.join(siteDir, 'src/content/market-notes.json'), 'utf8'))
 const editorialShell = (title, description, url) => shell
   .replace('<title>The Marginal Token</title>', `<title>${escapeAttribute(title)}</title>`)
-  .replaceAll('content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."', `content="${escapeAttribute(description)}"`)
+  .replaceAll('content="Independent AI model prices, weekly release reviews, and practical tools for comparing API and self-hosting costs."', `content="${escapeAttribute(description)}"`)
   .replace('<link rel="canonical" href="https://marginaltoken.com/" />', `<link rel="canonical" href="${escapeAttribute(url)}" />`)
   .replace('<meta property="og:title" content="The Marginal Token" />', `<meta property="og:title" content="${escapeAttribute(title)}" />`)
   .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${escapeAttribute(url)}" />`)
@@ -120,7 +120,7 @@ await writeFeeds(distDir,{notes:marketNotes,changes:changes.changes,register,gen
 await mkdir(notesDir, { recursive: true })
 await writeFile(path.join(notesDir, 'index.html'), editorialShell(
   'Market notes — The Marginal Token',
-  'Short notes on changes that affect the cost of buying and running AI, linked to verified sources and practical tools.',
+  'Weekly model-release reviews and short notes on the cost of buying and running AI, linked to verified sources and practical tools.',
   'https://marginaltoken.com/notes/',
 ))
 const noteSlugs = new Set()
@@ -136,6 +136,8 @@ for (const note of marketNotes) {
     headline: note.title,
     description: note.summary,
     datePublished: note.date,
+    dateModified: note.checked,
+    ...(note.kind === 'weekly' ? { temporalCoverage: `${note.periodStart}/${note.periodEnd}`, articleSection: 'Weekly review' } : {}),
     author: { '@type': 'Person', name: note.author },
     publisher: { '@type': 'Organization', name: 'The Marginal Token', url: 'https://marginaltoken.com/' },
     mainEntityOfPage: url,
@@ -168,7 +170,7 @@ for (const model of [...prices.models,...archived.values()]) {
   modelHtml = replaceMeta(
     modelHtml,
     'description',
-    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    'content="Independent AI model prices, weekly release reviews, and practical tools for comparing API and self-hosting costs."',
     `content="${escapeAttribute(description)}"`,
   )
   modelHtml = replaceMeta(
@@ -186,7 +188,7 @@ for (const model of [...prices.models,...archived.values()]) {
   modelHtml = replaceMeta(
     modelHtml,
     'Open Graph description',
-    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    'content="Independent AI model prices, weekly release reviews, and practical tools for comparing API and self-hosting costs."',
     `content="${escapeAttribute(description)}"`,
   )
   modelHtml = replaceMeta(
@@ -204,7 +206,7 @@ for (const model of [...prices.models,...archived.values()]) {
   modelHtml = replaceMeta(
     modelHtml,
     'Twitter description',
-    'content="The independent price tape marking frontier AI intelligence to market—model by model, million tokens at a time."',
+    'content="Independent AI model prices, weekly release reviews, and practical tools for comparing API and self-hosting costs."',
     `content="${escapeAttribute(description)}"`,
   )
   const modelDir = path.join(distDir, 'model', ...segments)

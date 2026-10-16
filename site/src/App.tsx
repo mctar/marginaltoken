@@ -76,6 +76,17 @@ export default function App() {
     )
   }
 
+  // Editorial and tool discovery remain usable while the independent feed loads.
+  if (route === '/') {
+    const data = state.status === 'ready' ? state.data : undefined
+    return <div className="min-h-screen">
+      <a className="skip-link" href="#main">Skip to content</a>
+      <Header asOf={data?.meta.asOf ?? ''} route={route} dateline="AI prices, releases & the cost of running them" />
+      <FrontPage data={data} feedError={state.status === 'error' ? state.message : undefined} />
+      <Footer generatedAt={data?.meta.generatedAt} modelCount={data?.meta.modelCount} />
+    </div>
+  }
+
   if (state.status === 'loading') {
     return <div className="loading-page">Reading the tape.</div>
   }
@@ -118,7 +129,6 @@ export default function App() {
           offersAsOf={data.offers?.asOf ?? null}
         />
       ) : <MissingModelPage modelKey={modelKey} history={data.history} changes={data.changes} asOf={data.prices.asOf}/>)}
-      {route === '/' && <FrontPage data={data} />}
       <Footer generatedAt={data.meta.generatedAt} modelCount={data.meta.modelCount} />
     </div>
   )

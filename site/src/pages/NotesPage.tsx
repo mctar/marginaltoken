@@ -58,7 +58,7 @@ export default function NotesPage({ pathname }: { pathname: string }) {
           <h2 id="note-calculator-title">{note.calculatorTitle}</h2>
           <p>{note.calculatorGuidance}</p>
           <div className="market-note-links">
-            <a className="text-link" href={marketNoteCalculatorPath(note)}>Open the workload calculator →</a>
+            <a className="text-link" href={marketNoteCalculatorPath(note)}>{note.calculatorKind === 'infrastructure' ? 'Compare rent vs run →' : 'Open the workload calculator →'}</a>
             <a className="text-link" href={modelPath(note.modelKey)}>Model card →</a>
           </div>
         </aside>

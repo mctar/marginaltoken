@@ -31,6 +31,7 @@ except ModuleNotFoundError:  # Direct execution: python3 collector/collect.py
 
 
 ROOT = Path(__file__).resolve().parent.parent
+WEIGHTS_IDENTITIES = json.loads((ROOT / "collector/weights-reviewed.json").read_text()).get("modelMappings", {})
 DEFAULT_DATA_DIR = ROOT / "data"
 DEFAULT_STATE_DIR = Path(__file__).resolve().parent / "state"
 DEFAULT_FIRSTPARTY = REGISTER_PATH
@@ -240,6 +241,13 @@ def normalize_openrouter(payload: dict[str, Any]) -> list[dict[str, Any]]:
             value = raw.get(raw_field)
             if isinstance(value, str) and value.strip():
                 model[output_field] = value.strip()
+        identity = WEIGHTS_IDENTITIES.get(model["key"])
+        # Correct only the exact upstream identity reviewed as broken. A new
+        # repository or a different model needs fresh review, not a fuzzy match.
+        if identity and model.get("huggingFaceId") in identity["replaces"]:
+            model["reportedHuggingFaceId"] = model["huggingFaceId"]
+            model["huggingFaceId"] = identity["repository"]
+            model["huggingFaceIdSource"] = identity["identitySource"]
         models.append(model)
     # Prefer an explicitly routed alias when both old and new IDs are listed.
     unique = {m["key"]: m for m in sorted(models, key=lambda m: m["routedId"] == m["key"], reverse=True)}

@@ -40,7 +40,7 @@ export function feedItems(notes, changes, register) {
     )?.[0] ?? key
   const noteItems = notes.map((n) => ({
     kind: 'note',
-    keys: [canonical(n.modelKey), canonical(n.comparisonModelKey)],
+    keys: [canonical(n.modelKey), ...(n.comparisonModelKey ? [canonical(n.comparisonModelKey)] : [])],
     title: n.title,
     date: n.date,
     link: `https://marginaltoken.com/notes/${n.slug}/`,

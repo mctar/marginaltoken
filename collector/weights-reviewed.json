@@ -49,6 +49,41 @@
       "bf16Repository": "meta-models/Muse-Spark-Open-816B-A42B",
       "nvfp4Repository": "meta-models/Muse-Spark-Open-816B-A42B-NVFP4",
       "caveat": "Meta’s deployment example, not a universal minimum or a measured cost estimate. Usable context, concurrency, runtime support and memory allocation affect capacity. Hosted API quotes describe a separate offer; GPU and operating costs need workload measurements."
+    },
+    "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16": {
+      "reviewedAt": "2026-10-16",
+      "licenseId": "other",
+      "licenseName": "OpenMDW-1.1",
+      "licenseFile": null,
+      "revision": "97e009758ae21747ee3752d2e43b005fb1e23a61",
+      "licenseSource": "https://openmdw.ai/license/1-1/",
+      "licenseEvidence": "Official model metadata links to OpenMDW-1.1 outside the repository; no repository-local license file is listed. This review does not override automated metadata.",
+      "licenseSummary": "Released under OpenMDW-1.1. Distribution requires retaining the agreement and applicable notices. Read the full terms for rights, conditions and limitations.",
+      "availability": "Released on 15 October 2026. NVIDIA’s post-trained BF16 and NVFP4 checkpoints are publicly downloadable without an access gate. The model accepts text, images and video; supported context depends on the deployment configuration.",
+      "totalParametersBillion": 120,
+      "activeParametersBillion": 12,
+      "configurations": [
+        {
+          "precision": "NVFP4",
+          "hardware": "Publisher examples: 1 × DGX Spark, 1 × H200, 2 × H100 or 1 × GB200"
+        }
+      ],
+      "deploymentSource": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4/blob/579ffa0b659bc681b89e649fa7c2d5089399602e/README.md#choose-your-deployment",
+      "bf16Repository": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+      "nvfp4Repository": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4",
+      "caveat": "These are NVIDIA’s deployment examples, not measured cost or throughput guarantees. Runtime, context, visual inputs, concurrency and draft models affect memory and capacity. Hosted routes can use different precision and limits. Bolt is a separate compressed derivative; its 24 GB model target does not describe Super VL.",
+      "deploymentRevision": "579ffa0b659bc681b89e649fa7c2d5089399602e"
+    }
+  },
+  "modelMappings": {
+    "nvidia/nemotron-3.5-super-vl": {
+      "repository": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+      "replaces": [
+        "nvidia/NVIDIA-Nemotron-3.5-Super-VL"
+      ],
+      "reviewedAt": "2026-10-16",
+      "identitySource": "https://github.com/NVIDIA-NeMo/Nemotron/blob/main/usage-cookbook/Nemotron-3.5-Super-VL/README.md",
+      "reason": "NVIDIA links the served Super VL model to this exact post-trained BF16 checkpoint. The shortened upstream repository returns 401 and prevents independent weights verification."
     }
   }
 }

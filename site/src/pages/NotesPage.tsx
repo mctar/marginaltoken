@@ -1,6 +1,7 @@
 import { longDate } from '../lib/format'
-import { marketNotes, marketNotePath, marketNoteCalculatorPath } from '../lib/market-notes'
+import { marketNotes, marketNotePath, marketNoteCalculatorPath, noteKindLabel } from '../lib/market-notes'
 import { modelPath } from '../lib/models'
+import WeeklyReviewBody from '../components/WeeklyReviewBody'
 
 export default function NotesPage({ pathname }: { pathname: string }) {
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
@@ -9,11 +10,13 @@ export default function NotesPage({ pathname }: { pathname: string }) {
       <main id="main" className="notes-page mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
         <p className="section-kicker">Editorial archive</p>
         <h1 className="notes-title">Market notes</h1>
-        <p className="notes-intro">Short notes on changes that affect the cost of buying and running AI. Evidence, implications, and a link to the tools.</p>
+        <p className="notes-intro">Weekly release reviews and short notes on the cost of buying and running AI. Verified changes, practical implications, and the tools to act on them.</p>
+        <a className="text-link" href="/feeds/notes.xml">Subscribe via RSS →</a>
         <ol className="notes-list">
           {marketNotes.map((note) => (
             <li key={note.slug}>
               <div className="market-note-meta">
+                <span className="section-kicker">{noteKindLabel(note)}</span>
                 <time dateTime={note.date}>{longDate(note.date)}</time>
                 <span>{note.author}</span>
               </div>
@@ -41,17 +44,18 @@ export default function NotesPage({ pathname }: { pathname: string }) {
 
   return (
     <main id="main" className="notes-page mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
-      <article className="market-note-article">
+      <article className={`market-note-article${note.kind === 'weekly' ? ' weekly-article' : ''}`}>
         <a className="text-link" href="/notes/">← Market notes</a>
         <header>
-          <p className="section-kicker">Market note</p>
+          <p className="section-kicker">{noteKindLabel(note)}</p>
           <h1 className="notes-title">{note.title}</h1>
+          {note.kind === 'weekly' && <p className="notes-intro">{note.summary}</p>}
           <div className="market-note-byline">
             <span>{note.author}</span>
             <time dateTime={note.date}>{longDate(note.date)}</time>
           </div>
         </header>
-        <div className="market-note-body">
+        {note.kind === 'weekly' ? <WeeklyReviewBody note={note} /> : <><div className="market-note-body">
           {note.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         </div>
         <aside className="market-note-calculator" aria-labelledby="note-calculator-title">
@@ -61,7 +65,7 @@ export default function NotesPage({ pathname }: { pathname: string }) {
             <a className="text-link" href={marketNoteCalculatorPath(note)}>{note.calculatorKind === 'infrastructure' ? 'Compare rent vs run →' : 'Open the workload calculator →'}</a>
             <a className="text-link" href={modelPath(note.modelKey)}>Model card →</a>
           </div>
-        </aside>
+        </aside></>}
         <footer className="market-note-sources">
           <p className="section-kicker">Sources · Checked {longDate(note.checked)}</p>
           <ul>{note.sources.map((source) => <li key={source.href}><a href={source.href}>{source.label}</a></li>)}</ul>

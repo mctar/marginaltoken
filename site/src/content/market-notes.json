@@ -1,5 +1,288 @@
 [
   {
+    "kind": "weekly",
+    "slug": "ai-model-releases-2026-10-12",
+    "date": "2026-10-16",
+    "checked": "2026-10-16",
+    "author": "Thordur Arnason",
+    "title": "AI model releases: 12–16 October 2026",
+    "summary": "Gemini 4 Argon and Muse Wonder expand the API choices. Muse Spark Open and NVIDIA’s Nemotron releases bring new deployment options. A review of the week so far, with access and costs checked.",
+    "periodStart": "2026-10-12",
+    "periodEnd": "2026-10-16",
+    "cutoff": "2026-10-16T08:33:34Z",
+    "editionStatus": "week-so-far",
+    "modelKeys": [
+      "meta/muse-wonder",
+      "google/gemini-4-argon",
+      "meta/muse-spark-open",
+      "nvidia/nemotron-3.5-super-vl",
+      "anthropic/claude-opus-5.5"
+    ],
+    "paragraphs": [
+      "This week’s releases widen the choice of both rented and self-hosted intelligence. The useful distinction is what you can access today: a production API, a preview, downloadable weights or a subscription. Those differences belong beside the price."
+    ],
+    "releases": [
+      {
+        "name": "Muse Wonder / Wonder Full",
+        "date": "2026-10-12",
+        "access": "Preview API / subscription",
+        "terms": "Wonder: $4 / $20. Wonder Full requires a Muse Code Power or Maximum subscription.",
+        "implication": "The API price buys Wonder. Full is a separate access decision.",
+        "links": [
+          {
+            "label": "Meta launch",
+            "href": "https://dev.meta.ai/resources/blog/build-with-muse-wonder"
+          },
+          {
+            "label": "Preview status",
+            "href": "https://dev.meta.ai/docs/overview"
+          },
+          {
+            "label": "Model card",
+            "href": "/model/meta/muse-wonder/"
+          }
+        ]
+      },
+      {
+        "name": "Gemini 4 Argon",
+        "date": "2026-10-13",
+        "access": "Generally available API",
+        "terms": "Standard: $2 / $10 until 30 November; $4 / $20 from 1 December. Implicit caching only.",
+        "implication": "Price a continuing workload at both rates before migrating.",
+        "links": [
+          {
+            "label": "Google release",
+            "href": "https://ai.google.dev/gemini-api/docs/changelog"
+          },
+          {
+            "label": "Pricing",
+            "href": "https://ai.google.dev/gemini-api/docs/pricing"
+          },
+          {
+            "label": "Billing note",
+            "href": "/notes/argon-introductory-rate/"
+          }
+        ]
+      },
+      {
+        "name": "Ultramarine 1 Flash",
+        "date": "2026-10-14",
+        "access": "API available; weights pending",
+        "terms": "$0.15 / $0.50 on the publisher’s API. The model page still says weights are coming soon.",
+        "implication": "A GLM-5.3 Flash post-train for professional work. Test its claimed savings on your own tasks.",
+        "links": [
+          {
+            "label": "Paper Instruments release",
+            "href": "https://www.paperinstruments.com/blog/ultramarine"
+          },
+          {
+            "label": "Price & access",
+            "href": "https://www.paperinstruments.com/ultramarine"
+          }
+        ]
+      },
+      {
+        "name": "Grok Voice 3.0",
+        "date": "2026-10-14",
+        "access": "Speech-to-speech API",
+        "terms": "$0.08 per minute, unchanged from Voice 2.0. The grok-voice-latest alias has switched over.",
+        "implication": "Retest existing voice agents. Per-minute billing needs a different comparison from text tokens.",
+        "links": [
+          {
+            "label": "xAI release & pricing",
+            "href": "https://x.ai/news/grok-voice-3"
+          }
+        ]
+      },
+      {
+        "name": "Muse Spark Open",
+        "date": "2026-10-15",
+        "access": "Gated weights + hosted routes",
+        "terms": "Custom Muse Model License. Meta supplies BF16 and NVFP4 checkpoints.",
+        "implication": "Budget hardware and check license conditions before treating downloadable weights as a saving.",
+        "links": [
+          {
+            "label": "Meta release",
+            "href": "https://dev.meta.ai/resources/blog/build-with-muse-spark-open"
+          },
+          {
+            "label": "Weights & license",
+            "href": "https://huggingface.co/meta-models/Muse-Spark-Open-816B-A42B"
+          },
+          {
+            "label": "Deployment note",
+            "href": "/notes/muse-spark-open-rider/"
+          }
+        ]
+      },
+      {
+        "name": "Nemotron 3.5 Super VL",
+        "date": "2026-10-15",
+        "access": "Public weights + hosted routes",
+        "terms": "120B total parameters, 12B active. OpenMDW-1.1 license.",
+        "implication": "Adds an option for multimodal agents; active parameters alone do not size a deployment.",
+        "links": [
+          {
+            "label": "NVIDIA release",
+            "href": "https://blogs.nvidia.com/blog/nemotron-3-5-super-vl/"
+          },
+          {
+            "label": "Exact weights",
+            "href": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16"
+          },
+          {
+            "label": "Model card",
+            "href": "/model/nvidia/nemotron-3.5-super-vl/"
+          }
+        ]
+      },
+      {
+        "name": "Nemotron 3.5 Bolt 74B-A9B",
+        "date": "2026-10-15",
+        "access": "Public weights for local use",
+        "terms": "Targets a 24 GB model footprint through compression and mixed-precision quantization.",
+        "implication": "Allow additional memory for context and runtime. Published laptop measurements used 128 GB systems.",
+        "links": [
+          {
+            "label": "NVIDIA technical report",
+            "href": "https://research.nvidia.com/labs/nemotron/Nemotron-3.5-Bolt-24GB/"
+          },
+          {
+            "label": "Weights",
+            "href": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB"
+          }
+        ]
+      }
+    ],
+    "takeaways": [
+      {
+        "title": "Compare the bill you will actually pay.",
+        "text": "Argon’s introductory rate has an end date. Wonder Full is sold by subscription. Opus Fast changes the service rate. A single headline price cannot represent all three decisions.",
+        "links": [
+          {
+            "label": "Compare API workloads",
+            "href": "/compare/?model=google%2Fgemini-4-argon&model=meta%2Fmuse-wonder"
+          }
+        ]
+      },
+      {
+        "title": "Put open weights through a capacity calculation.",
+        "text": "Spark Open, Super VL and Bolt occupy different hardware budgets. Measure memory, throughput, utilization and operational effort before choosing ownership over a hosted route.",
+        "links": [
+          {
+            "label": "Explore open models",
+            "href": "/open/"
+          },
+          {
+            "label": "Rent vs Run",
+            "href": "/infrastructure/?mode=custom&model=nvidia%2Fnemotron-3.5-super-vl&quote=tape"
+          }
+        ]
+      },
+      {
+        "title": "Measure the cost of completed work.",
+        "text": "Use representative tasks and count retries and human review. Publisher benchmarks are useful leads; they do not establish quality or cost parity on your workload.",
+        "links": [
+          {
+            "label": "Cost per successful task",
+            "href": "/compare/"
+          }
+        ]
+      }
+    ],
+    "updates": [
+      {
+        "title": "Opus 5.5 Fast · 15 October",
+        "text": "Fast mode left research preview at $8 / $40 per million tokens. It serves the same model at a premium rate; it is not a new Opus release.",
+        "links": [
+          {
+            "label": "Anthropic release notes",
+            "href": "https://platform.claude.com/docs/en/release-notes/overview"
+          },
+          {
+            "label": "Fast pricing",
+            "href": "https://platform.claude.com/docs/en/build-with-claude/fast-mode"
+          },
+          {
+            "label": "Model card",
+            "href": "/model/anthropic/claude-opus-5.5/"
+          }
+        ]
+      }
+    ],
+    "watching": [
+      {
+        "title": "MAI-Base-2 · 15 October",
+        "text": "Microsoft completed pre-training; post-training continues. Partner weight licensing through Foundry is planned. This announcement does not establish a public API or downloadable release.",
+        "links": [
+          {
+            "label": "Microsoft announcement",
+            "href": "https://microsoft.ai/news/frontier-pre-training-at-microsoft-ai/"
+          }
+        ]
+      },
+      {
+        "title": "GLM-Legal · 13 October",
+        "text": "Z.ai opened applications for API beta access. The post says AutoClaw integration is forthcoming; no public token tariff is stated there.",
+        "links": [
+          {
+            "label": "Z.ai announcement",
+            "href": "https://autoclaw.z.ai/blog/model/GLM-Legal/"
+          }
+        ]
+      },
+      {
+        "title": "Bolt E4B · expected 23 October",
+        "text": "NVIDIA’s smaller Bolt variant is scheduled for next week. Availability still needs checking on release day.",
+        "links": [
+          {
+            "label": "NVIDIA schedule",
+            "href": "https://blogs.nvidia.com/blog/nemotron-3-5-super-vl/"
+          }
+        ]
+      }
+    ],
+    "coverage": "A selected review of releases relevant to buying and running AI, checked through Friday morning. Weekend releases are outside this pilot’s cutoff. Step 5 Preview’s weights were verified by this site this week; that observation alone does not date their release. Prices and availability can change after this edition.",
+    "sources": [
+      {
+        "label": "Meta · Muse Wonder launch, 12 October",
+        "href": "https://dev.meta.ai/resources/blog/build-with-muse-wonder"
+      },
+      {
+        "label": "Google · Gemini API release notes, 13 October",
+        "href": "https://ai.google.dev/gemini-api/docs/changelog"
+      },
+      {
+        "label": "Paper Instruments · Ultramarine report, 14 October",
+        "href": "https://www.paperinstruments.com/blog/ultramarine"
+      },
+      {
+        "label": "xAI · Grok Voice 3.0, 14 October",
+        "href": "https://x.ai/news/grok-voice-3"
+      },
+      {
+        "label": "Meta · Muse Spark Open, 15 October",
+        "href": "https://dev.meta.ai/resources/blog/build-with-muse-spark-open"
+      },
+      {
+        "label": "NVIDIA · Nemotron release, 15 October",
+        "href": "https://blogs.nvidia.com/blog/nemotron-3-5-super-vl/"
+      },
+      {
+        "label": "Anthropic · Fast availability, 15 October",
+        "href": "https://platform.claude.com/docs/en/release-notes/overview"
+      },
+      {
+        "label": "Microsoft · MAI-Base-2 pre-training, 15 October",
+        "href": "https://microsoft.ai/news/frontier-pre-training-at-microsoft-ai/"
+      },
+      {
+        "label": "Z.ai · GLM-Legal beta announcement, 13 October",
+        "href": "https://autoclaw.z.ai/blog/model/GLM-Legal/"
+      }
+    ]
+  },
+  {
     "slug": "nemotron-super-vl-bolt-packs-light",
     "date": "2026-10-16",
     "checked": "2026-10-16",

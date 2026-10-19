@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-19T08:02:29Z",
+  "generatedAt": "2026-10-19T09:02:29Z",
   "asOf": "2026-10-19",
   "status": "degraded",
-  "degradedProviderCount": 1,
+  "degradedProviderCount": 2,
   "conflictCount": 8,
   "reviewCandidateCount": 2,
   "providers": [
@@ -67,26 +67,29 @@
     },
     {
       "provider": "deepseek",
-      "status": "fresh",
+      "status": "last_good",
       "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
       "lastVerified": "2026-10-19",
       "modelCount": 2,
       "reviewCandidateCount": 1,
-      "freshModelCount": 2,
+      "freshModelCount": 0,
       "models": [
         {
           "key": "deepseek/deepseek-v4.1-flash",
           "display": "DeepSeek V4.1 Flash",
-          "status": "fresh",
-          "lastVerified": "2026-10-19"
+          "status": "last_good",
+          "lastVerified": "2026-10-19",
+          "detail": "curl could not fetch https://api-docs.deepseek.com/quick_start/pricing/: curl: (28) Connection timed out after 25006 milliseconds"
         },
         {
           "key": "deepseek/deepseek-v4-pro",
           "display": "DeepSeek V4 Pro",
-          "status": "fresh",
-          "lastVerified": "2026-10-19"
+          "status": "last_good",
+          "lastVerified": "2026-10-19",
+          "detail": "curl could not fetch https://api-docs.deepseek.com/quick_start/pricing/: curl: (28) Connection timed out after 25006 milliseconds"
         }
-      ]
+      ],
+      "detail": "curl could not fetch https://api-docs.deepseek.com/quick_start/pricing/: curl: (28) Connection timed out after 25006 milliseconds; curl could not fetch https://api-docs.deepseek.com/quick_start/pricing/: curl: (28) Connection timed out afte"
     },
     {
       "provider": "google",
@@ -302,7 +305,7 @@
       "key": "deepseek/deepseek-v4.1-flash",
       "field": "input_mtok",
       "firstparty": 0.3,
-      "openrouter": 0.0456
+      "openrouter": 0.0448
     },
     {
       "key": "deepseek/deepseek-v4.1-flash",

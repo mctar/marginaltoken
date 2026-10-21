@@ -26,6 +26,8 @@ MAX_SOURCE_BYTES = 5 * 1024 * 1024
 DEFAULT_MAX_STALE_HOURS = 48
 LAST_GOOD_FILE = "firstparty-last-good.json"
 HEARTBEAT_FILE = "firstparty-heartbeat.json"
+# Old positional OpenAI snapshots may contain cache-write rates as output.
+PARSER_SCHEMAS = {"openai": 1}
 
 PROVIDER_URLS = {
     "anthropic": "https://platform.claude.com/docs/en/about-claude/pricing",
@@ -161,32 +163,61 @@ def _money_values(segment: str) -> list[str]:
     )
 
 
-def parse_openai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
-    del now
+def openai_price_rows(source: str, mode: str, model_names: set[str] | None = None) -> dict[str, dict[str, str]]:
+    """Bind prices to named columns within one serving mode, never positions."""
     section_match = re.search(
-        r"### Standard pricing data(?P<body>.*?)(?:\n\s*Batch\s*$|\n### Batch pricing data)",
-        source,
-        re.S | re.M,
+        rf"^### {re.escape(mode)} pricing data\s*\n(?P<body>.*?)(?=^### |^\s*(?:Batch|Flex|Priority)\s*$|\Z)",
+        source, re.S | re.M,
     )
     if not section_match:
-        raise OfficialSourceError("OpenAI standard pricing table not found")
-    table = section_match.group("body")
+        raise OfficialSourceError(f"OpenAI {mode} pricing table not found")
+    result = {}
+    header = None
+    for line in section_match.group("body").splitlines():
+        subheading = re.match(r"^####\s+(.+)$", line)
+        if subheading and subheading.group(1).strip() != mode:
+            break
+        if not line.strip().startswith("|"):
+            header = None
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if cells[0] == "Model":
+            if len(set(cells)) != len(cells):
+                raise OfficialSourceError("OpenAI duplicate pricing columns")
+            header = cells
+        elif all(re.fullmatch(r":?-+:?", cell) for cell in cells):
+            continue
+        else:
+            if model_names is not None and cells[0] not in model_names:
+                continue
+            if header is None or len(cells) != len(header):
+                raise OfficialSourceError("OpenAI price row does not match its header")
+            name = cells[0]
+            if name in result:
+                raise OfficialSourceError(f"OpenAI row ambiguous: {name}")
+            result[name] = dict(zip(header[1:], cells[1:]))
+    return result
+
+
+def openai_rate(cells: dict[str, str], column: str) -> float:
+    match = re.fullmatch(r"\$\s*([0-9]+(?:\.[0-9]+)?)", cells.get(column, ""))
+    if not match:
+        raise OfficialSourceError(f"OpenAI price missing or ambiguous: {column}")
+    return price(match.group(1), column)
+
+
+def parse_openai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
+    del now
+    table = openai_price_rows(source, "Standard", {str(row["model"]) for row in rows})
     result: dict[str, tuple[float, float]] = {}
     for row in rows:
-        model = re.escape(str(row["model"]))
-        match = re.search(rf"^\|\s*{model}\s*\|(?P<cells>.+)$", table, re.M | re.I)
-        if not match:
+        cells = table.get(str(row["model"]))
+        if cells is None:
             raise OfficialSourceError(f"OpenAI row missing: {row['model']}")
-        cells = [cell.strip() for cell in match.group("cells").split("|")]
-        if len(cells) < 8:
-            raise OfficialSourceError(f"OpenAI row is incomplete: {row['model']}")
-        input_match = re.search(r"\$([0-9.]+)", cells[0])
-        output_match = re.search(r"\$([0-9.]+)", cells[3])
-        if not input_match or not output_match:
-            raise OfficialSourceError(f"OpenAI prices missing: {row['model']}")
+        prefix = "Short context " if "Short context input" in cells else ""
         result[str(row["model"])] = (
-            price(input_match.group(1), f"{row['model']} input"),
-            price(output_match.group(1), f"{row['model']} output"),
+            openai_rate(cells, prefix + "input" if prefix else "Input"),
+            openai_rate(cells, prefix + "output" if prefix else "Output"),
         )
     return result
 
@@ -625,6 +656,11 @@ def refresh_firstparty(
         public_url = PROVIDER_PUBLIC_URLS.get(provider, url)
         parser = PARSERS.get(provider)
         cached = providers_state.get(provider) if isinstance(providers_state.get(provider), dict) else {}
+        schema = PARSER_SCHEMAS.get(provider)
+        if schema is not None and cached.get("parserSchema") != schema:
+            # Re-fetch and discard untrusted values, including fallback prices.
+            # A 304 response cannot validate a previous parser's interpretation.
+            cached = {}
         values: dict[str, tuple[float, float]] = {}
         errors: dict[str, str] = {}
         fetched = None
@@ -731,6 +767,7 @@ def refresh_firstparty(
                 "contentHash": content_hash,
                 "failedModels": sorted(errors),
                 "prices": saved_prices,
+                **({"parserSchema": schema} if schema is not None else {}),
             }
 
         report = {

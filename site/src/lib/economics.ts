@@ -147,10 +147,7 @@ export function calculateBill(
     problems.push(
       'Cache read price is unreported for this quote. Choose a published plan or enter a rate.',
     )
-  const writeRate =
-    assumption.cacheDuration === '1h'
-      ? plan.cacheWriteHour_mtok
-      : plan.cache_write_mtok
+  const writeRate = plan[cacheWriteField(assumption.cacheDuration)]
   if (writeFraction > 0 && writeRate === undefined)
     problems.push(
       'Cache write price is unreported for this duration. Choose a published plan or enter a rate.',
@@ -290,6 +287,15 @@ export function parseAssumptions(
   }
 }
 
+export function cacheWriteField(duration: string) {
+  switch (duration) {
+    case '30m': return 'cacheWrite30Minute_mtok'
+    case '1h': return 'cacheWriteHour_mtok'
+    case '12h': return 'cacheWrite12Hour_mtok'
+    default: return 'cache_write_mtok'
+  }
+}
+
 export function applyRateOverrides(
   plan: BillingPlan,
   assumption: ModelAssumptions,
@@ -301,9 +307,7 @@ export function applyRateOverrides(
     ['cachedInputRate', 'cached_input_mtok'],
     [
       'cacheWriteRate',
-      assumption.cacheDuration === '1h'
-        ? 'cacheWriteHour_mtok'
-        : 'cache_write_mtok',
+      cacheWriteField(assumption.cacheDuration),
     ],
     ['cacheStorageRate', 'cache_storage_mtok_hour'],
     ['reasoningRate', 'reasoning_mtok'],

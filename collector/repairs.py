@@ -3,6 +3,74 @@
 from __future__ import annotations
 
 from typing import Any
+from decimal import Decimal, ROUND_HALF_UP
+
+
+# Exact erroneous output values introduced by the column change on 20 October.
+OPENAI_OCTOBER_OUTPUTS = {
+    "openai/gpt-6-astra": (12.5, 50.0),
+    "openai/gpt-6.1-sol": (2.5, 10.0),
+    "openai/gpt-6-sol": (2.5, 10.0),
+    "openai/gpt-6-luna": (0.125, 0.5),
+    "openai/gpt-5.6-sol": (5.0, 20.0),
+    "openai/gpt-5.6-terra": (2.5, 12.0),
+    "openai/gpt-5.6-luna": (0.25, 1.2),
+}
+
+
+def repair_openai_october_20(previous_models, history_points, changes, meta) -> bool:
+    """Repair the observed column defect, preserving genuine same-day moves.
+
+    Only exact first-party error points and their matching price events qualify.
+    Refuse an evolved basket/index rather than guessing its counterfactual path.
+    The original published feed is retained in the operator's repair archive.
+    """
+    day = "2026-10-20"
+    affected = [p for p in history_points if p.get("date") == day
+                and p.get("source") == "firstparty" and p.get("key") in OPENAI_OCTOBER_OUTPUTS
+                and p.get("output_mtok") == OPENAI_OCTOBER_OUTPUTS[p["key"]][0]]
+    if not affected:
+        return False
+    basket = meta.get("basket", [])
+    index_points = meta.get("indexHistory", [])
+    earlier = [p for p in index_points if p["date"] < day]
+    later = [p for p in index_points if p["date"] >= day]
+    by_key = {m["key"]: m for m in previous_models}
+    if (not earlier or len(later) != 1 or later[0]["date"] != day
+            or later[0]["value"] != meta.get("indexValue")
+            or any(e.get("type") == "basket" and e.get("date", "") >= day for e in changes)):
+        raise ValueError("OpenAI October repair needs review: index path has changed")
+    for p in affected:
+        if by_key.get(p["key"], {}).get("output_mtok") != p["output_mtok"]:
+            raise ValueError("OpenAI October repair needs review: current price has changed")
+    reference = Decimal(0)
+    for key in basket:
+        moves = [e for e in changes if e.get("type") == "price" and e.get("key") == key
+                 and e.get("field") == "output_mtok" and e.get("date", "") >= day]
+        if key not in by_key or len(moves) > 1 or (moves and moves[0]["to"] != by_key[key]["output_mtok"]):
+            raise ValueError("OpenAI October repair needs review: basket price path has changed")
+        reference += Decimal(str(moves[0]["from"] if moves else by_key[key]["output_mtok"]))
+    prior_index = Decimal(str(max(earlier, key=lambda p: p["date"])["value"]))
+    observed_sum = sum(Decimal(str(by_key[key]["output_mtok"])) for key in basket)
+    rounded = lambda value: float(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    if reference <= 0 or rounded(prior_index * observed_sum / reference) != meta["indexValue"]:
+        raise ValueError("OpenAI October repair needs review: index does not match the observed defect")
+    keys = {p["key"] for p in affected}
+    for point in affected:
+        point["output_mtok"] = OPENAI_OCTOBER_OUTPUTS[point["key"]][1]
+        point["correction"] = "2026-10-21: output column corrected; cache-write price was recorded in error."
+    for key in keys:
+        by_key[key]["output_mtok"] = OPENAI_OCTOBER_OUTPUTS[key][1]
+    changes[:] = [e for e in changes if not (
+        e.get("type") == "price" and e.get("date") == day and e.get("key") in keys
+        and e.get("field") == "output_mtok"
+        and (e.get("to"), e.get("from")) == OPENAI_OCTOBER_OUTPUTS[e["key"]])]
+    corrected_sum = sum(Decimal(str(by_key[key]["output_mtok"])) for key in basket)
+    value = rounded(prior_index * corrected_sum / reference)
+    later[0]["value"] = value
+    meta["indexValue"] = value
+    meta["basketMean"] = float((corrected_sum / len(basket)).quantize(Decimal("0.000001")))
+    return True
 
 
 OPENAI_REPRICING = {

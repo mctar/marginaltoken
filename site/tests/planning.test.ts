@@ -64,3 +64,14 @@ test('an older billing snapshot cannot override a newly verified standard tape p
   assert.deepEqual(quotes.map((q) => q.id),['tape'])
   assert.equal(quotes[0].plan.input_mtok,3)
 })
+
+test('usage imports price explicit 30m and 12h cache retention', () => {
+  const quote = {...q, plan:{...q.plan, cache_write_mtok:undefined, cacheWrite30Minute_mtok:2.5, cacheWrite12Hour_mtok:5}}
+  for (const [duration, rate] of [['30m',2.5], ['12h',5]] as const) {
+    const row = importUsage(`model,requests,input_tokens,output_tokens,cache_write_tokens,cache_duration\nlab/test,10,1000000,0,1000000,${duration}`, 'normalized')[0]
+    const result = repriceUsage(row, model, quote)
+    assert.equal(result.complete, true)
+    assert.equal(result.monthlyTotal, rate)
+  }
+  assert.throws(() => importUsage('model,requests,input_tokens,output_tokens,cache_duration\nlab/test,1,1,0,2h','normalized'))
+})

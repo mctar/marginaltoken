@@ -8,6 +8,7 @@ from pathlib import Path
 
 from collector.official import (
     FetchResult,
+    PARSER_SCHEMAS,
     OfficialSourceError,
     parse_anthropic,
     parse_deepseek,
@@ -72,6 +73,26 @@ Batch
                 "gpt-5.6-luna": (0.2, 1.2),
             },
         )
+
+    def test_openai_named_columns_survive_reordering_and_extra_cache_tiers(self):
+        source = (Path(__file__).parent / 'fixtures/openai-pricing-20261021.md').read_text()
+        expected = {'gpt-6-astra': (10, 50), 'gpt-6.1-sol': (2, 10), 'gpt-6-sol': (2, 10),
+                    'gpt-6-luna': (.1, .5), 'gpt-5.6-sol': (4, 20), 'gpt-5.6-terra': (2, 12),
+                    'gpt-5.6-luna': (.2, 1.2)}
+        rows = [row('openai', name, name) for name in expected]
+        self.assertEqual(parse_openai(source, rows, NOW), expected)
+        for invalid in [source.replace('Short context output', 'Unknown price'),
+                        source.replace('Short context 30m write', 'Short context output'),
+                        source.replace('| $10.00 | $50.00 |', '| $10.00 | $50 / $60 |')]:
+            with self.assertRaises(OfficialSourceError):
+                parse_openai(invalid, rows, NOW)
+        duplicate = source.replace('### Batch pricing data',
+            '| Model | Input | Output |\n| gpt-6-astra | $1 | $2 |\n### Batch pricing data')
+        with self.assertRaises(OfficialSourceError):
+            parse_openai(duplicate, rows, NOW)
+        unrelated = source.replace('| gpt-6-astra | $10.00 |', '| gpt-6-astra |')
+        self.assertEqual(parse_openai(unrelated, [row('openai', 'gpt-6.1-sol', 'Sol')], NOW),
+                         {'gpt-6.1-sol': (2, 10)})
 
     def test_anthropic_selects_current_standard_prices(self) -> None:
         source = """
@@ -409,6 +430,26 @@ Batch
         self.assertEqual(report["status"], "degraded")
         self.assertEqual(report["providers"][0]["status"], "last_good")
 
+    def test_old_openai_parser_cache_is_not_reused_or_trusted_as_fallback(self):
+        self.seed_old_provider_snapshot()
+        path = self.state / 'firstparty-last-good.json'
+        old = json.loads(path.read_text())
+        old['providers']['openai'].pop('parserSchema')
+        old['providers']['openai']['prices']['gpt-5.6-luna']['output_mtok'] = .25
+        path.write_text(json.dumps(old))
+        calls = []
+        def fetcher(url, cached):
+            calls.append(cached)
+            return FetchResult(self.source('0.2', '1.2'))
+        rows, _ = refresh_firstparty(self.catalog, state_dir=self.state, now=NOW, fetcher=fetcher)
+        self.assertEqual(calls, [{}])
+        self.assertEqual(rows[0]['output_mtok'], 1.2)
+        path.write_text(json.dumps(old))
+        def offline(url, cached): raise OSError('offline')
+        rows, report = refresh_firstparty(self.catalog, state_dir=self.state, now=NOW, fetcher=offline)
+        self.assertEqual(rows[0]['output_mtok'], 99)  # reviewed cold-start rate, never the corrupt snapshot
+        self.assertEqual(report['providers'][0]['status'], 'manual')
+
     def test_incomplete_304_cache_is_refetched_without_validators(self) -> None:
         refresh_firstparty(
             self.catalog,
@@ -448,7 +489,7 @@ Batch
         catalog = self.catalog + [row("openai", "gpt-6-astra", "GPT-6 Astra")]
         (self.state / "firstparty-last-good.json").write_text(json.dumps({
             "version": 1, "providers": {"openai": {
-                "verifiedAt": NOW.isoformat(), "etag": "v1",
+                "verifiedAt": NOW.isoformat(), "etag": "v1", "parserSchema": PARSER_SCHEMAS["openai"],
                 "prices": {"gpt-5.6-luna": {"input_mtok": 0.2, "output_mtok": 1.2}, "gpt-6-astra": {"input_mtok": 10, "output_mtok": 50}},
             }},
         }))

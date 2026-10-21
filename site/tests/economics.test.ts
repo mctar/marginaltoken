@@ -142,3 +142,17 @@ test('scenario URL round trips model-specific success and rate assumptions witho
     '',
   )
 })
+
+test('OpenAI cache retention rates are not substituted for 5m or 1h writes', () => {
+  const p = { ...plan, cache_write_mtok: undefined, cacheWrite30Minute_mtok: 2.5, cacheWrite12Hour_mtok: 5 }
+  const w = { ...workload, calls: 1, inputTokens: 1000000, outputTokens: 0, reasoningTokens: 0, cacheReadPct: 0, cacheWritePct: 100 }
+  for (const duration of ['5m', '1h']) assert.equal(calculateBill(p, w, {...defaultAssumptions, cacheDuration:duration}).complete, false)
+  for (const [duration, rate] of [['30m',2.5], ['12h',5]] as const) {
+    const a = {...defaultAssumptions, cacheDuration:duration}
+    const result = calculateBill(p, w, a)
+    assert.equal(result.complete, true)
+    close(result.monthlyTotal, rate)
+    const custom = {...a, cacheWriteRate:'7'}
+    close(calculateBill(applyRateOverrides(p,custom),w,custom).monthlyTotal,7)
+  }
+})

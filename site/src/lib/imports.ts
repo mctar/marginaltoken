@@ -1,4 +1,5 @@
 import { quoteBill } from './planning.ts'
+import { cacheWriteField } from './economics.ts'
 import type { Quote } from './quotes.ts'
 import type { PriceModel } from './types'
 import { canonicalModelKey, modelRegister } from './register.ts'
@@ -90,7 +91,7 @@ export type UsageRow = {
   minPrompt?: number
   maxPrompt?: number
   quote: string
-  cacheDuration: '5m' | '1h'
+  cacheDuration: '5m' | '30m' | '1h' | '12h'
 }
 export type UsageFormat = 'normalized' | 'openai' | 'anthropic'
 export function importUsage(text: string, format: UsageFormat): UsageRow[] {
@@ -160,8 +161,8 @@ export function importUsage(text: string, format: UsageFormat): UsageRow[] {
       throw new Error(
         'Prompt bounds must bracket the inclusive average and be supplied together.',
       )
-    if (r.cache_duration && !['5m', '1h'].includes(r.cache_duration))
-      throw new Error('cache_duration must be 5m or 1h.')
+    if (r.cache_duration && !['5m', '30m', '1h', '12h'].includes(r.cache_duration))
+      throw new Error('cache_duration must be 5m, 30m, 1h or 12h.')
     return {
       model: canonicalModelKey(bounded(r.model, 'model')),
       period: bounded(r.period, 'period', false),
@@ -174,7 +175,7 @@ export function importUsage(text: string, format: UsageFormat): UsageRow[] {
       minPrompt,
       maxPrompt,
       quote: bounded(r.quote, 'quote', false),
-      cacheDuration: (r.cache_duration || '5m') as '5m' | '1h',
+      cacheDuration: (r.cache_duration || '5m') as '5m' | '30m' | '1h' | '12h',
     }
   })
   if (!result.length) throw new Error('CSV contains no usage rows.')
@@ -184,12 +185,12 @@ export function repriceUsage(row: UsageRow, model: PriceModel, quote: Quote) {
   const requests = row.requests || 1
   const result = quoteBill(
     model,
-    row.cacheDuration === '1h'
+    row.cacheDuration !== '5m'
       ? {
           ...quote,
           plan: {
             ...quote.plan,
-            cache_write_mtok: quote.plan.cacheWriteHour_mtok,
+            cache_write_mtok: quote.plan[cacheWriteField(row.cacheDuration)],
           },
         }
       : quote,

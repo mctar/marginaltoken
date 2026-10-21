@@ -70,3 +70,22 @@ class RegisterTests(unittest.TestCase):
         from collector.register import canonical_key
         self.assertEqual(canonical_key("google/gemini-3.7-flash"), "google/gemini-3.7-flash")
         self.assertEqual(self.register["models"]["google/gemini-3.7-flash"]["lifecycle"]["successor"], "google/gemini-3.8-flash")
+
+    def test_archived_official_quotes_leave_active_verification_but_retain_identity(self):
+        active = {f"{r['provider']}/{r['model']}" for r in firstparty_catalog(self.register)}
+        for key in ['google/gemini-3.7-flash', 'google/gemini-3.5-flash']:
+            self.assertNotIn(key, active)
+            self.assertIn('firstparty', self.register['models'][key])
+            self.assertEqual(self.register['models'][key]['lifecycle']['status'], 'deprecated')
+        self.assertIn('google/gemini-3.8-flash', active)
+        self.assertIn('google/gemini-3.6-flash', active)
+
+    def test_active_model_cannot_be_hidden_as_historical(self):
+        import json, tempfile
+        from pathlib import Path
+        self.register['models']['openai/gpt-6.1-sol']['firstpartyHistorical'] = True
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'register.json'
+            path.write_text(json.dumps(self.register))
+            with self.assertRaisesRegex(ValueError, 'Historical pricing'):
+                read_register(path)

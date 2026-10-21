@@ -22,11 +22,11 @@ from typing import Any
 
 try:
     from collector.official import DEFAULT_MAX_STALE_HOURS, refresh_firstparty
-    from collector.repairs import repair_openai_july_30
+    from collector.repairs import repair_openai_july_30, repair_openai_october_20
     from collector.register import REGISTER_PATH, read_register, firstparty_catalog, canonical_key, apply_register
 except ModuleNotFoundError:  # Direct execution: python3 collector/collect.py
     from official import DEFAULT_MAX_STALE_HOURS, refresh_firstparty
-    from repairs import repair_openai_july_30
+    from repairs import repair_openai_july_30, repair_openai_october_20
     from register import REGISTER_PATH, read_register, firstparty_catalog, canonical_key, apply_register
 
 
@@ -729,6 +729,8 @@ def collect_once(
     baseline_catalog = firstparty_catalog(register) if register else baseline_payload
     normalize_firstparty(baseline_catalog)
     reviewed_keys = load_reviewed_firstparty(firstparty_reviewed_path)
+    if register:
+        reviewed_keys.update(key for key, record in register["models"].items() if record.get("firstpartyHistorical"))
     if refresh_official is None:
         refresh_official = source_file is None
     if refresh_official:
@@ -856,6 +858,7 @@ def collect_once(
     previous_meta = read_feed(data_dir / "meta.json", {})
     if not isinstance(previous_meta, dict):
         raise CollectorError("previous meta.json is invalid")
+    repair_applied = repair_openai_october_20(previous_models, history_points, old_events, previous_meta) or repair_applied
     index_migration_needed = bool(previous_meta) and previous_meta.get("indexMethod") != INDEX_METHOD
 
     previous_provenance = read_feed(data_dir / "provenance.json", {})

@@ -24,6 +24,12 @@ def read_register(path: Path = REGISTER_PATH) -> dict[str, Any]:
         row = record.get("firstparty")
         if row and f"{row.get('provider')}/{row.get('model')}" != key:
             raise ValueError(f"Fallback identity mismatch: {key}")
+        if record.get("firstpartyHistorical") and (
+            not row or record.get("lifecycle", {}).get("status") not in {"deprecated", "retired"}
+            or not record.get("lifecycle", {}).get("sourceUrl")
+            or any(p["fallback"] == key for p in register["basket"].values())
+        ):
+            raise ValueError(f"Historical pricing requires a sourced lifecycle and no basket selection: {key}")
         for alias in record.get("aliases", []):
             if alias in aliases:
                 raise ValueError(f"Duplicate alias: {alias}")
@@ -44,7 +50,7 @@ def canonical_key(key: str, register: dict[str, Any] | None = None) -> str:
 def firstparty_catalog(register: dict[str, Any]) -> list[dict[str, Any]]:
     rows = []
     for key, record in register["models"].items():
-        if "firstparty" not in record:
+        if "firstparty" not in record or record.get("firstpartyHistorical"):
             continue
         row = dict(record["firstparty"])
         row["index_eligible"] = any(p["fallback"] == key for p in register["basket"].values())

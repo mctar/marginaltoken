@@ -660,7 +660,9 @@ export default function ComparePage({
                         }
                       >
                         <option value="5m">Default / 5 minutes</option>
+                        <option value="30m">30 minutes</option>
                         <option value="1h">1 hour</option>
+                        <option value="12h">12 hours</option>
                       </select>
                     </label>
                     <NumberField

@@ -69,6 +69,7 @@ class DecisionsTests(unittest.TestCase):
 | Model | Short context input | Short context cached input | Short context cache writes | Short context output | Long context input | Long context cached input | Long context cache writes | Long context output |
 | sample | $2 | $0.2 | $2.5 | $10 | $4 | $0.4 | $5 | $15 |
 ### Batch pricing data
+| Model | Short context input | Short context cached input | Short context cache writes | Short context output | Long context input | Long context cached input | Long context cache writes | Long context output |
 | sample | $1 | $0.1 | $1.25 | $5 | $2 | $0.2 | $2.5 | $7.5 |
 '''
         r=parse_billing('openai',source,[{'key':'openai/sample'},{'key':'openai/sample-plus'}])
@@ -80,6 +81,36 @@ class DecisionsTests(unittest.TestCase):
         plans=parse_billing('anthropic',source,[{'key':'anthropic/example','display':'Claude Example'}])['anthropic/example']
         self.assertEqual(plans[0]['output_mtok'],10)
         self.assertEqual(plans[1]['cacheWriteHour_mtok'],2)
+
+    def test_openai_current_cache_durations_and_batch_are_distinct(self):
+        from pathlib import Path
+        source = (Path(__file__).parent/'fixtures/openai-pricing-20261021.md').read_text()
+        plans = parse_billing('openai', source, [{'key': 'openai/gpt-6.1-sol'}])['openai/gpt-6.1-sol']
+        self.assertEqual([p['output_mtok'] for p in plans], [10, 15, 5, 7.5])
+        self.assertEqual([p['cacheWrite30Minute_mtok'] for p in plans], [2.5, 5, 1.25, 2.5])
+        self.assertEqual([p['cacheWrite12Hour_mtok'] for p in plans], [5, 10, 2.5, 5])
+        self.assertTrue(all('cache_write_mtok' not in p and 'cacheWriteHour_mtok' not in p for p in plans))
+
+    def test_openai_new_schema_refreshes_a_recent_billing_snapshot(self):
+        import tempfile, json
+        from pathlib import Path
+        from datetime import datetime, timezone
+        from unittest.mock import patch
+        from collector.decisions import collect, OPENAI_BILLING_SCHEMA
+        from collector.official import FetchResult
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root/'data').mkdir(); (root/'collector/state').mkdir(parents=True)
+            (root/'data/prices.json').write_text(json.dumps({'models': [{'key':'openai/gpt-6.1-sol','provider':'openai'}]}))
+            previous = {'plans': {}, 'verifiedAt': '2026-10-21T08:00:00Z', 'sourceUrl': 'https://example.com', 'status':'fresh'}
+            cachepath = root/'collector/state/decisions-cache.json'
+            cachepath.write_text(json.dumps({'weights':{},'billing':{'openai':previous}}))
+            source = (Path(__file__).parent/'fixtures/openai-pricing-20261021.md').read_text()
+            with patch('collector.decisions.fetch_source', return_value=FetchResult(source)):
+                collect(root, datetime(2026,10,21,9,tzinfo=timezone.utc))
+            saved = json.loads(cachepath.read_text())['billing']['openai']
+            self.assertEqual(saved['parserSchema'], OPENAI_BILLING_SCHEMA)
+            self.assertEqual(saved['verifiedAt'], '2026-10-21T09:00:00Z')
+            self.assertEqual(saved['plans']['openai/gpt-6.1-sol'][0]['output_mtok'], 10)
     def test_google_long_prompt_and_cache_storage(self):
         source='Gemini Example | example | Standard | Input price | $2.00, prompts <= 200k tokens | $4.00, prompts > 200k tokens | Output price (including thinking tokens) | $10.00, prompts <= 200k tokens | $15.00, prompts > 200k | Context caching price | $0.2 | $0.4 | $4.50 / 1,000,000 tokens per hour (storage price) | Used to improve our products | No | Batch | Input price | $1 | $2 | Output price (including thinking tokens) | $5 | $7.5 | Context caching price | Same as Standard | $0.2 | $0.4 | $4.50 / 1,000,000 tokens per hour (storage price) | Used to improve our products | No | 200k'
         plans=parse_billing('google',source,[{'key':'google/example','display':'Gemini Example'}])['google/example']

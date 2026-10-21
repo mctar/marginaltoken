@@ -36,8 +36,14 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <span className="method-number">02</span>
           <h2>Where prices come from</h2>
           <p>
-            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. The collector also scans official pricing pages from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI every hour. Each provider is parsed and cached independently. A verified first-party row replaces the matching OpenRouter row; failed scans retain that provider's last-good snapshot and surface a source warning. A new paid OpenRouter listing from one of these providers enters a persistent review queue, but remains a routed quote until its official rate and production status are verified.
+            OpenRouter supplies the broad model list. Its model-level figure is the lowest listed rate available through its routing market. The collector also scans official pricing pages from Anthropic, OpenAI, Google, Mistral, Moonshot AI, DeepSeek, and xAI every hour. Each provider is parsed and cached independently. A verified first-party row replaces the matching OpenRouter row; failed model checks retain dated fallback rates and surface a source warning without blocking other models. A new paid OpenRouter listing from one of these providers enters a persistent review queue, but remains a routed quote until its official rate and production status are verified.
           </p>
+        </section>
+        <section>
+          <span className="method-number">Data corrections</span>
+          <h2>21 October 2026 · OpenAI output prices</h2>
+          <p>The 20 October collection read cache-write prices as output prices for seven OpenAI models after the provider reordered its pricing table. The affected quotes and historical observations have been corrected, the false price-cut events removed, and the index recalculated while preserving genuine price changes. Pricing columns are now matched by name.</p>
+          <p>Deprecated Google API IDs whose official pricing rows were removed remain in the historical register. They no longer trigger current-price verification warnings; any remaining hosted quotes retain their routed source.</p>
         </section>
         <section>
           <span className="method-number">03</span>

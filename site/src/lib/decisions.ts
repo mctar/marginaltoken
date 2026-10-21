@@ -116,6 +116,8 @@ export function validDecisions(value: unknown): value is DecisionsFeed {
                     p.cached_input_mtok,
                     p.cache_write_mtok,
                     p.cacheWriteHour_mtok,
+                    p.cacheWrite30Minute_mtok,
+                    p.cacheWrite12Hour_mtok,
                     p.cache_storage_mtok_hour,
                     p.minimumPromptTokens,
                     p.maximumPromptTokens,

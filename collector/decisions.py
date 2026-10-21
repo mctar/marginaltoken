@@ -13,14 +13,15 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 try:
     from collector.collect import atomic_write_json, atomic_write_text
-    from collector.official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, _money_values
+    from collector.official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, _money_values, openai_price_rows, openai_rate
 except ModuleNotFoundError:
     from collect import atomic_write_json, atomic_write_text
-    from official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, _money_values
+    from official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, _money_values, openai_price_rows, openai_rate
 ROOT = Path(__file__).resolve().parent.parent
 PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by-4.0', 'cc0-1.0'}
 WEIGHTS_SCHEMA = 2
 ANTHROPIC_BILLING_SCHEMA = 1
+OPENAI_BILLING_SCHEMA = 1
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
 
 def license_file(repository, payload):
@@ -153,26 +154,28 @@ def argon_billing(segment):
 def parse_billing(provider, source, models):
     result = {}
     if provider == 'openai':
-        expected_header = '| Model | Short context input | Short context cached input | Short context cache writes | Short context output | Long context input | Long context cached input | Long context cache writes | Long context output |'
-        if expected_header not in source: raise ValueError('OpenAI billing columns changed')
-        sections = {}
-        for mode, marker in [('Standard', 'Standard'), ('Batch', 'Batch')]:
-            m = re.search(rf'### {marker} pricing data\s*(.*?)(?=\n### |\Z)', source, re.S)
-            if not m: continue
-            rows = {}
-            for line in m.group(1).splitlines():
-                cells = [c.strip() for c in line.strip().strip('|').split('|')]
-                if len(cells) == 9 and cells[0] not in ('Model', '---'):
-                    name = re.sub(r'\s*\(.*', '', cells[0]); rows[name] = prices(cells[1:])
-            sections[mode] = rows
+        names = {model['key'].split('/', 1)[1] for model in models}
+        sections = {mode: openai_price_rows(source, mode, names) for mode in ['Standard', 'Batch']}
         for model in models:
             name = model['key'].split('/', 1)[1]; plans = []
             for mode, rows in sections.items():
-                if name not in rows: continue
-                vals = rows[name]
-                for label, vs in [(mode, vals[:4]), (mode+' long context', vals[4:])]:
-                    p = tier(label, vs)
-                    if p: plans.append(p)
+                cells = rows.get(name)
+                if cells is None: continue
+                # Keep exact API IDs; qualified legacy rows need a separate review.
+                for prefix, label in [('Short context ', mode), ('Long context ', mode+' long context')]:
+                    if prefix+'input' not in cells: continue
+                    p = {'id': label.lower().replace(' ', '-'), 'label': label,
+                         'input_mtok': openai_rate(cells, prefix+'input'),
+                         'output_mtok': openai_rate(cells, prefix+'output')}
+                    for column, field in [('cached input', 'cached_input_mtok'),
+                                          ('cache writes', 'cache_write_mtok'),
+                                          ('30m write', 'cacheWrite30Minute_mtok'),
+                                          ('12h write', 'cacheWrite12Hour_mtok')]:
+                        if prefix+column in cells and cells[prefix+column] != '-':
+                            p[field] = openai_rate(cells, prefix+column)
+                    if 'cacheWrite30Minute_mtok' in p or 'cacheWrite12Hour_mtok' in p:
+                        p['notes'] = 'Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests.'
+                    plans.append(p)
             if plans: result[model['key']] = plans
     elif provider == 'anthropic':
         text = visible_text(source); start = text.find('The following table shows pricing for all Claude models:')
@@ -302,7 +305,8 @@ def collect(root=ROOT, now=None):
         needs_fast = (provider == 'anthropic' and any(m['key'] == 'anthropic/claude-opus-5.5' for m in models)
                       and ((previous or {}).get('parserSchema') != ANTHROPIC_BILLING_SCHEMA
                            or not any(p['id'] == 'fast' for p in (previous or {}).get('plans', {}).get('anthropic/claude-opus-5.5', []))))
-        if previous and age(previous)<timedelta(hours=24) and not needs_argon and not needs_fast:entry=previous
+        needs_openai = provider == 'openai' and (previous or {}).get('parserSchema') != OPENAI_BILLING_SCHEMA
+        if previous and age(previous)<timedelta(hours=24) and not needs_argon and not needs_fast and not needs_openai:entry=previous
         else:
             try:
                 source=fetch_source(PROVIDER_URLS[provider]).text
@@ -310,6 +314,7 @@ def collect(root=ROOT, now=None):
                 if not entries:raise ValueError('No billing plans parsed')
                 entry={'plans':entries,'sourceUrl':PROVIDER_PUBLIC_URLS.get(provider,PROVIDER_URLS[provider]),'verifiedAt':stamp,'status':'fresh'}
                 if provider == 'anthropic':entry['parserSchema'] = ANTHROPIC_BILLING_SCHEMA
+                if provider == 'openai':entry['parserSchema'] = OPENAI_BILLING_SCHEMA
             except Exception:
                 entry={**previous,'status':'stale' if age(previous)>timedelta(days=7) else 'last_good'} if previous else None
         if entry:

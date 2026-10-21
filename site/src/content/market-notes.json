@@ -1,5 +1,39 @@
 [
   {
+    "kind": "standalone",
+    "slug": "clairic-extraction-input-only-pricing",
+    "date": "2026-10-21",
+    "checked": "2026-10-21",
+    "author": "Thordur Arnason",
+    "title": "Clairic: extraction at $0.10 per million input tokens",
+    "summary": "Cloudflare’s extraction preview charges for input only. The practical test is cost per accepted extraction, including validation and human review.",
+    "paragraphs": [
+      "An invoice number, a delivery date or a receipt total is a small job to give a general-purpose language model. Cloudflare’s Clairic offers a specialist alternative: define the fields you need and receive typed values, with confidence scores for extracted answers and intervals for estimates.",
+      "Released on 19 October as a Workers AI preview, Clairic is available through the @cf/cloudflare/clairic endpoint. The posted rate is $0.10 per million input tokens, with no output-token charge. It accepts text and up to four images. Check the API’s reported usage when budgeting: field definitions contribute tokens, and requests can span multiple processing passes.",
+      "The economics are promising for repetitive document work, but a correctly formatted answer can still be wrong. Cloudflare describes limitations in multi-step arithmetic and forecasting, and says uncertainty intervals can be too narrow on unfamiliar data. Extract the facts, use code for calculations and test review thresholds on representative documents. Cloudflare’s performance claims still need validation on your workload.",
+      "Open weights are planned; the announcement makes the hosted preview available now. Treat self-hosting as a future option until downloadable weights and license terms are available.",
+      "The useful comparison is cost per accepted extraction. Count the model call, retries, validation and human review against your current pipeline. A lower token bill matters most when it also reduces the cost of getting a correct result."
+    ],
+    "sources": [
+      {
+        "label": "Cloudflare Clairic announcement · 19 October 2026",
+        "href": "https://blog.cloudflare.com/clairic-extraction-model/"
+      },
+      {
+        "label": "Clairic API, input usage and pricing",
+        "href": "https://developers.cloudflare.com/workers-ai/models/clairic/"
+      },
+      {
+        "label": "Workers AI pricing",
+        "href": "https://developers.cloudflare.com/workers-ai/platform/pricing/"
+      },
+      {
+        "label": "Extraction results and uncertainty",
+        "href": "https://developers.cloudflare.com/workers-ai/concepts/extraction-models/"
+      }
+    ]
+  },
+  {
     "slug": "mercury-3-launch-pricing-migration",
     "date": "2026-10-20",
     "checked": "2026-10-21",

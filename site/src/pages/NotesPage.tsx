@@ -58,14 +58,14 @@ export default function NotesPage({ pathname }: { pathname: string }) {
         {note.kind === 'weekly' ? <WeeklyReviewBody note={note} /> : <><div className="market-note-body">
           {note.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         </div>
-        <aside className="market-note-calculator" aria-labelledby="note-calculator-title">
+        {note.kind !== 'standalone' && <aside className="market-note-calculator" aria-labelledby="note-calculator-title">
           <h2 id="note-calculator-title">{note.calculatorTitle}</h2>
           <p>{note.calculatorGuidance}</p>
           <div className="market-note-links">
             <a className="text-link" href={marketNoteCalculatorPath(note)}>{note.calculatorKind === 'infrastructure' ? 'Compare rent vs run →' : 'Open the workload calculator →'}</a>
             <a className="text-link" href={modelPath(note.modelKey)}>Model card →</a>
           </div>
-        </aside></>}
+        </aside>}</>}
         <footer className="market-note-sources">
           <p className="section-kicker">Sources · Checked {longDate(note.checked)}</p>
           <ul>{note.sources.map((source) => <li key={source.href}><a href={source.href}>{source.label}</a></li>)}</ul>

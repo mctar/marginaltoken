@@ -191,7 +191,9 @@ The first OpenRouter appearance of a paid model from a registered provider is wr
 
 ## Market notes
 
-Reviewed editorial notes live in `site/src/content/market-notes.json`. Each has a permanent slug, publication and evidence-check dates, a byline, source links, and a calculator link selecting the relevant model and published billing plan. The homepage shows the latest compact entry, `/notes/` preserves the archive, and each note has a static entry document with its own canonical URL and article metadata. Notes remain readable independently of price-feed availability and hourly revisions. To publish another reviewed note, add a record to the same register and build the site; no route or component changes are needed.
+Reviewed editorial notes live in `site/src/content/market-notes.json`. Each has a permanent slug, publication and evidence-check dates, a byline and source links. Model notes also have a calculator link selecting the relevant model and published billing plan. The homepage shows the latest compact entry, `/notes/` preserves the archive, and each note has a static entry document with its own canonical URL and article metadata. Notes remain readable independently of price-feed availability and hourly revisions. To publish another reviewed note, add a record to the same register and build the site; no route or component changes are needed.
+
+Use `kind: "standalone"` for notes about specialist models without a comparable ledger entry. These retain the article, sources and editorial RSS entry while omitting model-card and calculator links; publication does not create a price row or model-specific feed.
 
 ## Decision tools
 

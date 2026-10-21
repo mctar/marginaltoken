@@ -23,6 +23,11 @@ export type ModelNote = NoteBase & {
   calculatorGuidance: string
 }
 
+// Specialist models may merit coverage before they have a comparable ledger row.
+export type StandaloneNote = NoteBase & {
+  kind: 'standalone'
+}
+
 export type WeeklyEntry = {
   name: string
   date: string
@@ -46,7 +51,7 @@ export type WeeklyReview = NoteBase & {
   coverage: string
 }
 
-export type MarketNote = ModelNote | WeeklyReview
+export type MarketNote = ModelNote | StandaloneNote | WeeklyReview
 
 // Reviewed editorial content has its own dates and survives price-feed revisions.
 export const marketNotes: readonly MarketNote[] = (reviewedNotes as MarketNote[]).slice().sort(

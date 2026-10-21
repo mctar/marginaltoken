@@ -4,7 +4,7 @@ import { frontPageStories, marketNotes, type WeeklyReview } from '../src/lib/mar
 import { feedItems } from '../scripts/feeds.mjs'
 
 const weekly = marketNotes.find((note): note is WeeklyReview => note.kind === 'weekly')!
-const model = marketNotes.find((note) => note.kind !== 'weekly')!
+const model = marketNotes.find((note) => note.kind !== 'weekly' && note.kind !== 'standalone')!
 
 test('a current weekly edition leads ahead of daily notes without repeating a story', () => {
   const newer = { ...model, date: '2026-10-20' }
@@ -30,6 +30,15 @@ test('weekly RSS items reach every covered canonical model with a stable edition
   assert.equal(item.guid, completed.guid)
   const [legacy] = feedItems([{ ...model, modelKey: 'lab/alias', comparisonModelKey: 'lab/other' }], [], register)
   assert.deepEqual(legacy.keys, ['lab/canonical', 'lab/other'])
+})
+
+test('standalone notes reach editorial RSS without inventing a ledger identity', () => {
+  const note = marketNotes.find((note) => note.kind === 'standalone')!
+  assert.ok(note)
+  const [item] = feedItems([note], [], { models: {} })
+  assert.equal(item.kind, 'note')
+  assert.deepEqual(item.keys, [])
+  assert.equal(item.link, `https://marginaltoken.com/notes/${note.slug}/`)
 })
 
 test('weekly release dates stay inside the stated window and links have explicit destinations', () => {

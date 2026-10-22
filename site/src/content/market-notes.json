@@ -1,6 +1,38 @@
 [
   {
     "kind": "standalone",
+    "slug": "flint-local-coding-hardware-running-costs",
+    "date": "2026-10-22",
+    "checked": "2026-10-22",
+    "author": "Thordur Arnason",
+    "title": "Flint: local coding, hardware requirements and running costs",
+    "summary": "Recursive’s coding model has downloadable Apache-2.0 weights. Its optimized Mac runtime requires specific chips and at least 48 GB of memory; running costs depend on hardware use and task success.",
+    "paragraphs": [
+      "Recursive released Flint on 21 October, with Apache-2.0 weights for a coding model containing 39.8 billion parameters, roughly 2.5 billion active per token. It is designed to investigate codebases, fix bugs and implement features.",
+      "Recursive’s optimized rec runtime requires an M4 Pro, M5 Pro or M5 Max Mac with at least 48 GB of unified memory. Other runtimes have separate requirements. NVIDIA deployments are available through vLLM and SGLang; NVIDIA RTX Spark support for rec is still described as coming soon.",
+      "Local execution avoids API token charges, but hardware, electricity and setup still cost money. Recursive’s speed and coding scores are vendor claims. Test representative tasks on your intended runtime, including retries and review time. Compare cost per accepted code change, with realistic assumptions about how often the machine will be used."
+    ],
+    "sources": [
+      {
+        "label": "Recursive’s Flint announcement",
+        "href": "https://recursive.com/updates/introducing-recursive-flint"
+      },
+      {
+        "label": "Flint weights, model card and Apache-2.0 license",
+        "href": "https://huggingface.co/RecursiveSI/flint"
+      },
+      {
+        "label": "rec runtime: supported Macs, memory and NVIDIA availability",
+        "href": "https://docs.recursive.com/edge/rec"
+      },
+      {
+        "label": "Flint on vLLM · 21 October 2026",
+        "href": "https://vllm-project.github.io/2026/10/21/flint.html"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
     "slug": "clairic-extraction-input-only-pricing",
     "date": "2026-10-21",
     "checked": "2026-10-21",

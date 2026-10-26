@@ -3,7 +3,9 @@ import assert from 'node:assert/strict'
 import { frontPageStories, marketNotes, type WeeklyReview } from '../src/lib/market-notes.ts'
 import { feedItems } from '../scripts/feeds.mjs'
 
-const weekly = marketNotes.find((note): note is WeeklyReview => note.kind === 'weekly')!
+// Fixed dates keep time-dependent behavior independent of the newest edition.
+const weekly: WeeklyReview = { ...marketNotes.find((note): note is WeeklyReview => note.kind === 'weekly')!,
+  date: '2026-10-16', periodStart: '2026-10-12', periodEnd: '2026-10-18' }
 const model = marketNotes.find((note) => note.kind !== 'weekly' && note.kind !== 'standalone')!
 
 test('a current weekly edition leads ahead of daily notes without repeating a story', () => {

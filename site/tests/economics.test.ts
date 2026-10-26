@@ -156,3 +156,17 @@ test('OpenAI cache retention rates are not substituted for 5m or 1h writes', () 
     close(calculateBill(applyRateOverrides(p,custom),w,custom).monthlyTotal,7)
   }
 })
+
+
+test('Kimi cache writes replace input for that fraction, and TTLs have separate prices', () => {
+  const kimi = {id:'standard',label:'Standard',input_mtok:2,output_mtok:10,cached_input_mtok:.2,cache_write_mtok:2,cacheWriteHour_mtok:4}
+  const w = {...workload,calls:1,inputTokens:1000000,outputTokens:0,reasoningTokens:0,cacheReadPct:50,cacheWritePct:50}
+  const five = calculateBill(kimi,w,defaultAssumptions)
+  const hour = calculateBill(kimi,w,{...defaultAssumptions,cacheDuration:'1h'})
+  assert.equal(five.complete,true)
+  assert.equal(hour.complete,true)
+  close(five.monthlyTotal,1.1)
+  close(hour.monthlyTotal,2.1)
+  // A full initial write has the normal miss cost at the default 5m TTL.
+  close(calculateBill(kimi,{...w,cacheReadPct:0,cacheWritePct:100},defaultAssumptions).monthlyTotal,2)
+})

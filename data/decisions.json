@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-26T07:39:51Z",
+  "generatedAt": "2026-10-26T10:07:55Z",
   "asOf": "2026-10-26",
   "models": [
     {
@@ -1570,6 +1570,56 @@
         "status": "fresh",
         "weightsAvailable": true,
         "metadataSchema": 2
+      },
+      "billing": {
+        "plans": [
+          {
+            "id": "standard",
+            "label": "Standard",
+            "cacheWriteHour_mtok": 6.0,
+            "cache_write_mtok": 3.0,
+            "cached_input_mtok": 0.3,
+            "input_mtok": 3.0,
+            "output_mtok": 15.0,
+            "contextWindowTokens": 1048576,
+            "notes": "Kimi API model: kimi-k3. Flat rates across the context window. Cache writes use a 5-minute TTL by default, or the selected 1-hour TTL; hits refresh that TTL without another write charge. Allocate each input token to uncached input, cache reads or cache writes once. No separate storage rate is published."
+          }
+        ],
+        "sourceUrl": "https://platform.kimi.ai/docs/pricing/chat",
+        "verifiedAt": "2026-10-26T10:07:55Z",
+        "status": "fresh"
+      }
+    },
+    {
+      "key": "moonshotai/kimi-k3.1-pro",
+      "billing": {
+        "plans": [
+          {
+            "id": "standard",
+            "label": "Standard",
+            "cacheWriteHour_mtok": 4.0,
+            "cache_write_mtok": 2.0,
+            "cached_input_mtok": 0.2,
+            "input_mtok": 2.0,
+            "output_mtok": 10.0,
+            "contextWindowTokens": 1048576,
+            "notes": "Kimi API model: kimi-k3.1-pro. Flat rates across the context window. Cache writes use a 5-minute TTL by default, or the selected 1-hour TTL; hits refresh that TTL without another write charge. Allocate each input token to uncached input, cache reads or cache writes once. No separate storage rate is published."
+          },
+          {
+            "id": "highspeed",
+            "label": "Highspeed",
+            "cacheWriteHour_mtok": 8.0,
+            "cache_write_mtok": 4.0,
+            "cached_input_mtok": 0.2,
+            "input_mtok": 4.0,
+            "output_mtok": 20.0,
+            "contextWindowTokens": 1048576,
+            "notes": "Kimi API model: kimi-k3.1-pro-highspeed. Flat rates across the context window. Cache writes use a 5-minute TTL by default, or the selected 1-hour TTL; hits refresh that TTL without another write charge. Allocate each input token to uncached input, cache reads or cache writes once. No separate storage rate is published."
+          }
+        ],
+        "sourceUrl": "https://platform.kimi.ai/docs/pricing/chat",
+        "verifiedAt": "2026-10-26T10:07:55Z",
+        "status": "fresh"
       }
     },
     {

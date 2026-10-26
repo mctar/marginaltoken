@@ -372,7 +372,9 @@ def collect(root=ROOT, now=None):
         entries = previous.get('models', {}) if previous.get('parserSchema') == MOONSHOT_BILLING_SCHEMA else {}
         due = [m for m in wanted if m['key'] not in entries or age(entries[m['key']]) >= timedelta(hours=24)]
         if due:
-            try: parsed = parse_billing('moonshotai', fetch_source(MOONSHOT_BILLING_URL).text or '', due)
+            # Mintlify's negotiated Markdown omits this custom DocTable.
+            # Its HTML response includes the actual named columns and rates.
+            try: parsed = parse_billing('moonshotai', fetch_source(MOONSHOT_BILLING_URL, accept='text/html').text or '', due)
             except Exception: parsed = {}
             for model in due:
                 key = model['key']

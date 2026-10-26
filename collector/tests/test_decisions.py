@@ -140,8 +140,13 @@ class DecisionsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);(root/'data').mkdir();(root/'collector/state').mkdir(parents=True)
             (root/'data/prices.json').write_text(json.dumps({'models':models}))
-            with patch('collector.decisions.fetch_source',return_value=FetchResult(source)):
+            def negotiated(url, *args, **kwargs):
+                # The production docs omit DocTable in the Markdown response.
+                return FetchResult(source if kwargs.get('accept') == 'text/html' else '# Model pricing: see web table')
+            with patch('collector.decisions.fetch_source',side_effect=negotiated):
                 collect(root,datetime(2026,10,24,tzinfo=timezone.utc))
+            saved=json.loads((root/'data/decisions.json').read_text())['models']
+            self.assertEqual(len(saved),2)
             broken=source.replace('`$10.00 / MTok`','`unreported`')
             with patch('collector.decisions.fetch_source',return_value=FetchResult(broken)):
                 collect(root,datetime(2026,10,26,tzinfo=timezone.utc))

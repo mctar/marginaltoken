@@ -1,5 +1,417 @@
 [
   {
+    "kind": "weekly",
+    "slug": "ai-model-releases-2026-10-19",
+    "date": "2026-10-26",
+    "checked": "2026-10-26",
+    "author": "Thordur Arnason",
+    "title": "AI model releases: 19–25 October 2026",
+    "summary": "A completed-week review, updated through the Kimi and MiniMax notes published on 26 October. New APIs, public weights, specialist models, and the price and access changes that affect a deployment.",
+    "periodStart": "2026-10-19",
+    "periodEnd": "2026-10-25",
+    "cutoff": "2026-10-26T10:22:35.642168Z",
+    "editionStatus": "complete",
+    "modelKeys": [
+      "inception/mercury-3",
+      "minimax/minimax-m3.1-flash",
+      "moonshotai/kimi-k3.1-pro",
+      "moonshotai/kimi-k3",
+      "mistralai/mistral-large-4",
+      "openai/gpt-4.1-nano",
+      "openai/o3-mini",
+      "xiaomi/mimo-v2.5",
+      "xiaomi/mimo-v2.5-pro",
+      "z-ai/glm-5.3-flash",
+      "openai/gpt-6-luna"
+    ],
+    "paragraphs": [
+      "This edition covers Monday 19 to Sunday 25 October, with access and pricing updated through today’s Kimi and MiniMax Market Notes. Announcement dates, checkpoint uploads and our verification dates are kept distinct.",
+      "The week brought cheaper frontier API access, local coding and conversational models, and specialists for decisions, extraction and speech. The practical question is which offer fits the job, including its billing units, license and operating requirements."
+    ],
+    "releases": [
+      {
+        "name": "Mercury 3",
+        "date": "2026-10-19",
+        "access": "Public API",
+        "terms": "$0.10 / $0.35 promotional; regular $0.20 / $0.70.",
+        "implication": "No verified promotion end date. Budget both rates.",
+        "links": [
+          {
+            "label": "Inception release",
+            "href": "https://www.inceptionlabs.ai/blog/introducing-mercury-3"
+          },
+          {
+            "label": "20 October note",
+            "href": "/notes/mercury-3-launch-pricing-migration/"
+          }
+        ]
+      },
+      {
+        "name": "Clairic",
+        "date": "2026-10-19",
+        "access": "Workers AI preview",
+        "terms": "$0.10 per million input tokens; no output charge.",
+        "implication": "Extraction endpoint; public weights remain unverified.",
+        "links": [
+          {
+            "label": "Cloudflare release",
+            "href": "https://blog.cloudflare.com/clairic-extraction-model/"
+          },
+          {
+            "label": "21 October note",
+            "href": "/notes/clairic-extraction-input-only-pricing/"
+          }
+        ]
+      },
+      {
+        "name": "MiniMax M3.1 Flash",
+        "date": "2026-10-19",
+        "access": "API; checkpoint uploaded 23 October",
+        "terms": "Routed quote: $0.15 / $0.60. Custom Community License.",
+        "implication": "Commercial attribution, notice or prior authorization conditions matter.",
+        "links": [
+          {
+            "label": "MiniMax release",
+            "href": "https://www.minimax.io/blog/minimax-m31f"
+          },
+          {
+            "label": "26 October license note",
+            "href": "/notes/minimax-m31-flash-commercial-license/"
+          }
+        ]
+      },
+      {
+        "name": "Voxtral 3",
+        "date": "2026-10-20",
+        "access": "Four public-preview audio APIs",
+        "terms": "Transcription minutes and generated characters; Voice Agents is a separate bundle.",
+        "implication": "Compare complete voice workflows, not text-token prices.",
+        "links": [
+          {
+            "label": "Mistral release",
+            "href": "https://mistral.ai/news/voxtral-3/"
+          },
+          {
+            "label": "Pricing",
+            "href": "https://docs.mistral.ai/inference/pricing"
+          }
+        ]
+      },
+      {
+        "name": "Eleven Realtime v1 Mini / Max",
+        "date": "2026-10-20",
+        "access": "Gradual ElevenAgents rollout; separate WebSocket API",
+        "terms": "ElevenAgents platform minutes plus model tokens.",
+        "implication": "Do not apply the platform quote to standalone access.",
+        "links": [
+          {
+            "label": "ElevenLabs release",
+            "href": "https://elevenlabs.io/blog/realtime"
+          },
+          {
+            "label": "Access and billing",
+            "href": "https://elevenlabs.io/docs/eleven-agents/customization/realtime-models"
+          }
+        ]
+      },
+      {
+        "name": "Granite Speech 5.0 2B",
+        "date": "2026-10-21",
+        "access": "Public ASR and translation weights",
+        "terms": "Apache-2.0; 21 October announcement, model card dated 20 October.",
+        "implication": "Evaluate transcription and translation in speech-specific cost units.",
+        "links": [
+          {
+            "label": "IBM announcement",
+            "href": "https://huggingface.co/blog/ibm-granite/granite-speech-5"
+          },
+          {
+            "label": "Exact weights",
+            "href": "https://huggingface.co/ibm-granite/granite-speech-5.0-2b"
+          }
+        ]
+      },
+      {
+        "name": "Flint",
+        "date": "2026-10-21",
+        "access": "Public coding weights",
+        "terms": "Apache-2.0. The rec runtime needs supported Macs with at least 48 GB memory.",
+        "implication": "Other runtimes differ; measure accepted coding work.",
+        "links": [
+          {
+            "label": "Recursive release",
+            "href": "https://recursive.com/updates/introducing-recursive-flint"
+          },
+          {
+            "label": "22 October deployment note",
+            "href": "/notes/flint-local-coding-hardware-running-costs/"
+          }
+        ]
+      },
+      {
+        "name": "Mammoth-1 / Elephant-1",
+        "date": "2026-10-21",
+        "access": "Weights and Baseten decision APIs",
+        "terms": "MIT-labelled 27B / 9B models. Free API offer ends 27 October, 23:59 Pacific.",
+        "implication": "Return probabilities instead of prose; later tariffs need checking.",
+        "links": [
+          {
+            "label": "Base Labs release",
+            "href": "https://www.baseten.co/blog/the-best-decision-models-in-the-world-mammoth-1-and-elephant-1/"
+          },
+          {
+            "label": "Weights",
+            "href": "https://huggingface.co/baselabs/mammoth-1"
+          }
+        ]
+      },
+      {
+        "name": "Canva Craft",
+        "date": "2026-10-22",
+        "access": "Canva and public API",
+        "terms": "Image generation up to 2K. No comparable token tariff verified here.",
+        "implication": "Craft-fast, Craft-ultrafast and MCP access are still described as upcoming.",
+        "links": [
+          {
+            "label": "Canva announcement",
+            "href": "https://www.canva.com/newsroom/news/canva-craft/"
+          }
+        ]
+      },
+      {
+        "name": "Kimi K3.1 Pro / Highspeed",
+        "date": "2026-10-23",
+        "access": "Public APIs; full weights pending",
+        "terms": "Standard $2 / $10; Highspeed $4 / $20. Weights promised by 4 November.",
+        "implication": "Standard Pro replaces K3 in API selections; K3 retains the open-weight slot.",
+        "links": [
+          {
+            "label": "23 October announcement",
+            "href": "https://forum.moonshot.ai/t/kimi-k3-1-pro-has-launched-start-exploring-now/629"
+          },
+          {
+            "label": "26 October pricing note",
+            "href": "/notes/kimi-k31-pro-api-pricing-weights-pending/"
+          }
+        ]
+      },
+      {
+        "name": "Nemotron 3.5 Bolt E4B 4GB",
+        "date": "2026-10-23",
+        "access": "Public local-agent weights",
+        "terms": "OpenMDW 1.1 terms; 64K context.",
+        "implication": "About 4 GB is a workload-dependent target, not a complete-agent memory guarantee.",
+        "links": [
+          {
+            "label": "NVIDIA release",
+            "href": "https://research.nvidia.com/labs/nemotron/NVIDIA-Nemotron-3.5-Bolt-E4B-4GB/"
+          },
+          {
+            "label": "Exact weights",
+            "href": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-E4B-4GB"
+          }
+        ]
+      }
+    ],
+    "takeaways": [
+      {
+        "title": "Check what is available.",
+        "text": "A priced API, downloadable checkpoint and restricted preview are different offers. Kimi’s weights are pending; MiniMax’s custom commercial conditions apply to its weights and derivatives.",
+        "links": [
+          {
+            "label": "Today’s MiniMax note",
+            "href": "/notes/minimax-m31-flash-commercial-license/"
+          },
+          {
+            "label": "Explore open models",
+            "href": "/open/"
+          }
+        ]
+      },
+      {
+        "title": "Compare completed work in the right units.",
+        "text": "Count retries and human review. Speech minutes, image/video outputs and decision calls need their own denominators; a token quote alone cannot rank them.",
+        "links": [
+          {
+            "label": "Workload and successful-task calculator",
+            "href": "/compare/"
+          }
+        ]
+      },
+      {
+        "title": "Measure local capacity.",
+        "text": "Flint and Bolt target different hardware and workloads. Include utilization, memory, electricity and operating effort. Publisher speed and benchmark claims here have not been independently replicated.",
+        "links": [
+          {
+            "label": "Flint deployment requirements",
+            "href": "/notes/flint-local-coding-hardware-running-costs/"
+          },
+          {
+            "label": "Rent vs Run",
+            "href": "/infrastructure/"
+          }
+        ]
+      }
+    ],
+    "updates": [
+      {
+        "title": "Prices, caching and retirements",
+        "text": "Mistral Large 4’s introductory discount ended on 20 October: $1.36 / $4.18. OpenAI added 12-hour cache writes and retired listed legacy API snapshots on 23 October. Xiaomi’s direct MiMo V2.5 APIs retired on 21 October; third-party routes have separate status.",
+        "links": [
+          {
+            "label": "Mistral pricing",
+            "href": "https://docs.mistral.ai/inference/pricing"
+          },
+          {
+            "label": "OpenAI cache rates",
+            "href": "https://developers.openai.com/api/docs/pricing"
+          },
+          {
+            "label": "OpenAI retirements",
+            "href": "https://developers.openai.com/api/docs/deprecations"
+          },
+          {
+            "label": "Xiaomi notice",
+            "href": "https://mimo.mi.com/docs/zh-CN/updates/deprecate"
+          }
+        ]
+      },
+      {
+        "title": "New venues and API compatibility",
+        "text": "Anthropic-managed Claude on Google Cloud became generally available on 22 October. Mistral added GLM 5.3 Flash; OpenAI’s Decisions API reached GA with GPT-6 Luna. Claude’s 21 October API/SDK migration changes request compatibility. These are access changes, not new base models.",
+        "links": [
+          {
+            "label": "Claude release notes",
+            "href": "https://platform.claude.com/docs/en/release-notes/overview"
+          },
+          {
+            "label": "Mistral changelog",
+            "href": "https://docs.mistral.ai/resources/changelogs"
+          },
+          {
+            "label": "OpenAI changelog",
+            "href": "https://developers.openai.com/api/docs/changelog"
+          }
+        ]
+      },
+      {
+        "title": "More public research weights, checked 26 October",
+        "text": "Nanbeige4.3-33B has a 24 October checkpoint upload, Apache-2.0 metadata and 512K context. Carbon-X’s 22 October checkpoint combines DNA and language under Apache-2.0; use its supported tokenizer/runtime. Ling-3.0-flash-Sante has MIT-labelled healthcare research weights, with no exact release day verified. No clinical validation is inferred.",
+        "links": [
+          {
+            "label": "Nanbeige weights and history",
+            "href": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B"
+          },
+          {
+            "label": "Carbon-X weights and limitations",
+            "href": "https://huggingface.co/HuggingFaceBio/Carbon-X"
+          },
+          {
+            "label": "Ling Sante research card",
+            "href": "https://huggingface.co/inclusionAI/Ling-3.0-flash-Sante"
+          }
+        ]
+      },
+      {
+        "title": "Deployment packages and creative APIs",
+        "text": "NVIDIA’s RFD4-Proteina bundle and Cosmos3 Nano-Sim checkpoints extend biology and simulation tooling. Retrieval weights, Hy-Memory GGUF and INCO’s Qwen drafter packages are distinct from new base-model launches. Seedance Pro Fast is documented on Volcano Ark; fal’s FLUX 3 Max video offer lists promotional per-second pricing. Exact first-access dates for these offers remain unverified.",
+        "links": [
+          {
+            "label": "NVIDIA research packages",
+            "href": "https://blogs.nvidia.com/blog/open-models-europe-industry/"
+          },
+          {
+            "label": "Hy-Memory package",
+            "href": "https://huggingface.co/tencent/Hy-Memory-30B-A3B-GGUF"
+          },
+          {
+            "label": "Qwen drafter package",
+            "href": "https://huggingface.co/incoai/Qwen3.8-Flash-Next-DFlash2"
+          },
+          {
+            "label": "Seedance documentation",
+            "href": "https://console.volcengine.com/ark/region:cn-beijing/docs/seedance-1-0-pro-pro-fast"
+          },
+          {
+            "label": "FLUX 3 Max offer",
+            "href": "https://fal.ai/flux-3-max"
+          }
+        ]
+      }
+    ],
+    "watching": [
+      {
+        "title": "Restricted previews and research announcements",
+        "text": "Block’s Dessa offers selected researchers early access. OpenAI models on Google Cloud are in private preview. Microsoft’s MAI-DxO research update and MAI-Base-2 pretraining report do not establish generally available new model APIs.",
+        "links": [
+          {
+            "label": "Dessa access",
+            "href": "https://block.xyz/dessa"
+          },
+          {
+            "label": "Google Cloud private preview",
+            "href": "https://cloud.google.com/blog/products/ai-machine-learning/google-cloud-brings-openai-models-to-customers"
+          },
+          {
+            "label": "Microsoft research update",
+            "href": "https://microsoft.ai/news/building-medical-superintelligence/"
+          },
+          {
+            "label": "MAI-Base-2 report",
+            "href": "https://microsoft.ai/news/frontier-pre-training-at-microsoft-ai/"
+          }
+        ]
+      }
+    ],
+    "coverage": "A review of the releases and material access changes verified for this edition, not an exhaustive census. Dates refer to stated announcements unless an upload or observation is specified. License metadata is distinguished from reviewed terms; vendor performance claims remain unverified.",
+    "sources": [
+      {
+        "label": "Inception release",
+        "href": "https://www.inceptionlabs.ai/blog/introducing-mercury-3"
+      },
+      {
+        "label": "Cloudflare release",
+        "href": "https://blog.cloudflare.com/clairic-extraction-model/"
+      },
+      {
+        "label": "MiniMax release",
+        "href": "https://www.minimax.io/blog/minimax-m31f"
+      },
+      {
+        "label": "Mistral release",
+        "href": "https://mistral.ai/news/voxtral-3/"
+      },
+      {
+        "label": "ElevenLabs release",
+        "href": "https://elevenlabs.io/blog/realtime"
+      },
+      {
+        "label": "IBM announcement",
+        "href": "https://huggingface.co/blog/ibm-granite/granite-speech-5"
+      },
+      {
+        "label": "Recursive release",
+        "href": "https://recursive.com/updates/introducing-recursive-flint"
+      },
+      {
+        "label": "Base Labs release",
+        "href": "https://www.baseten.co/blog/the-best-decision-models-in-the-world-mammoth-1-and-elephant-1/"
+      },
+      {
+        "label": "Canva announcement",
+        "href": "https://www.canva.com/newsroom/news/canva-craft/"
+      },
+      {
+        "label": "23 October announcement",
+        "href": "https://forum.moonshot.ai/t/kimi-k3-1-pro-has-launched-start-exploring-now/629"
+      },
+      {
+        "label": "NVIDIA release",
+        "href": "https://research.nvidia.com/labs/nemotron/NVIDIA-Nemotron-3.5-Bolt-E4B-4GB/"
+      }
+    ]
+  },
+  {
     "slug": "kimi-k31-pro-api-pricing-weights-pending",
     "date": "2026-10-26",
     "checked": "2026-10-26",

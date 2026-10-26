@@ -380,43 +380,39 @@ def parse_mistral(source: str, rows: list[dict[str, Any]], now: datetime) -> dic
 
 
 def parse_moonshot(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
+    """Read one exact card; successor copy must never price its predecessor."""
     del now
-    text = visible_text(source)
-    card = re.search(
-        r"(?:^|\|\s*)K3\s*\|\s*Kimi K3\b(?P<body>.*?)(?=\|\s*K2\.7 Code\b|$)",
-        text,
-        re.I | re.S,
-    )
-    values: tuple[float, float] | None = None
-    if card:
-        input_match = re.search(
-            r"\bInput\s*\|\s*\$([0-9.]+)\s*/\s*MTok",
-            card.group("body"),
-            re.I,
-        )
-        output_match = re.search(
-            r"\bOutput\s*\|\s*\$([0-9.]+)\s*/\s*MTok",
-            card.group("body"),
-            re.I,
-        )
-        if input_match and output_match:
-            values = (
-                price(input_match.group(1), "Kimi K3 input"),
-                price(output_match.group(1), "Kimi K3 output"),
+    names = {"kimi-k3": "K3", "kimi-k3.1-pro": "K3.1 Pro",
+             "kimi-k3.1-pro-highspeed": "K3.1 Pro Highspeed"}
+    headings = list(re.finditer(r"<h[23]\b[^>]*>(.*?)</h[23]>", source, re.I | re.S))
+    result = {}
+    for row in rows:
+        model = str(row["model"])
+        name = names.get(model)
+        matches = []
+        for i, heading in enumerate(headings):
+            if visible_text(heading.group(1)) != name:
+                continue
+            end = headings[i+1].start() if i+1 < len(headings) else len(source)
+            body = visible_text(source[heading.end():end])
+            values = []
+            for label in ["Input", "Output"]:
+                rates = re.findall(rf"(?:^|\|)\s*{label}\s*\|\s*\$([0-9.]+)\s*/\s*MTok", body)
+                if len(rates) != 1:
+                    raise OfficialSourceError(f"Moonshot {model} {label} price missing or ambiguous")
+                values.append(price(rates[0], f"{model} {label}"))
+            matches.append(tuple(values))
+        # Retain the former K3 JSON-LD representation, scoped to K3 only.
+        if not matches and model == "kimi-k3":
+            statements = re.findall(
+                r"Kimi K3 API pricing.*?Input tokens are billed at \$([0-9.]+).*?Output tokens are billed at \$([0-9.]+)",
+                source, re.I | re.S,
             )
-    if values is None:
-        statement = re.search(
-            r"Kimi K3 API pricing.*?Input tokens are billed at \$([0-9.]+).*?Output tokens are billed at \$([0-9.]+)",
-            source,
-            re.I | re.S,
-        )
-        if not statement:
-            raise OfficialSourceError("Kimi K3 API pricing statement not found")
-        values = (
-            price(statement.group(1), "Kimi K3 input"),
-            price(statement.group(2), "Kimi K3 output"),
-        )
-    return {str(row["model"]): values for row in rows}
+            matches = [(price(a, "K3 input"), price(b, "K3 output")) for a, b in statements]
+        if len(matches) != 1:
+            raise OfficialSourceError(f"Moonshot exact price card missing or ambiguous: {model}")
+        result[model] = matches[0]
+    return result
 
 
 def parse_deepseek(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:

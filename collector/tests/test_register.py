@@ -58,6 +58,18 @@ class RegisterTests(unittest.TestCase):
         held = apply_register(self.models, self.register, self.now)
         self.assertEqual(held["basket"]["openai"], "openai/gpt-6.1-sol")
 
+    def test_kimi_pro_promotes_only_after_its_own_fresh_verification(self):
+        old='moonshotai/kimi-k3';new='moonshotai/kimi-k3.1-pro'
+        pro=next(m for m in self.models if m['key']==new)
+        pro['verificationStatus']='manual'
+        self.assertEqual(apply_register(self.models,self.register,self.now)['basket']['moonshotai'],old)
+        pro['verificationStatus']='fresh'
+        selected=apply_register(self.models,self.register,self.now)
+        self.assertEqual(selected['basket']['moonshotai'],new)
+        self.assertIn('kimi-frontier',pro['selectedSlots'])
+        self.assertEqual(self.register['openShortlist'][0][0],old)
+        self.assertNotIn('moonshotai/kimi-k3.1-pro-highspeed',self.register['models'])
+
     def test_alias_deduplicates_but_preserves_route(self):
         raw = lambda key: {"id": key, "pricing": {"prompt": ".000001", "completion": ".000002"}}
         rows = normalize_openrouter({"data": [raw("mistralai/mistral-large-4"), raw("mistralai/mistral-large-4-0")]})

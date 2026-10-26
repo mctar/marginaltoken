@@ -102,3 +102,11 @@ test('invalid optional feed rows fail validation without crashing the publicatio
   assert.equal(validDecisions({...feed,models:[null]}),false)
   assert.equal(validDecisions({...feed,models:[{key:'x/model',billing:{verifiedAt:'2026-10-12',sourceUrl:'https://example.com',status:'fresh',plans:[null]}}]}),false)
 })
+
+
+test('Kimi API successor without downloadable weights leaves K3 on the open shelf', () => {
+  const k3: PriceModel={...model,key:'moonshotai/kimi-k3',provider:'moonshotai',huggingFaceId:'moonshotai/Kimi-K3'}
+  const pro: PriceModel={...k3,key:'moonshotai/kimi-k3.1-pro',huggingFaceId:undefined,identityReviewed:true,family:'kimi-frontier',selectionOrder:200}
+  const d: DecisionsFeed={...feed,models:[{key:k3.key,weights:{...feed.models[0].weights!,repository:k3.huggingFaceId!}}]}
+  assert.equal(openShortlist([k3,pro],d).find(m=>m.provider==='moonshotai')?.key,k3.key)
+})

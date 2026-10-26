@@ -296,6 +296,29 @@ The following table shows pricing for all Claude models:
         rows = [row("moonshotai", "kimi-k3", "Kimi K3")]
         self.assertEqual(parse_moonshot(source, rows, NOW), {"kimi-k3": (3.0, 15.0)})
 
+    def test_moonshot_current_cards_keep_three_exact_tariffs_distinct(self) -> None:
+        from pathlib import Path
+        source = (Path(__file__).parent/'fixtures/moonshot-home-20261026.html').read_text()
+        names = ['kimi-k3', 'kimi-k3.1-pro', 'kimi-k3.1-pro-highspeed']
+        rows = [row('moonshotai', name, name) for name in names]
+        self.assertEqual(parse_moonshot(source, rows, NOW), dict(zip(names, [(3,15),(2,10),(4,20)])))
+
+    def test_moonshot_missing_output_cannot_borrow_the_next_cards_rate(self) -> None:
+        source = '<h3>K3.1 Pro</h3><span>Input</span><span>$2 / MTok</span><h3>K3.1 Pro Highspeed</h3><span>Input</span><span>$4 / MTok</span><span>Output</span><span>$20 / MTok</span>'
+        with self.assertRaisesRegex(OfficialSourceError, 'Output price missing'):
+            parse_moonshot(source, [row('moonshotai','kimi-k3.1-pro','Kimi K3.1 Pro')], NOW)
+        self.assertEqual(parse_moonshot(source, [row('moonshotai','kimi-k3.1-pro-highspeed','Highspeed')], NOW), {'kimi-k3.1-pro-highspeed':(4,20)})
+
+    def test_moonshot_legacy_copy_cannot_verify_a_successor(self) -> None:
+        source = 'Kimi K3 API pricing. Input tokens are billed at $3.00. Output tokens are billed at $15.00.'
+        with self.assertRaisesRegex(OfficialSourceError, 'exact price card missing'):
+            parse_moonshot(source, [row('moonshotai','kimi-k3.1-pro','Kimi K3.1 Pro')], NOW)
+
+    def test_moonshot_conflicting_card_duplicates_are_not_verified(self) -> None:
+        source = '<h3>K3</h3><span>Input</span><span>$3 / MTok</span><span>Output</span><span>$15 / MTok</span>'
+        with self.assertRaisesRegex(OfficialSourceError, 'ambiguous'):
+            parse_moonshot(source+source.replace('$15','$30'), [row('moonshotai','kimi-k3','Kimi K3')], NOW)
+
     def test_deepseek_table(self) -> None:
         source = """
 <table><tr><td>MODEL</td><td>deepseek-v4-flash</td><td>deepseek-v4-pro</td></tr>

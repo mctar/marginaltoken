@@ -22,6 +22,8 @@ PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by
 WEIGHTS_SCHEMA = 2
 ANTHROPIC_BILLING_SCHEMA = 1
 OPENAI_BILLING_SCHEMA = 1
+MOONSHOT_BILLING_SCHEMA = 1
+MOONSHOT_BILLING_URL = 'https://platform.kimi.ai/docs/pricing/chat'
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
 
 def license_file(repository, payload):
@@ -52,15 +54,17 @@ def weights_record(repository, payload, now, license_bytes=None):
     filename = license_file(repository, payload)
     name = str(card.get('license_name') or license_id)
     review = WEIGHTS_REVIEWS.get(repository)
-    if (review and review.get('licenseSha256') and review['licenseId'] == license_id and review['licenseFile'] == filename
-            and license_bytes is not None and hashlib.sha256(license_bytes).hexdigest() == review['licenseSha256']):
+    reviewed = bool(review and review.get('licenseSha256') and review['licenseId'] == license_id and review['licenseFile'] == filename
+            and license_bytes is not None and hashlib.sha256(license_bytes).hexdigest() == review['licenseSha256'])
+    if reviewed:
         name = review['licenseName']
     return {'repository': repository, 'sourceUrl': f'https://huggingface.co/{repository}',
             'licenseUrl': f'https://huggingface.co/{repository}/blob/main/{quote(filename, safe="/")}' if filename else f'https://huggingface.co/{repository}',
             'license': license_id, 'licenseName': name,
             'licenseClass': 'permissive' if license_id in PERMISSIVE else 'unknown' if license_id == 'unknown' else 'custom',
             'gated': bool(payload.get('gated')), 'verifiedAt': now, 'status': 'fresh', 'weightsAvailable': True,
-            'metadataSchema': WEIGHTS_SCHEMA}
+            'metadataSchema': WEIGHTS_SCHEMA,
+            **({'reviewedLicenseSha256': review['licenseSha256']} if reviewed else {})}
 
 def prices(cells):
     result = []
@@ -151,9 +155,47 @@ def argon_billing(segment):
                       'scheduledRates': [{'effectiveFrom': rates[0]['starting'][1].isoformat(), **future}]})
     return plans
 
+def moonshot_plan(source, api_id, label='Standard'):
+    """Read the published DocTable's named columns as data, without executing MDX."""
+    columns = {'Input': 'input_mtok', 'Output': 'output_mtok',
+               'Cached Input': 'cached_input_mtok', '5m writes': 'cache_write_mtok',
+               '1h writes': 'cacheWriteHour_mtok'}
+    found = []
+    for table in re.finditer(r'columns:\[(.*?)\],rows:\[(.*?)\]\}\)', source, re.S):
+        header = re.findall(r'(?:title|children):`([^`]+)`', table.group(1))
+        if len(header) != 6 or len(set(header)) != 6 or set(header) != {'Model', *columns}:
+            continue
+        # Model is the link cell; the numeric columns may be reordered.
+        if header[0] != 'Model': continue
+        for row in re.finditer(r'\[_jsx\(_components\.a,\{[^{}]*children:`([^`]+)`\}\),(.*?)\]', table.group(2), re.S):
+            if row.group(1) != api_id: continue
+            cells = row.group(2).split(',')
+            rates = [re.fullmatch(r'`\$([0-9]+(?:\.[0-9]+)?) / MTok`', cell.strip()) for cell in cells]
+            if len(rates) != 5 or not all(rates):
+                raise ValueError(f'Moonshot {api_id} billing row malformed')
+            found.append({columns[name]: float(rate.group(1)) for name, rate in zip(header[1:], rates)})
+    # Hydration may repeat identical data; disagreement cannot verify a price.
+    unique = {json.dumps(row, sort_keys=True) for row in found}
+    if len(unique) != 1: raise ValueError(f'Moonshot {api_id} billing row missing or ambiguous')
+    return {'id': label.lower(), 'label': label, **json.loads(unique.pop()),
+            'contextWindowTokens': 1048576,
+            'notes': f'Kimi API model: {api_id}. Flat rates across the context window. Cache writes use a 5-minute TTL by default, or the selected 1-hour TTL; hits refresh that TTL without another write charge. Allocate each input token to uncached input, cache reads or cache writes once. No separate storage rate is published.'}
+
+
 def parse_billing(provider, source, models):
     result = {}
-    if provider == 'openai':
+    if provider == 'moonshotai':
+        for model in models:
+            name = model['key'].split('/', 1)[1]
+            if name not in {'kimi-k3', 'kimi-k3.1-pro'}: continue
+            try: standard = moonshot_plan(source, name)
+            except ValueError: continue
+            plans = [standard]
+            if name == 'kimi-k3.1-pro':
+                try: plans.append(moonshot_plan(source, 'kimi-k3.1-pro-highspeed', 'Highspeed'))
+                except ValueError: pass
+            result[model['key']] = plans
+    elif provider == 'openai':
         names = {model['key'].split('/', 1)[1] for model in models}
         sections = {mode: openai_price_rows(source, mode, names) for mode in ['Standard', 'Batch']}
         for model in models:
@@ -277,7 +319,10 @@ def collect(root=ROOT, now=None):
     repositories=sorted({m['huggingFaceId'] for m in models if isinstance(m.get('huggingFaceId'),str) and re.fullmatch(r'[\w.-]+/[\w.-]+',m['huggingFaceId'])})
     def get_weights(repo):
         previous=cache['weights'].get(repo)
-        if previous and previous.get('metadataSchema') == WEIGHTS_SCHEMA and age(previous)<timedelta(days=1):return repo,previous
+        review = WEIGHTS_REVIEWS.get(repo)
+        needs_review = bool(review and review.get('licenseSha256') and
+                            (previous or {}).get('reviewedLicenseSha256') != review['licenseSha256'])
+        if previous and previous.get('metadataSchema') == WEIGHTS_SCHEMA and age(previous)<timedelta(days=1) and not needs_review:return repo,previous
         try:
             request=urllib.request.Request('https://huggingface.co/api/models/'+repo,headers={'User-Agent':'MarginalToken/1.0'})
             with urllib.request.urlopen(request,timeout=12) as r:payload=json.loads(r.read(4*1024*1024))
@@ -320,6 +365,24 @@ def collect(root=ROOT, now=None):
         if entry:
             cache['billing'][provider]=entry
             for key,plans in entry['plans'].items():billing[key]={'plans':plans,**{k:entry[k] for k in ['sourceUrl','verifiedAt','status']}}
+    # Moonshot's new billing adapter retains freshness independently per model.
+    wanted = [m for m in models if m['key'] in {'moonshotai/kimi-k3', 'moonshotai/kimi-k3.1-pro'}]
+    if wanted:
+        previous = cache['billing'].get('moonshotai', {})
+        entries = previous.get('models', {}) if previous.get('parserSchema') == MOONSHOT_BILLING_SCHEMA else {}
+        due = [m for m in wanted if m['key'] not in entries or age(entries[m['key']]) >= timedelta(hours=24)]
+        if due:
+            try: parsed = parse_billing('moonshotai', fetch_source(MOONSHOT_BILLING_URL).text or '', due)
+            except Exception: parsed = {}
+            for model in due:
+                key = model['key']
+                if key in parsed:
+                    entries[key] = {'plans': parsed[key], 'sourceUrl': MOONSHOT_BILLING_URL,
+                                    'verifiedAt': stamp, 'status': 'fresh'}
+                elif key in entries:
+                    entries[key] = {**entries[key], 'status': 'stale' if age(entries[key]) > timedelta(days=7) else 'last_good'}
+        cache['billing']['moonshotai'] = {'parserSchema': MOONSHOT_BILLING_SCHEMA, 'models': entries}
+        billing.update({m['key']: entries[m['key']] for m in wanted if m['key'] in entries})
     records=[]
     for m in models:
         row={'key':m['key']}

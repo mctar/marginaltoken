@@ -42,7 +42,7 @@ class DecisionsTests(unittest.TestCase):
             root=Path(directory);(root/'data').mkdir();(root/'collector/state').mkdir(parents=True)
             (root/'data/prices.json').write_text(json.dumps({'models':[{'key':'x/model','provider':'x','huggingFaceId':'x/model'}]}))
             payload={'id':'x/model','sha':'a'*40,'tags':['license:other'],'siblings':[{'rfilename':'model.safetensors'},{'rfilename':'LICENSE.txt'}]}
-            previous=weights_record('x/model',payload,'2026-10-15T00:00:00Z');previous.pop('metadataSchema')
+            previous=weights_record('x/model',payload,'2026-10-15T00:00:00Z');previous.pop('reviewedLicenseSha256', None)
             (root/'collector/state/decisions-cache.json').write_text(json.dumps({'weights':{'x/model':previous},'billing':{}}))
             terms=b'Example Model License 1.0'
             review={'licenseId':'other','licenseFile':'LICENSE.txt','licenseName':'Example Model License 1.0','licenseSha256':hashlib.sha256(terms).hexdigest()}
@@ -111,6 +111,47 @@ class DecisionsTests(unittest.TestCase):
             self.assertEqual(saved['parserSchema'], OPENAI_BILLING_SCHEMA)
             self.assertEqual(saved['verifiedAt'], '2026-10-21T09:00:00Z')
             self.assertEqual(saved['plans']['openai/gpt-6.1-sol'][0]['output_mtok'], 10)
+    def test_moonshot_exact_models_and_cache_retention_prices(self):
+        from pathlib import Path
+        source=(Path(__file__).parent/'fixtures/moonshot-billing-20261026.txt').read_text()
+        plans=parse_billing('moonshotai',source,[{'key':'moonshotai/kimi-k3'},{'key':'moonshotai/kimi-k3.1-pro'},{'key':'moonshotai/kimi-k3.1-pro-extra'}])
+        self.assertEqual(set(plans), {'moonshotai/kimi-k3','moonshotai/kimi-k3.1-pro'})
+        pro, fast = plans['moonshotai/kimi-k3.1-pro']
+        self.assertEqual([pro[f] for f in ['input_mtok','output_mtok','cached_input_mtok','cache_write_mtok','cacheWriteHour_mtok']], [2,10,.2,2,4])
+        self.assertEqual([fast[f] for f in ['input_mtok','output_mtok','cached_input_mtok','cache_write_mtok','cacheWriteHour_mtok']], [4,20,.2,4,8])
+        self.assertEqual(plans['moonshotai/kimi-k3'][0]['cacheWriteHour_mtok'],6)
+
+    def test_moonshot_malformed_successor_does_not_erase_valid_predecessor(self):
+        from pathlib import Path
+        source=(Path(__file__).parent/'fixtures/moonshot-billing-20261026.txt').read_text().replace('`$10.00 / MTok`','`unreported`')
+        plans=parse_billing('moonshotai',source,[{'key':'moonshotai/kimi-k3'},{'key':'moonshotai/kimi-k3.1-pro'}])
+        self.assertEqual(set(plans), {'moonshotai/kimi-k3'})
+        # A column disappearing cannot silently turn a write price into output.
+        self.assertEqual(parse_billing('moonshotai',source.replace('children:`1h writes`','children:`Other price`'),[{'key':'moonshotai/kimi-k3'}]),{})
+
+    def test_moonshot_billing_keeps_per_model_fallback_dates(self):
+        import tempfile,json
+        from pathlib import Path
+        from datetime import datetime,timezone
+        from collector.decisions import collect,MOONSHOT_BILLING_SCHEMA
+        from collector.official import FetchResult
+        source=(Path(__file__).parent/'fixtures/moonshot-billing-20261026.txt').read_text()
+        models=[{'key':'moonshotai/kimi-k3','provider':'moonshotai'},{'key':'moonshotai/kimi-k3.1-pro','provider':'moonshotai'}]
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'data').mkdir();(root/'collector/state').mkdir(parents=True)
+            (root/'data/prices.json').write_text(json.dumps({'models':models}))
+            with patch('collector.decisions.fetch_source',return_value=FetchResult(source)):
+                collect(root,datetime(2026,10,24,tzinfo=timezone.utc))
+            broken=source.replace('`$10.00 / MTok`','`unreported`')
+            with patch('collector.decisions.fetch_source',return_value=FetchResult(broken)):
+                collect(root,datetime(2026,10,26,tzinfo=timezone.utc))
+            cache=json.loads((root/'collector/state/decisions-cache.json').read_text())['billing']['moonshotai']
+            self.assertEqual(cache['parserSchema'],MOONSHOT_BILLING_SCHEMA)
+            k3=cache['models']['moonshotai/kimi-k3'];pro=cache['models']['moonshotai/kimi-k3.1-pro']
+            self.assertEqual((k3['status'],k3['verifiedAt']),('fresh','2026-10-26T00:00:00Z'))
+            self.assertEqual((pro['status'],pro['verifiedAt']),('last_good','2026-10-24T00:00:00Z'))
+            self.assertEqual(pro['plans'][0]['output_mtok'],10)
+
     def test_google_long_prompt_and_cache_storage(self):
         source='Gemini Example | example | Standard | Input price | $2.00, prompts <= 200k tokens | $4.00, prompts > 200k tokens | Output price (including thinking tokens) | $10.00, prompts <= 200k tokens | $15.00, prompts > 200k | Context caching price | $0.2 | $0.4 | $4.50 / 1,000,000 tokens per hour (storage price) | Used to improve our products | No | Batch | Input price | $1 | $2 | Output price (including thinking tokens) | $5 | $7.5 | Context caching price | Same as Standard | $0.2 | $0.4 | $4.50 / 1,000,000 tokens per hour (storage price) | Used to improve our products | No | 200k'
         plans=parse_billing('google',source,[{'key':'google/example','display':'Gemini Example'}])['google/example']

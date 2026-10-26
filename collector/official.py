@@ -83,9 +83,10 @@ def price(value: str, label: str) -> float:
     return float(parsed.quantize(PRICE_QUANTUM, rounding=ROUND_HALF_UP))
 
 
-def fetch_source(url: str, cached: dict[str, Any] | None = None) -> FetchResult:
+def fetch_source(url: str, cached: dict[str, Any] | None = None, *,
+                 accept: str = "text/markdown,text/plain,text/html;q=0.9,*/*;q=0.1") -> FetchResult:
     headers = {
-        "Accept": "text/markdown,text/plain,text/html;q=0.9,*/*;q=0.1",
+        "Accept": accept,
         "User-Agent": "The-Marginal-Token/1.0 (+https://marginaltoken.com)",
     }
     if cached:
@@ -110,7 +111,7 @@ def fetch_source(url: str, cached: dict[str, Any] | None = None) -> FetchResult:
             )
         raise
     except urllib.error.URLError:
-        return fetch_source_with_curl(url, cached)
+        return fetch_source_with_curl(url, cached, accept=accept)
     with response:
         body = response.read(MAX_SOURCE_BYTES + 1)
         if len(body) > MAX_SOURCE_BYTES:
@@ -123,7 +124,8 @@ def fetch_source(url: str, cached: dict[str, Any] | None = None) -> FetchResult:
         )
 
 
-def fetch_source_with_curl(url: str, cached: dict[str, Any] | None = None) -> FetchResult:
+def fetch_source_with_curl(url: str, cached: dict[str, Any] | None = None, *,
+                           accept: str = "text/markdown,text/plain,text/html;q=0.9,*/*;q=0.1") -> FetchResult:
     """Use curl's system trust store when Python cannot verify a corporate proxy."""
 
     del cached
@@ -139,7 +141,7 @@ def fetch_source_with_curl(url: str, cached: dict[str, Any] | None = None) -> Fe
                 "--max-time",
                 "25",
                 "--header",
-                "Accept: text/markdown,text/plain,text/html;q=0.9,*/*;q=0.1",
+                f"Accept: {accept}",
                 "--user-agent",
                 "The-Marginal-Token/1.0 (+https://marginaltoken.com)",
                 url,

@@ -596,3 +596,15 @@ Batch
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FetchRepresentationTests(unittest.TestCase):
+    def test_explicit_html_accept_survives_system_trust_fallback(self):
+        from unittest.mock import patch
+        from urllib.error import URLError
+        from collector.official import fetch_source,FetchResult
+        with patch('collector.official.urllib.request.urlopen',side_effect=URLError('TLS failure')) as request, patch('collector.official.fetch_source_with_curl',return_value=FetchResult('<html>table</html>')) as fallback:
+            result=fetch_source('https://example.test/pricing',accept='text/html')
+        self.assertEqual(request.call_args.args[0].get_header('Accept'),'text/html')
+        fallback.assert_called_once_with('https://example.test/pricing',None,accept='text/html')
+        self.assertEqual(result.text,'<html>table</html>')

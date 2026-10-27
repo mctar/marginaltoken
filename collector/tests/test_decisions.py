@@ -76,6 +76,47 @@ class DecisionsTests(unittest.TestCase):
         self.assertNotIn('openai/sample-plus',r)
         plans=r['openai/sample'];self.assertEqual(len(plans),4)
         self.assertEqual(plans[0]['cache_write_mtok'],2.5);self.assertEqual(plans[-1]['output_mtok'],7.5)
+    def test_terra_exact_identity_modes_cache_and_context_boundaries(self):
+        from pathlib import Path
+        source = (Path(__file__).parent/'fixtures/openai-terra-pricing-20261027.md').read_text()
+        result = parse_billing('openai', source, [{'key':'openai/gpt-6.1-terra'}, {'key':'openai/gpt-6.1-terra-pro'}])
+        self.assertNotIn('openai/gpt-6.1-terra-pro', result)
+        plans = {p['id']:p for p in result['openai/gpt-6.1-terra']}
+        self.assertEqual(set(plans), {'standard','standard-long-context','batch','batch-long-context','flex','flex-long-context','fast','fast-long-context'})
+        self.assertEqual((plans['standard']['input_mtok'],plans['standard']['output_mtok'],plans['standard']['cached_input_mtok']), (1,5,.05))
+        self.assertEqual((plans['standard']['cacheWrite30Minute_mtok'],plans['standard']['cacheWrite12Hour_mtok']), (1.25,2.5))
+        self.assertEqual((plans['standard-long-context']['input_mtok'],plans['standard-long-context']['output_mtok']), (2,7.5))
+        self.assertEqual(plans['standard-long-context']['cacheWrite12Hour_mtok'], 5)
+        self.assertEqual(plans['flex']['input_mtok'], .5)
+        self.assertEqual(plans['fast']['input_mtok'], 2)
+        for key, plan in plans.items():
+            if key.endswith('long-context'):
+                self.assertEqual(plan['minimumPromptTokens'], 272001)
+                self.assertNotIn('maximumPromptTokens', plan)
+            else:
+                self.assertEqual(plan['maximumPromptTokens'], 272000)
+                self.assertNotIn('minimumPromptTokens', plan)
+
+    def test_new_official_terra_entry_refreshes_even_a_current_schema_cache(self):
+        import tempfile, json
+        from pathlib import Path
+        from datetime import datetime, timezone
+        from collector.decisions import collect, OPENAI_BILLING_SCHEMA
+        from collector.official import FetchResult
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root/'data').mkdir(); (root/'collector/state').mkdir(parents=True)
+            (root/'data/prices.json').write_text(json.dumps({'models':[{'key':'openai/gpt-6.1-terra','provider':'openai','source':'firstparty'}]}))
+            previous = {'plans':{}, 'parserSchema':OPENAI_BILLING_SCHEMA, 'verifiedAt':'2026-10-27T08:00:00Z', 'sourceUrl':'https://example.com', 'status':'fresh'}
+            cachepath = root/'collector/state/decisions-cache.json'
+            cachepath.write_text(json.dumps({'weights':{},'billing':{'openai':previous}}))
+            source = (Path(__file__).parent/'fixtures/openai-terra-pricing-20261027.md').read_text()
+            with patch('collector.decisions.fetch_source', return_value=FetchResult(source)) as fetch:
+                collect(root, datetime(2026,10,27,9,tzinfo=timezone.utc))
+            self.assertEqual(sum(c.args[0] == 'https://developers.openai.com/api/docs/pricing.md' for c in fetch.call_args_list), 1)
+            saved = json.loads(cachepath.read_text())['billing']['openai']
+            self.assertEqual(saved['verifiedAt'],'2026-10-27T09:00:00Z')
+            self.assertEqual(len(saved['plans']['openai/gpt-6.1-terra']),8)
+
     def test_claude_cache_and_batch_stack_without_confusing_output_column(self):
         source='The following table shows pricing for all Claude models: | Model | Base input tokens | 5m cache writes | 1h cache writes | Cache hits and refreshes | Output tokens | | Claude Example | $2 / MTok | $2.5 / MTok | $4 / MTok | $0.2 / MTok | $10 / MTok | Batch processing 50% discount on both input and output tokens. Prompt caching and batch processing discounts apply'
         plans=parse_billing('anthropic',source,[{'key':'anthropic/example','display':'Claude Example'}])['anthropic/example']

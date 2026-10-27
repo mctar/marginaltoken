@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by-4.0', 'cc0-1.0'}
 WEIGHTS_SCHEMA = 2
 ANTHROPIC_BILLING_SCHEMA = 1
-OPENAI_BILLING_SCHEMA = 1
+OPENAI_BILLING_SCHEMA = 2
 MOONSHOT_BILLING_SCHEMA = 1
 MOONSHOT_BILLING_URL = 'https://platform.kimi.ai/docs/pricing/chat'
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
@@ -198,6 +198,13 @@ def parse_billing(provider, source, models):
     elif provider == 'openai':
         names = {model['key'].split('/', 1)[1] for model in models}
         sections = {mode: openai_price_rows(source, mode, names) for mode in ['Standard', 'Batch']}
+        # Terra's extra modes are explicitly reviewed; keep other model plans unchanged.
+        if 'gpt-6.1-terra' in names:
+            flex = re.search(r'^#### Flex\s*\n(?P<body>.*?)(?=^#### |^### |\Z)', source, re.S | re.M)
+            if flex:
+                sections['Flex'] = openai_price_rows('### Flex pricing data\n'+flex.group('body'), 'Flex', {'gpt-6.1-terra'})
+            if re.search(r'^### Fast pricing data\s*$', source, re.M):
+                sections['Fast'] = openai_price_rows(source, 'Fast', {'gpt-6.1-terra'})
         for model in models:
             name = model['key'].split('/', 1)[1]; plans = []
             for mode, rows in sections.items():
@@ -217,6 +224,12 @@ def parse_billing(provider, source, models):
                             p[field] = openai_rate(cells, prefix+column)
                     if 'cacheWrite30Minute_mtok' in p or 'cacheWrite12Hour_mtok' in p:
                         p['notes'] = 'Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests.'
+                    if name == 'gpt-6.1-terra':
+                        p['contextWindowTokens'] = 1050000
+                        p['maximumOutputTokens'] = 128000
+                        if prefix == 'Short context ': p['maximumPromptTokens'] = 272000
+                        else: p['minimumPromptTokens'] = 272001
+                        p['notes'] = (p.get('notes', '')+' Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.').strip()
                     plans.append(p)
             if plans: result[model['key']] = plans
     elif provider == 'anthropic':
@@ -350,7 +363,9 @@ def collect(root=ROOT, now=None):
         needs_fast = (provider == 'anthropic' and any(m['key'] == 'anthropic/claude-opus-5.5' for m in models)
                       and ((previous or {}).get('parserSchema') != ANTHROPIC_BILLING_SCHEMA
                            or not any(p['id'] == 'fast' for p in (previous or {}).get('plans', {}).get('anthropic/claude-opus-5.5', []))))
-        needs_openai = provider == 'openai' and (previous or {}).get('parserSchema') != OPENAI_BILLING_SCHEMA
+        required_openai = {m['key'] for m in models if m['provider'] == 'openai' and m.get('source') == 'firstparty'}
+        needs_openai = provider == 'openai' and ((previous or {}).get('parserSchema') != OPENAI_BILLING_SCHEMA
+                          or bool(required_openai - set((previous or {}).get('plans', {}))))
         if previous and age(previous)<timedelta(hours=24) and not needs_argon and not needs_fast and not needs_openai:entry=previous
         else:
             try:

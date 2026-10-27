@@ -14,6 +14,21 @@ class RegisterTests(unittest.TestCase):
                         "source": "firstparty", "checked": "2026-10-13", "verificationStatus": "fresh"}
                        for r in firstparty_catalog(self.register)]
 
+    def test_terra_is_reviewed_without_changing_curated_families_or_aliasing_pro(self):
+        from collector.register import canonical_key
+        result = apply_register(self.models, self.register, self.now)
+        self.assertEqual(result['basket']['openai'], 'openai/gpt-6.1-sol')
+        self.assertEqual(result['basket']['anthropic'], 'anthropic/claude-opus-5.5')
+        base = next(m for m in self.models if m['key']=='openai/gpt-6.1-terra')
+        self.assertEqual(base['selectedSlots'], [])
+        self.assertEqual(base['apiId'], 'gpt-6.1-terra')
+        self.assertEqual(canonical_key('openai/gpt-6.1-terra-pro',self.register),'openai/gpt-6.1-terra-pro')
+        self.assertNotIn('apiId',self.register['models']['openai/gpt-6.1-terra-pro'])
+        self.assertNotIn('firstparty',self.register['models']['openai/gpt-6.1-terra-pro'])
+        from pathlib import Path
+        from collector.collect import load_reviewed_firstparty
+        self.assertIn('openai/gpt-6.1-terra-pro', load_reviewed_firstparty(Path(__file__).parents[1]/'firstparty-reviewed.json'))
+
     def test_only_verified_same_family_successor_promotes(self):
         old = "openai/gpt-6.1-sol"
         new = "openai/future-sol"

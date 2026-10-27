@@ -170,3 +170,23 @@ test('Kimi cache writes replace input for that fraction, and TTLs have separate 
   // A full initial write has the normal miss cost at the default 5m TTL.
   close(calculateBill(kimi,{...w,cacheReadPct:0,cacheWritePct:100},defaultAssumptions).monthlyTotal,2)
 })
+
+
+test('Terra changes the full-request rate above 272K and keeps retention rates distinct', () => {
+  const standard = { id: 'standard', label: 'Standard', input_mtok: 1, output_mtok: 5,
+    cached_input_mtok: .05, cacheWrite30Minute_mtok: 1.25, cacheWrite12Hour_mtok: 2.5,
+    maximumPromptTokens: 272000 }
+  const long = { ...standard, id: 'standard-long-context', input_mtok: 2, output_mtok: 7.5,
+    cacheWrite30Minute_mtok: 2.5, cacheWrite12Hour_mtok: 5,
+    maximumPromptTokens: undefined, minimumPromptTokens: 272001 }
+  const request = { ...workload, calls: 1, inputTokens: 272000, outputTokens: 1000,
+    reasoningTokens: 0, cacheReadPct: 0, cacheWritePct: 0 }
+  close(calculateBill(standard, request, defaultAssumptions).monthlyTotal, .277)
+  const over = { ...request, inputTokens: 272001 }
+  assert.equal(calculateBill(standard, over, defaultAssumptions).complete, false)
+  assert.equal(calculateBill(long, request, defaultAssumptions).complete, false)
+  close(calculateBill(long, over, defaultAssumptions).monthlyTotal, .551502)
+  const writes = { ...over, inputTokens: 300000, cacheWritePct: 100 }
+  close(calculateBill(long, writes, { ...defaultAssumptions, cacheDuration: '12h' }).monthlyTotal, 1.5075)
+  close(calculateBill(long, writes, { ...defaultAssumptions, cacheDuration: '30m' }).monthlyTotal, .7575)
+})

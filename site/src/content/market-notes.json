@@ -1,5 +1,84 @@
 [
   {
+    "kind": "model",
+    "slug": "gpt-61-terra-pricing-context-routed-pro",
+    "date": "2026-10-27",
+    "checked": "2026-10-27",
+    "author": "Thordur Arnason",
+    "title": "GPT-6.1 Terra: token prices, long prompts and the routed Pro variant",
+    "summary": "OpenAI’s new model costs $1 input/$5 output per million tokens at Standard rates up to 272,000 prompt tokens. Longer prompts and cache retention change the bill; OpenRouter’s Pro route uses the same underlying model.",
+    "modelKey": "openai/gpt-6.1-terra",
+    "comparisonModelKey": "openai/gpt-6.1-sol",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Compare Terra and Sol on your workload",
+    "calculatorGuidance": "Start with Standard, then select the matching context tier and cache retention. Above 272,000 prompt tokens, the long context rate applies to the full request. Use the rate multiplier for regional processing and add tool charges separately.",
+    "paragraphs": [
+      "OpenAI released GPT-6.1 Terra on 26 October at $1 per million input tokens and $5 per million output tokens. Cached reads cost $0.05. Above 272,000 prompt tokens, the full request uses $2 input and $7.50 output rates, with higher cache rates too. Tool calling requires the Responses API.",
+      "Standard cache writes cost $1.25 per million tokens for 30-minute retention or $2.50 for 12 hours. Batch and Flex have lower published rates; Fast is a separate serving mode. Regional processing adds 10% where available, and tool charges are additional.",
+      "OpenRouter describes “Terra Pro” as the same underlying model with a different reasoning mode. It is a routed serving variant, not evidence of a separate OpenAI model release. More reasoning can increase tokens per completed task despite identical token prices.",
+      "Compare representative completed tasks, retries and review effort. OpenAI’s performance and task-cost comparisons are vendor results. Sol remains our basket selection."
+    ],
+    "sources": [
+      {
+        "label": "OpenAI release · 26 October 2026",
+        "href": "https://openai.com/index/introducing-gpt-6-1-terra/"
+      },
+      {
+        "label": "Official model, billing limits and tool support",
+        "href": "https://developers.openai.com/api/docs/models/gpt-6.1-terra"
+      },
+      {
+        "label": "Official prices by serving mode and context",
+        "href": "https://developers.openai.com/api/docs/pricing"
+      },
+      {
+        "label": "OpenRouter’s routed Pro description and endpoints",
+        "href": "https://openrouter.ai/api/v1/models/openai/gpt-6.1-terra-pro/endpoints"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "slug": "unlimited-ocr-2-deployment-cost-per-page",
+    "date": "2026-10-27",
+    "checked": "2026-10-27",
+    "author": "Thordur Arnason",
+    "title": "Unlimited-OCR-2: measure the cost per accepted page",
+    "summary": "Baidu’s public OCR weights target long-document parsing. Runtime, throughput, reprocessing and review determine running costs; its published 80GB test GPU is not a stated minimum.",
+    "paragraphs": [
+      "Baidu’s 27 October announcement brings public Unlimited-OCR-2 weights and code for long-document parsing; the checkpoint was uploaded on 26 October. The model card labels the weights MIT, and the code repository publishes MIT terms. Its fixed-reference attention is a design for bounding attention work, not proof of a constant total document bill.",
+      "Baidu documents Transformers and SGLang serving. The published Transformers test used an A800 with 80GB memory; that is a tested setup, not a stated minimum. Hardware, throughput and accuracy need measurement on the documents you actually process.",
+      "Budget capacity, then measure cost per accepted page—including reprocessing and human review. Baidu’s benchmark results and efficiency claims have not been independently replicated here. No paid API tariff has been verified for this exact release.",
+      "The separate MarathonDocBench repository provides evaluation annotations and page images. Its Apache-2.0 metadata applies to that evaluation release; it does not establish that the model’s training data is public."
+    ],
+    "sources": [
+      {
+        "label": "Exact model card and checkpoint files · announcement 27 October 2026",
+        "href": "https://huggingface.co/baidu/Unlimited-OCR-2/tree/04647c7a6098d8d58915f003536a741c82eafb40"
+      },
+      {
+        "label": "Checkpoint upload history · 26 October 2026",
+        "href": "https://huggingface.co/baidu/Unlimited-OCR-2/commits/main"
+      },
+      {
+        "label": "Official serving code and setup",
+        "href": "https://github.com/baidu/Unlimited-OCR"
+      },
+      {
+        "label": "MIT code license",
+        "href": "https://github.com/baidu/Unlimited-OCR/blob/main/LICENSE"
+      },
+      {
+        "label": "MarathonDocBench evaluation data",
+        "href": "https://huggingface.co/datasets/baidu/MarathonDocBench"
+      },
+      {
+        "label": "Estimate deployment costs with Rent vs Run",
+        "href": "/infrastructure/"
+      }
+    ]
+  },
+  {
     "kind": "weekly",
     "slug": "ai-model-releases-2026-10-19",
     "date": "2026-10-26",

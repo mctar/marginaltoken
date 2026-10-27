@@ -150,6 +150,12 @@ export default function ModelHistory({
           {model?.routedId && ` · routed ID: ${model.routedId}`}
         </p>
       )}
+      {record?.identityNote && (
+        <p className="decision-note">
+          {record.identityNote}{' '}
+          {record.identitySource && <a href={record.identitySource}>Identity source →</a>}
+        </p>
+      )}
       {record?.lifecycle?.successor && (
         <p>
           <a href={`/model/${record.lifecycle.successor}/`}>

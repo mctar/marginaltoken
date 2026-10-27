@@ -8,6 +8,7 @@ export type ModelRecord = {
   apiIdFloating?: boolean
   apiIdSource?: string
   identitySource?: string
+  identityNote?: string
   approved: boolean
   stage?: string
   display?: string

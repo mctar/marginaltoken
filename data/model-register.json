@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-10-26",
+  "reviewedAt": "2026-10-27",
   "policy": "Promote reviewed identities within approved families only after fresh official price verification. Discovery never changes family policy.",
   "basket": {
     "anthropic": "anthropic/claude-opus-5.5",
@@ -1029,6 +1029,40 @@
         "checked": "2026-10-26",
         "rate_note": "Standard Kimi K3.1 Pro, cache-miss input. Highspeed is a separate optional billing plan."
       }
+    },
+    "openai/gpt-6.1-terra": {
+      "provider": "openai",
+      "family": "openai-terra",
+      "order": 100,
+      "aliases": [],
+      "approved": true,
+      "display": "GPT-6.1 Terra",
+      "apiId": "gpt-6.1-terra",
+      "stage": "stable",
+      "identitySource": "https://developers.openai.com/api/docs/models/gpt-6.1-terra",
+      "identityNote": "Released 26 October 2026. Tool calling requires the Responses API. Standard prices apply up to 272,000 prompt tokens; longer requests use the full-request long context tier. Regional processing adds 10% where available; tool fees are additional.",
+      "firstparty": {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "display": "GPT-6.1 Terra",
+        "input_mtok": 1.0,
+        "output_mtok": 5.0,
+        "context": 1050000,
+        "source_url": "https://developers.openai.com/api/docs/pricing",
+        "checked": "2026-10-27",
+        "rate_note": "Standard OpenAI API rate up to 272,000 prompt tokens; cache writes and longer prompts have separate billing rates."
+      }
+    },
+    "openai/gpt-6.1-terra-pro": {
+      "provider": "openai",
+      "family": "openai-terra-routed-mode",
+      "order": 0,
+      "aliases": [],
+      "approved": true,
+      "display": "GPT-6.1 Terra Pro",
+      "stage": "stable",
+      "identitySource": "https://openrouter.ai/api/v1/models/openai/gpt-6.1-terra-pro/endpoints",
+      "identityNote": "OpenRouter describes this route as the same underlying GPT-6.1 Terra model with reasoning.mode set to pro. This is a routed serving variant, not a separately verified OpenAI API model ID. More reasoning can increase total task cost even when token rates match."
     }
   },
   "apiShortlist": [

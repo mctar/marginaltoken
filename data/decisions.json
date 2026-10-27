@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-27T08:02:44Z",
+  "generatedAt": "2026-10-27T08:04:49Z",
   "asOf": "2026-10-27",
   "models": [
     {
@@ -1812,7 +1812,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-10-27T08:02:44Z",
+        "verifiedAt": "2026-10-27T08:04:49Z",
         "status": "fresh"
       }
     },
@@ -1862,7 +1862,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-10-27T08:02:44Z",
+        "verifiedAt": "2026-10-27T08:04:49Z",
         "status": "fresh"
       }
     },
@@ -1912,7 +1912,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-10-27T08:02:44Z",
+        "verifiedAt": "2026-10-27T08:04:49Z",
         "status": "fresh"
       }
     },
@@ -1962,7 +1962,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-10-27T08:02:44Z",
+        "verifiedAt": "2026-10-27T08:04:49Z",
         "status": "fresh"
       }
     },
@@ -2012,7 +2012,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-10-27T08:02:44Z",
+        "verifiedAt": "2026-10-27T08:04:49Z",
         "status": "fresh"
       }
     },
@@ -2062,7 +2062,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-10-27T08:02:44Z",
+        "verifiedAt": "2026-10-27T08:04:49Z",
         "status": "fresh"
       }
     },
@@ -2112,7 +2112,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-10-27T08:02:44Z",
+        "verifiedAt": "2026-10-27T08:04:49Z",
         "status": "fresh"
       }
     },
@@ -2128,7 +2128,10 @@
             "cached_input_mtok": 0.05,
             "cacheWrite30Minute_mtok": 1.25,
             "cacheWrite12Hour_mtok": 2.5,
-            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
+            "contextWindowTokens": 1050000,
+            "maximumOutputTokens": 128000,
+            "maximumPromptTokens": 272000
           },
           {
             "id": "standard-long-context",
@@ -2138,7 +2141,10 @@
             "cached_input_mtok": 0.1,
             "cacheWrite30Minute_mtok": 2.5,
             "cacheWrite12Hour_mtok": 5.0,
-            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
+            "contextWindowTokens": 1050000,
+            "maximumOutputTokens": 128000,
+            "minimumPromptTokens": 272001
           },
           {
             "id": "batch",
@@ -2148,7 +2154,10 @@
             "cached_input_mtok": 0.025,
             "cacheWrite30Minute_mtok": 0.625,
             "cacheWrite12Hour_mtok": 1.25,
-            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
+            "contextWindowTokens": 1050000,
+            "maximumOutputTokens": 128000,
+            "maximumPromptTokens": 272000
           },
           {
             "id": "batch-long-context",
@@ -2158,11 +2167,66 @@
             "cached_input_mtok": 0.05,
             "cacheWrite30Minute_mtok": 1.25,
             "cacheWrite12Hour_mtok": 2.5,
-            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
+            "contextWindowTokens": 1050000,
+            "maximumOutputTokens": 128000,
+            "minimumPromptTokens": 272001
+          },
+          {
+            "id": "flex",
+            "label": "Flex",
+            "input_mtok": 0.5,
+            "output_mtok": 2.5,
+            "cached_input_mtok": 0.025,
+            "cacheWrite30Minute_mtok": 0.625,
+            "cacheWrite12Hour_mtok": 1.25,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
+            "contextWindowTokens": 1050000,
+            "maximumOutputTokens": 128000,
+            "maximumPromptTokens": 272000
+          },
+          {
+            "id": "flex-long-context",
+            "label": "Flex long context",
+            "input_mtok": 1.0,
+            "output_mtok": 3.75,
+            "cached_input_mtok": 0.05,
+            "cacheWrite30Minute_mtok": 1.25,
+            "cacheWrite12Hour_mtok": 2.5,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
+            "contextWindowTokens": 1050000,
+            "maximumOutputTokens": 128000,
+            "minimumPromptTokens": 272001
+          },
+          {
+            "id": "fast",
+            "label": "Fast",
+            "input_mtok": 2.0,
+            "output_mtok": 10.0,
+            "cached_input_mtok": 0.1,
+            "cacheWrite30Minute_mtok": 2.5,
+            "cacheWrite12Hour_mtok": 5.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
+            "contextWindowTokens": 1050000,
+            "maximumOutputTokens": 128000,
+            "maximumPromptTokens": 272000
+          },
+          {
+            "id": "fast-long-context",
+            "label": "Fast long context",
+            "input_mtok": 4.0,
+            "output_mtok": 15.0,
+            "cached_input_mtok": 0.2,
+            "cacheWrite30Minute_mtok": 5.0,
+            "cacheWrite12Hour_mtok": 10.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
+            "contextWindowTokens": 1050000,
+            "maximumOutputTokens": 128000,
+            "minimumPromptTokens": 272001
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-10-27T08:02:44Z",
+        "verifiedAt": "2026-10-27T08:04:49Z",
         "status": "fresh"
       }
     },

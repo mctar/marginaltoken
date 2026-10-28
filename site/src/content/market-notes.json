@@ -1,5 +1,71 @@
 [
   {
+    "kind": "standalone",
+    "slug": "lfm3-local-deployment-commercial-license",
+    "date": "2026-10-28",
+    "checked": "2026-10-28",
+    "author": "Thordur Arnason",
+    "title": "LFM3: local deployment and the commercial-license threshold",
+    "summary": "Liquid’s new model family has downloadable weights, a custom commercial license and separate memory costs for runtime and context. Public LFM3 API tariffs remain unverified.",
+    "paragraphs": [
+      "Liquid AI announced LFM3 on 27 October, with public weights spanning text, vision, audio, omni and decision models. The text checkpoint, LFM3-1.7B, supports 256K context. Liquid estimates about 1 GB at four-bit precision; runtime and long-context memory still need a separate budget.",
+      "The weights use the custom LFM Open License v1.0, with a $10 million annual-revenue threshold and a definition of legal entity that includes controlled affiliates. Larger businesses need a separate agreement for commercial use. Check the full terms when assessing eligibility.",
+      "Liquid announces API access, but its public pricing page does not list LFM3 rates at this check. We have not verified authenticated console tariffs. Rates for the older d1 and LFM2.5 models do not establish LFM3 prices.",
+      "Use Rent vs Run to budget deployment, then measure throughput, completed tasks, memory and engineering time on your own workload. Liquid’s launch benchmarks are vendor results."
+    ],
+    "sources": [
+      {
+        "label": "Liquid AI announcement · 27 October 2026",
+        "href": "https://www.liquid.ai/blog/lfm3"
+      },
+      {
+        "label": "Exact LFM3-1.7B model card and checkpoint",
+        "href": "https://huggingface.co/LiquidAI/LFM3-1.7B/tree/40ebe0aa6662c9d40389c2f5d565b6a2c6aebacd"
+      },
+      {
+        "label": "LFM Open License v1.0 · commercial-use terms and legal-entity definition",
+        "href": "https://huggingface.co/LiquidAI/LFM3-1.7B/blob/40ebe0aa6662c9d40389c2f5d565b6a2c6aebacd/LICENSE"
+      },
+      {
+        "label": "Liquid’s public API and enterprise-license pricing",
+        "href": "https://www.liquid.ai/pricing"
+      },
+      {
+        "label": "Estimate deployment costs with Rent vs Run",
+        "href": "/infrastructure/"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "slug": "qwen-audio-31-realtime-flash-billing",
+    "date": "2026-10-28",
+    "checked": "2026-10-28",
+    "author": "Thordur Arnason",
+    "title": "Qwen Audio 3.1 Realtime Flash: four billing meters for voice",
+    "summary": "QwenCloud’s new voice model bills text and audio separately. International and mainland China tariffs differ; token prices alone do not establish a cost per minute.",
+    "paragraphs": [
+      "QwenCloud added qwen-audio-3.1-realtime-flash on 27 October. The real-time speech model accepts and returns text and audio, with function calling and voice cloning.",
+      "The International tariff separates four meters: $0.23 per million text-input tokens, $0.93 per million audio-input tokens, $0.70 per million text-output tokens and $1.87 per million audio-output tokens. Mainland China has a separate tariff. These are token rates, not prices per minute.",
+      "Budget the actual text and audio usage returned by the API, alongside any separately charged tools or voice services. A text-only comparison omits part of a voice application’s bill.",
+      "The guide lists retained audio-history limits of 50 turns and 300 seconds, with 20 turns retained by default. These are history limits, not a five-minute call cap; earlier history is discarded. The release entry separately lists a 262,144-token context window. Measure cost per completed conversation before replacing an existing voice stack."
+    ],
+    "sources": [
+      {
+        "label": "QwenCloud release entry · 27 October 2026",
+        "href": "https://docs.qwencloud.com/changelog/models"
+      },
+      {
+        "label": "Official International and mainland China tariffs · real-time voice chat",
+        "href": "https://docs.qwencloud.com/developer-guides/getting-started/model-prices#real-time-voice-chat"
+      },
+      {
+        "label": "Model guide · voice support and retained conversation history",
+        "href": "https://docs.qwencloud.com/developer-guides/speech/qwen-audio-realtime"
+      }
+    ]
+  },
+  {
     "kind": "model",
     "slug": "gpt-61-terra-pricing-context-routed-pro",
     "date": "2026-10-27",

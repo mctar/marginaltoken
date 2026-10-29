@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-10-27",
+  "reviewedAt": "2026-10-29",
   "policy": "Promote reviewed identities within approved families only after fresh official price verification. Discovery never changes family policy.",
   "basket": {
     "anthropic": "anthropic/claude-opus-5.5",
@@ -1063,6 +1063,19 @@
       "stage": "stable",
       "identitySource": "https://openrouter.ai/api/v1/models/openai/gpt-6.1-terra-pro/endpoints",
       "identityNote": "OpenRouter describes this route as the same underlying GPT-6.1 Terra model with reasoning.mode set to pro. This is a routed serving variant, not a separately verified OpenAI API model ID. More reasoning can increase total task cost even when token rates match."
+    },
+    "particle-ai/particle-1": {
+      "provider": "particle-ai",
+      "family": "particle-coding",
+      "order": 0,
+      "aliases": [],
+      "approved": true,
+      "display": "Particle-1",
+      "apiId": "particle-ai/particle-1",
+      "stage": "stable",
+      "identitySource": "https://docs.particle.ai/models",
+      "identityNote": "Particle’s post-trained model is distinct from DeepSeek V4.1 Flash. Its direct API lists particle-ai/particle-1 and accepts particle-1 as a request alias. Direct off-peak/Flex billing must not be assumed for an OpenRouter route. The direct API does not advertise schema-guaranteed structured output.",
+      "identityNoteSource": "https://docs.particle.ai/models"
     }
   },
   "apiShortlist": [

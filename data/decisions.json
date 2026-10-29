@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-29T06:01:38Z",
+  "generatedAt": "2026-10-29T08:11:54Z",
   "asOf": "2026-10-29",
   "models": [
     {
@@ -2276,6 +2276,56 @@
         "status": "fresh",
         "weightsAvailable": true,
         "metadataSchema": 2
+      }
+    },
+    {
+      "key": "particle-ai/particle-1",
+      "billing": {
+        "plans": [
+          {
+            "id": "standard",
+            "label": "Direct peak",
+            "input_mtok": 0.25,
+            "cached_input_mtok": 0.03,
+            "output_mtok": 1.0,
+            "contextWindowTokens": 1048576,
+            "maximumOutputTokens": 131072,
+            "notes": "Particle direct API only; do not apply these rules to a routed quote. Peak: 04:00–20:30; off-peak: 20:30–04:00 America/New_York (follows DST). Choose the period for the requests being budgeted; it is selected after routing and locked for each request. Flex requires an eligible account and effective X-Particle-Service-Tier: flex; requesting it alone is insufficient. Account-specific overrides may differ. Reasoning is included in output: do not count it twice. All steering generations, including the original hidden tail, remain billable; usage: null is not zero usage. Default web search adds $0.0025 per successful search, unchanged by Flex; add tool fees separately. Cached input is the observed cache-hit portion; no cache-write/storage tariff is published."
+          },
+          {
+            "id": "off-peak",
+            "label": "Direct off-peak",
+            "input_mtok": 0.125,
+            "cached_input_mtok": 0.015,
+            "output_mtok": 0.5,
+            "contextWindowTokens": 1048576,
+            "maximumOutputTokens": 131072,
+            "notes": "Particle direct API only; do not apply these rules to a routed quote. Peak: 04:00–20:30; off-peak: 20:30–04:00 America/New_York (follows DST). Choose the period for the requests being budgeted; it is selected after routing and locked for each request. Flex requires an eligible account and effective X-Particle-Service-Tier: flex; requesting it alone is insufficient. Account-specific overrides may differ. Reasoning is included in output: do not count it twice. All steering generations, including the original hidden tail, remain billable; usage: null is not zero usage. Default web search adds $0.0025 per successful search, unchanged by Flex; add tool fees separately. Cached input is the observed cache-hit portion; no cache-write/storage tariff is published."
+          },
+          {
+            "id": "flex",
+            "label": "Direct peak · Flex",
+            "input_mtok": 0.125,
+            "cached_input_mtok": 0.015,
+            "output_mtok": 0.5,
+            "contextWindowTokens": 1048576,
+            "maximumOutputTokens": 131072,
+            "notes": "Particle direct API only; do not apply these rules to a routed quote. Peak: 04:00–20:30; off-peak: 20:30–04:00 America/New_York (follows DST). Choose the period for the requests being budgeted; it is selected after routing and locked for each request. Flex requires an eligible account and effective X-Particle-Service-Tier: flex; requesting it alone is insufficient. Account-specific overrides may differ. Reasoning is included in output: do not count it twice. All steering generations, including the original hidden tail, remain billable; usage: null is not zero usage. Default web search adds $0.0025 per successful search, unchanged by Flex; add tool fees separately. Cached input is the observed cache-hit portion; no cache-write/storage tariff is published."
+          },
+          {
+            "id": "off-peak-flex",
+            "label": "Direct off-peak · Flex",
+            "input_mtok": 0.0625,
+            "cached_input_mtok": 0.0075,
+            "output_mtok": 0.25,
+            "contextWindowTokens": 1048576,
+            "maximumOutputTokens": 131072,
+            "notes": "Particle direct API only; do not apply these rules to a routed quote. Peak: 04:00–20:30; off-peak: 20:30–04:00 America/New_York (follows DST). Choose the period for the requests being budgeted; it is selected after routing and locked for each request. Flex requires an eligible account and effective X-Particle-Service-Tier: flex; requesting it alone is insufficient. Account-specific overrides may differ. Reasoning is included in output: do not count it twice. All steering generations, including the original hidden tail, remain billable; usage: null is not zero usage. Default web search adds $0.0025 per successful search, unchanged by Flex; add tool fees separately. Cached input is the observed cache-hit portion; no cache-write/storage tariff is published."
+          }
+        ],
+        "sourceUrl": "https://docs.particle.ai/usage-billing",
+        "verifiedAt": "2026-10-29T08:11:54Z",
+        "status": "fresh"
       }
     },
     {

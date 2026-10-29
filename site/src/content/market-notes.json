@@ -1,16 +1,99 @@
 [
   {
     "kind": "standalone",
+    "slug": "nemotron-35-transcribe-deployment-costs",
+    "date": "2026-10-29",
+    "checked": "2026-10-29",
+    "author": "Thordur Arnason",
+    "title": "Nemotron 3.5 Transcribe: public weights and deployment costs",
+    "summary": "NVIDIA’s speech model has public BF16 weights. Its peak NIM performance, open serving recipe and Granary-v2 label manifests describe different parts of the deployment bill.",
+    "paragraphs": [
+      "NVIDIA released Nemotron 3.5 Transcribe on 28 October for promptable transcription, speaker attribution and translation. Its public BF16 checkpoint uses OpenMDW-1.1; the documented quick start uses one H100 with 80 GB memory.",
+      "NVIDIA’s headline throughput comes from optimized NIM serving with NVFP4 and DFlash2. The model card says those serving optimizations are not yet in the open-source release. We verified the base and DFlash2 weights; the advertised quantized checkpoint downloads remain unverified at this check.",
+      "Granary-v2 provides label manifests, not bundled source audio. Audio must come from its distributors under their terms; the released People’s Speech subset has separate CC BY-SA obligations.",
+      "Use Rent vs Run to budget hardware, then measure GPU time and review effort per accepted audio hour. Vendor benchmarks do not establish your production cost."
+    ],
+    "sources": [
+      {
+        "label": "NVIDIA research release · 28 October 2026",
+        "href": "https://research.nvidia.com/labs/nemotron/NVIDIA-Nemotron-3.5-Transcribe/"
+      },
+      {
+        "label": "Exact BF16 model card · hardware, public recipe and NIM caveat",
+        "href": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B/tree/9d8cd6b79bfdd427b6558a5fdbf76fcaf8c75341"
+      },
+      {
+        "label": "Public DFlash2 draft checkpoint",
+        "href": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-DFlash2"
+      },
+      {
+        "label": "Granary-v2 · manifests and source-audio access",
+        "href": "https://huggingface.co/datasets/nvidia/Granary-v2"
+      },
+      {
+        "label": "Granary-v2 license notice and People’s Speech exception",
+        "href": "https://huggingface.co/datasets/nvidia/Granary-v2/blob/81402b751b451b5fe4f4c29e8b40f92892f1e440/NOTICE"
+      },
+      {
+        "label": "Estimate deployment costs with Rent vs Run",
+        "href": "/infrastructure/"
+      }
+    ]
+  },
+  {
+    "kind": "model",
+    "slug": "particle-1-token-efficiency-billing",
+    "date": "2026-10-29",
+    "checked": "2026-10-29",
+    "author": "Thordur Arnason",
+    "title": "Particle-1: token savings and the serving plan behind the bill",
+    "summary": "Particle’s coding model has distinct direct peak, off-peak and Flex rates. Vendor task-cost comparisons assume high cache reuse; steering can leave more than one generation billable.",
+    "modelKey": "particle-ai/particle-1",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Compare Particle-1 and Terra on your workload",
+    "calculatorGuidance": "Select the direct peak/off-peak and eligible Flex plan that matches your requests. The schedule follows America/New_York and is locked per request. Routed quotes have their own terms. Use observed cache hits, count reasoning once within total output, and include original hidden tails, steering successors, retries and tool fees.",
+    "paragraphs": [
+      "Particle launched Particle-1 on 28 October, post-trained from DeepSeek V4.1 Flash for coding. Its current direct peak prices are $0.25 input, $0.03 cached input and $1 output per million tokens, including reasoning.",
+      "Direct off-peak rates are half price from 20:30 to 04:00 America/New_York. Eligible Flex requests receive another 50% token discount. Those direct billing rules must not be assumed for an OpenRouter quote.",
+      "Particle’s reported task-cost savings use vendor benchmarks, assumed tariffs and a fixed 95% cache-hit rate. They are not a guaranteed saving on your workload. Mid-turn steering can also leave the original generation running privately and billably; a missing immediate usage figure does not mean zero cost.",
+      "Compare all generations, retries and accepted outcomes in the workload calculator, using the actual serving plan and observed cache hits."
+    ],
+    "sources": [
+      {
+        "label": "Particle announcement · 28 October 2026 and benchmark assumptions",
+        "href": "https://particle.ai/blog/introducing-particle-1"
+      },
+      {
+        "label": "Current direct billing · peak, off-peak, Flex and steering",
+        "href": "https://docs.particle.ai/usage-billing"
+      },
+      {
+        "label": "Direct model identities, request alias and limits",
+        "href": "https://docs.particle.ai/models"
+      },
+      {
+        "label": "Direct Flex eligibility and effective service tier",
+        "href": "https://docs.particle.ai/service-tiers"
+      },
+      {
+        "label": "OpenRouter’s distinct routed quote and endpoints",
+        "href": "https://openrouter.ai/api/v1/models/particle-ai/particle-1/endpoints"
+      }
+    ],
+    "comparisonModelKey": "openai/gpt-6.1-terra"
+  },
+  {
+    "kind": "standalone",
     "slug": "lfm3-local-deployment-commercial-license",
     "date": "2026-10-28",
-    "checked": "2026-10-28",
+    "checked": "2026-10-29",
     "author": "Thordur Arnason",
     "title": "LFM3: local deployment and the commercial-license threshold",
-    "summary": "Liquid’s new model family has downloadable weights, a custom commercial license and separate memory costs for runtime and context. Public LFM3 API tariffs remain unverified.",
+    "summary": "Liquid’s downloadable models have a custom commercial license and separate runtime memory costs. Its text API now lists $0.08 input/$0.20 output per million tokens, with $0.02 cached input.",
     "paragraphs": [
       "Liquid AI announced LFM3 on 27 October, with public weights spanning text, vision, audio, omni and decision models. The text checkpoint, LFM3-1.7B, supports 256K context. Liquid estimates about 1 GB at four-bit precision; runtime and long-context memory still need a separate budget.",
       "The weights use the custom LFM Open License v1.0, with a $10 million annual-revenue threshold and a definition of legal entity that includes controlled affiliates. Larger businesses need a separate agreement for commercial use. Check the full terms when assessing eligibility.",
-      "Liquid announces API access, but its public pricing page does not list LFM3 rates at this check. We have not verified authenticated console tariffs. Rates for the older d1 and LFM2.5 models do not establish LFM3 prices.",
+      "Update · 29 October: public rates for LFM3-1.7B are $0.08 input, $0.02 cached input and $0.20 output per million tokens. These replace our earlier unverified-pricing statement. They apply to the text model, not the vision, audio, omni or decision variants.",
       "Use Rent vs Run to budget deployment, then measure throughput, completed tasks, memory and engineering time on your own workload. Liquid’s launch benchmarks are vendor results."
     ],
     "sources": [

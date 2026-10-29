@@ -4,6 +4,60 @@ from unittest.mock import patch
 from collector.decisions import weights_record, parse_billing, license_file
 
 class DecisionsTests(unittest.TestCase):
+    def test_particle_exact_identity_named_columns_and_discount_stack(self):
+        from pathlib import Path
+        source = (Path(__file__).parent/'fixtures/particle-billing-20261029.md').read_text()
+        models = [{'key':'particle-ai/particle-1'}, {'key':'particle-ai/particle-1-plus'}, {'key':'deepseek/deepseek-v4.1-flash'}]
+        result = parse_billing('particle-ai', source, models)
+        self.assertEqual(set(result), {'particle-ai/particle-1'})
+        plans = {p['id']:p for p in result['particle-ai/particle-1']}
+        self.assertEqual(set(plans), {'standard','off-peak','flex','off-peak-flex'})
+        self.assertEqual([plans['standard'][f] for f in ['input_mtok','cached_input_mtok','output_mtok']], [.25,.03,1])
+        self.assertEqual([plans['off-peak-flex'][f] for f in ['input_mtok','cached_input_mtok','output_mtok']], [.0625,.0075,.25])
+        self.assertTrue(all('cache_write_mtok' not in p for p in plans.values()))
+        reordered = source.replace('| Model | Input (uncached) | Cached input | Output |','| Output | Model | Cached input | Input (uncached) |')
+        reordered = reordered.replace('| `particle-1` | \\$0.25 | \\$0.03 | \\$1.00 |','| \\$1.00 | `particle-1` | \\$0.03 | \\$0.25 |')
+        self.assertEqual(parse_billing('particle-ai', reordered, models), result)
+
+    def test_particle_changed_policy_ambiguous_row_or_conflicting_rates_cannot_verify(self):
+        from pathlib import Path
+        source = (Path(__file__).parent/'fixtures/particle-billing-20261029.md').read_text()
+        row = next(l for l in source.splitlines() if l.startswith('| `particle-1` |'))
+        for broken in [source.replace('Input (uncached)', 'Input (changed)'),
+                       source.replace('50% of the peak defaults', '40% of the peak defaults'),
+                       source.replace('20:30 – 04:00', '21:30 – 04:00'),
+                       source.replace(row, row+'\n'+row),
+                       source.replace('\\$0.125 input', '\\$0.12 input')]:
+            with self.subTest(source=broken[:30]), self.assertRaises(ValueError):
+                parse_billing('particle-ai', broken, [{'key':'particle-ai/particle-1'}])
+
+    def test_particle_cache_reverifies_changed_schema_and_preserves_fallback_age(self):
+        import tempfile,json
+        from pathlib import Path
+        from datetime import datetime,timezone
+        from collector.decisions import collect,PARTICLE_BILLING_SCHEMA,PARTICLE_BILLING_URL
+        from collector.official import FetchResult
+        source = (Path(__file__).parent/'fixtures/particle-billing-20261029.md').read_text()
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'data').mkdir();(root/'collector/state').mkdir(parents=True)
+            (root/'data/prices.json').write_text(json.dumps({'models':[{'key':'particle-ai/particle-1','provider':'particle-ai','source':'openrouter'}]}))
+            with patch('collector.decisions.fetch_source',return_value=FetchResult(source)):
+                collect(root,datetime(2026,10,29,tzinfo=timezone.utc))
+            cp=root/'collector/state/decisions-cache.json';saved=json.loads(cp.read_text());entry=saved['billing']['particle-ai']
+            self.assertEqual(entry['parserSchema'],PARTICLE_BILLING_SCHEMA)
+            self.assertEqual(entry['sourceUrl'],PARTICLE_BILLING_URL)
+            saved['billing']['particle-ai']['parserSchema']=0;cp.write_text(json.dumps(saved))
+            with patch('collector.decisions.fetch_source',return_value=FetchResult(source)) as fetch:
+                collect(root,datetime(2026,10,29,1,tzinfo=timezone.utc))
+            self.assertTrue(any(c.args[0] == PARTICLE_BILLING_URL for c in fetch.call_args_list))
+            with patch('collector.decisions.fetch_source',side_effect=OSError('source offline')):
+                collect(root,datetime(2026,10,31,tzinfo=timezone.utc))
+            prior=json.loads(cp.read_text())['billing']['particle-ai']
+            self.assertEqual((prior['status'],prior['verifiedAt']),('last_good','2026-10-29T01:00:00Z'))
+            with patch('collector.decisions.fetch_source',side_effect=OSError('source offline')):
+                collect(root,datetime(2026,11,7,tzinfo=timezone.utc))
+            self.assertEqual(json.loads(cp.read_text())['billing']['particle-ai']['status'],'stale')
+
     def test_license_links_stay_in_the_exact_repository_and_require_a_listed_file(self):
         payload={'id':'x/model','tags':['license:other'],'siblings':[{'rfilename':'model.safetensors'},{'rfilename':'terms/LICENSE.txt'}]}
         payload['cardData']={'license_link':'https://huggingface.co/x/model/blob/main/terms/LICENSE.txt'}

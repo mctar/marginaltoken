@@ -22,6 +22,8 @@ PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by
 WEIGHTS_SCHEMA = 2
 ANTHROPIC_BILLING_SCHEMA = 1
 OPENAI_BILLING_SCHEMA = 2
+PARTICLE_BILLING_SCHEMA = 1
+PARTICLE_BILLING_URL = 'https://docs.particle.ai/usage-billing'
 MOONSHOT_BILLING_SCHEMA = 1
 MOONSHOT_BILLING_URL = 'https://platform.kimi.ai/docs/pricing/chat'
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
@@ -182,9 +184,61 @@ def moonshot_plan(source, api_id, label='Standard'):
             'notes': f'Kimi API model: {api_id}. Flat rates across the context window. Cache writes use a 5-minute TTL by default, or the selected 1-hour TTL; hits refresh that TTL without another write charge. Allocate each input token to uncached input, cache reads or cache writes once. No separate storage rate is published.'}
 
 
+def particle_plans(source):
+    """Verify the reviewed direct model and named rates; never inherit route rules."""
+    text = source.replace('\\$', '$').replace('\\_', '_')
+    section = re.search(r'^## Prices\s*\n(.*?)(?=^### Flex pricing|\Z)', text, re.S | re.M)
+    if not section:
+        raise ValueError('Particle pricing section missing')
+    headers = None; rows = []
+    expected = {'Model', 'Input (uncached)', 'Cached input', 'Output'}
+    for line in section.group(1).splitlines():
+        if not line.strip().startswith('|'): continue
+        cells = [c.strip().strip('`') for c in line.strip().strip('|').split('|')]
+        if set(cells) == expected and len(cells) == 4:
+            headers = cells
+        elif headers and 'particle-1' in cells:
+            if len(cells) != 4 or cells[headers.index('Model')] != 'particle-1':
+                raise ValueError('Particle pricing row malformed')
+            rates = {}
+            for column, field in [('Input (uncached)', 'input_mtok'), ('Cached input', 'cached_input_mtok'), ('Output', 'output_mtok')]:
+                match = re.fullmatch(r'\$([0-9]+(?:\.[0-9]+)?)', cells[headers.index(column)])
+                if not match: raise ValueError('Particle price missing or ambiguous')
+                rates[field] = float(match.group(1))
+            rows.append(rates)
+    if len(rows) != 1:
+        raise ValueError('Particle exact model row missing or duplicated')
+    # Discount plans are verified independently from the standard rate row.
+    clean = re.sub(r'[*`]', '', text)
+    if not (re.search(r'\| Off-peak \| 20:30 [–-] 04:00 \|', clean)
+            and 'America/New_York, follows DST' in clean
+            and '50% of the peak defaults' in clean
+            and re.search(r'### Flex pricing.*?effective.*?flex.*?50% off', clean, re.S)):
+        raise ValueError('Particle scheduled/Flex discount policy changed')
+    explicit = re.search(r'Off-peak defaults are.*?\$([0-9.]+) input / \$([0-9.]+) cached input / \$([0-9.]+) output on.*?particle-1', clean, re.S)
+    if not explicit or any(abs(float(value) - rows[0][field] * .5) > 1e-9
+            for value, field in zip(explicit.groups(), ['input_mtok', 'cached_input_mtok', 'output_mtok'])):
+        raise ValueError('Particle explicit off-peak rates disagree with discount rule')
+    notes = ('Particle direct API only; do not apply these rules to a routed quote. '
+             'Peak: 04:00–20:30; off-peak: 20:30–04:00 America/New_York (follows DST). '
+             'Choose the period for the requests being budgeted; it is selected after routing and locked for each request. '
+             'Flex requires an eligible account and effective X-Particle-Service-Tier: flex; requesting it alone is insufficient. '
+             'Account-specific overrides may differ. Reasoning is included in output: do not count it twice. '
+             'All steering generations, including the original hidden tail, remain billable; usage: null is not zero usage. '
+             'Default web search adds $0.0025 per successful search, unchanged by Flex; add tool fees separately. '
+             'Cached input is the observed cache-hit portion; no cache-write/storage tariff is published.')
+    return [dict(id=id, label=label, **{k:round(v*factor, 8) for k,v in rows[0].items()},
+                 contextWindowTokens=1048576, maximumOutputTokens=131072, notes=notes)
+            for id,label,factor in [('standard','Direct peak',1), ('off-peak','Direct off-peak',.5),
+                                    ('flex','Direct peak · Flex',.5), ('off-peak-flex','Direct off-peak · Flex',.25)]]
+
+
 def parse_billing(provider, source, models):
     result = {}
-    if provider == 'moonshotai':
+    if provider == 'particle-ai':
+        if any(m['key'] == 'particle-ai/particle-1' for m in models):
+            result['particle-ai/particle-1'] = particle_plans(source)
+    elif provider == 'moonshotai':
         for model in models:
             name = model['key'].split('/', 1)[1]
             if name not in {'kimi-k3', 'kimi-k3.1-pro'}: continue
@@ -400,6 +454,24 @@ def collect(root=ROOT, now=None):
                     entries[key] = {**entries[key], 'status': 'stale' if age(entries[key]) > timedelta(days=7) else 'last_good'}
         cache['billing']['moonshotai'] = {'parserSchema': MOONSHOT_BILLING_SCHEMA, 'models': entries}
         billing.update({m['key']: entries[m['key']] for m in wanted if m['key'] in entries})
+    # Direct Particle billing is separate from OpenRouter's Tape/venue quote.
+    particle_key = 'particle-ai/particle-1'
+    if any(m['key'] == particle_key for m in models):
+        previous = cache['billing'].get('particle-ai')
+        if (previous and previous.get('parserSchema') == PARTICLE_BILLING_SCHEMA
+                and age(previous) < timedelta(hours=24)):
+            entry = previous
+        else:
+            try:
+                parsed = parse_billing('particle-ai', fetch_source(PARTICLE_BILLING_URL).text or '',
+                                       [{'key': particle_key}])
+                entry = {'plans': parsed[particle_key], 'sourceUrl': PARTICLE_BILLING_URL,
+                         'verifiedAt': stamp, 'status': 'fresh', 'parserSchema': PARTICLE_BILLING_SCHEMA}
+            except Exception:
+                entry = {**previous, 'status': 'stale' if age(previous) > timedelta(days=7) else 'last_good'} if previous else None
+        if entry:
+            cache['billing']['particle-ai'] = entry
+            billing[particle_key] = {k:v for k,v in entry.items() if k != 'parserSchema'}
     records=[]
     for m in models:
         row={'key':m['key']}

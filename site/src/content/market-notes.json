@@ -1,15 +1,61 @@
 [
   {
+    "kind": "model",
+    "slug": "mistral-large-4-weights-api-license",
+    "date": "2026-10-30",
+    "checked": "2026-10-30",
+    "author": "Thordur Arnason",
+    "title": "Mistral Large 4: public weights, new API rates and hosting conditions",
+    "summary": "Large 4’s FP8 and NVFP4 weights are public. Direct API rates now include $0.07 cached input; the custom license has a Model-as-a-Service condition.",
+    "modelKey": "mistralai/mistral-large-4",
+    "comparisonModelKey": "openai/gpt-6.1-sol",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Compare Large 4 on your workload",
+    "calculatorGuidance": "Select Direct Standard for Mistral’s published USD tariff, or select a routed quote under its own terms. Use observed cache hits and include reasoning once within total output. Hardware and operating costs belong in Rent vs Run.",
+    "paragraphs": [
+      "Mistral released Large 4’s FP8 and NVFP4 checkpoints on 29 October. Its direct API now lists $0.70 input, $0.07 cached input and $2.10 output per million tokens. Routed services have their own terms.",
+      "The weights use the Mistral Ecosystem Open-Weight License. Its Model-as-a-Service condition also covers affiliates, with explicit exceptions for internal use and official Mistral products. Check the full terms before hosting it commercially.",
+      "NVFP4 targets Blackwell GPUs. Public weights still require a hardware, memory and operating budget. Use Rent vs Run and measure completed tasks on your workload. The official API documentation still labels Large 4 Public Preview."
+    ],
+    "sources": [
+      {
+        "label": "Mistral weights release and new rates · 29 October 2026",
+        "href": "https://mistral.ai/news/mistral-large-4-oss/"
+      },
+      {
+        "label": "Direct Standard USD pricing and cached input",
+        "href": "https://docs.mistral.ai/inference/pricing"
+      },
+      {
+        "label": "Exact model license · conditions and exceptions",
+        "href": "https://huggingface.co/mistralai/Mistral-Large-4-1T-A52B/blob/f12dabdc0c1e99e7f7924461a6f308859b05af4d/LICENSE"
+      },
+      {
+        "label": "Official model documentation · Public Preview",
+        "href": "https://docs.mistral.ai/models/mistral-large-4-0"
+      },
+      {
+        "label": "NVFP4 deployment details",
+        "href": "https://huggingface.co/mistralai/Mistral-Large-4-1T-A52B-NVFP4/blob/bb6d00fe249b0e876f0cffc6b85014be02de3e68/README.md"
+      },
+      {
+        "label": "Estimate deployment costs with Rent vs Run",
+        "href": "/infrastructure/"
+      }
+    ]
+  },
+  {
     "kind": "standalone",
     "slug": "nemotron-35-transcribe-deployment-costs",
     "date": "2026-10-29",
-    "checked": "2026-10-29",
+    "checked": "2026-10-30",
     "author": "Thordur Arnason",
     "title": "Nemotron 3.5 Transcribe: public weights and deployment costs",
-    "summary": "NVIDIA’s speech model has public BF16 weights. Its peak NIM performance, open serving recipe and Granary-v2 label manifests describe different parts of the deployment bill.",
+    "summary": "NVIDIA’s speech model now has verified BF16, FP8 and NVFP4 weights. Hardware requirements, peak NIM performance and the public serving recipe still need separate cost checks.",
     "paragraphs": [
       "NVIDIA released Nemotron 3.5 Transcribe on 28 October for promptable transcription, speaker attribution and translation. Its public BF16 checkpoint uses OpenMDW-1.1; the documented quick start uses one H100 with 80 GB memory.",
-      "NVIDIA’s headline throughput comes from optimized NIM serving with NVFP4 and DFlash2. The model card says those serving optimizations are not yet in the open-source release. We verified the base and DFlash2 weights; the advertised quantized checkpoint downloads remain unverified at this check.",
+      "NVIDIA’s headline throughput comes from optimized NIM serving with NVFP4 and DFlash2. The model card says those serving optimizations are not yet in the open-source release.",
+      "Update · 30 October: the exact FP8 and NVFP4 repositories are now public. NVFP4’s quick start uses one RTX PRO 6000 Blackwell with 96 GB memory. GGUF downloads remain unverified. Measure the available serving recipe rather than assuming NIM throughput.",
       "Granary-v2 provides label manifests, not bundled source audio. Audio must come from its distributors under their terms; the released People’s Speech subset has separate CC BY-SA obligations.",
       "Use Rent vs Run to budget hardware, then measure GPU time and review effort per accepted audio hour. Vendor benchmarks do not establish your production cost."
     ],
@@ -25,6 +71,14 @@
       {
         "label": "Public DFlash2 draft checkpoint",
         "href": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-DFlash2"
+      },
+      {
+        "label": "Public NVFP4 checkpoint · verified 30 October",
+        "href": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4/tree/66c6adc4020179567074d0399cda2a4eeb2bb347"
+      },
+      {
+        "label": "Public FP8 checkpoint · verified 30 October",
+        "href": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-FP8/tree/2b6209f89bec0da576d69183bfdabb3b6c05ade2"
       },
       {
         "label": "Granary-v2 · manifests and source-audio access",

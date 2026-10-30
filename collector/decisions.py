@@ -24,6 +24,8 @@ ANTHROPIC_BILLING_SCHEMA = 1
 OPENAI_BILLING_SCHEMA = 2
 PARTICLE_BILLING_SCHEMA = 1
 PARTICLE_BILLING_URL = 'https://docs.particle.ai/usage-billing'
+MISTRAL_BILLING_SCHEMA = 1
+MISTRAL_BILLING_URL = 'https://docs.mistral.ai/inference/pricing'
 MOONSHOT_BILLING_SCHEMA = 1
 MOONSHOT_BILLING_URL = 'https://platform.kimi.ai/docs/pricing/chat'
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
@@ -233,9 +235,40 @@ def particle_plans(source):
                                     ('flex','Direct peak · Flex',.5), ('off-peak-flex','Direct off-peak · Flex',.25)]]
 
 
+def mistral_large4_plan(source):
+    """Exact reviewed direct model, named columns, explicitly selected Standard/USD."""
+    if not re.search(r'<button\b[^>]*aria-pressed="true"[^>]*>Standard</button>', source):
+        raise ValueError('Standard tier not selected')
+    if not re.search(r'<button\b[^>]*aria-pressed="true"[^>]*>USD</button>', source):
+        raise ValueError('USD currency not selected')
+    matches = []
+    for table in re.findall(r'<table\b[^>]*>.*?</table>', source, re.I | re.S):
+        headers = None
+        for row in re.findall(r'<tr\b[^>]*>(.*?)</tr>', table, re.I | re.S):
+            cells = [visible_text(re.sub(r'<del\b[^>]*>.*?</del>', '', c, flags=re.I | re.S))
+                     for c in re.findall(r'<t[dh]\b[^>]*>(.*?)</t[dh]>', row, re.I | re.S)]
+            if len(cells) == 4 and set(cells) == {'Model','Input','Cached input','Output'}:
+                headers = cells
+            elif headers and len(cells) == 4:
+                values = dict(zip(headers, cells))
+                if re.fullmatch(r'Mistral Large 4(?:\s*\|\s*↗)?', values['Model']):
+                    rates = [re.fullmatch(r'\$\s*([0-9]+(?:\.[0-9]+)?)', values[k])
+                             for k in ['Input','Cached input','Output']]
+                    if not all(rates): raise ValueError('Ambiguous Mistral rate')
+                    matches.append([float(r[1]) for r in rates])
+    if len(matches) != 1: raise ValueError('Missing or duplicate exact Mistral row')
+    inp, cached, output = matches[0]
+    if min(inp,cached,output) <= 0: raise ValueError('Nonpositive Mistral rate')
+    return {'id':'standard','label':'Direct Standard','input_mtok':inp,
+            'cached_input_mtok':cached,'output_mtok':output,
+            'notes':'Mistral direct Standard API in USD only; routed quotes have separate terms. Cached input means observed cache hits. No cache-write or storage rate inferred. Batch, Priority and regional modifiers are not included. Reasoning is billable output: include it once in total output. Tool fees and other charges require separate assumptions.'}
+
 def parse_billing(provider, source, models):
     result = {}
-    if provider == 'particle-ai':
+    if provider == 'mistralai':
+        if any(m['key'] == 'mistralai/mistral-large-4' for m in models):
+            result['mistralai/mistral-large-4'] = [mistral_large4_plan(source)]
+    elif provider == 'particle-ai':
         if any(m['key'] == 'particle-ai/particle-1' for m in models):
             result['particle-ai/particle-1'] = particle_plans(source)
     elif provider == 'moonshotai':
@@ -472,6 +505,21 @@ def collect(root=ROOT, now=None):
         if entry:
             cache['billing']['particle-ai'] = entry
             billing[particle_key] = {k:v for k,v in entry.items() if k != 'parserSchema'}
+    mistral_key = 'mistralai/mistral-large-4'
+    if any(m['key'] == mistral_key for m in models):
+        previous = cache['billing'].get('mistralai')
+        if previous and previous.get('parserSchema') == MISTRAL_BILLING_SCHEMA and age(previous) < timedelta(hours=24):
+            entry = previous
+        else:
+            try:
+                parsed = parse_billing('mistralai', fetch_source(MISTRAL_BILLING_URL, accept='text/html').text or '', [{'key':mistral_key}])
+                entry = {'plans':parsed[mistral_key], 'sourceUrl':MISTRAL_BILLING_URL,
+                         'verifiedAt':stamp, 'status':'fresh', 'parserSchema':MISTRAL_BILLING_SCHEMA}
+            except Exception:
+                entry = {**previous,'status':'stale' if age(previous)>timedelta(days=7) else 'last_good'} if previous else None
+        if entry:
+            cache['billing']['mistralai'] = entry
+            billing[mistral_key] = {k:v for k,v in entry.items() if k != 'parserSchema'}
     records=[]
     for m in models:
         row={'key':m['key']}

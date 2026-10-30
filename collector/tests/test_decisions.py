@@ -4,6 +4,55 @@ from unittest.mock import patch
 from collector.decisions import weights_record, parse_billing, license_file
 
 class DecisionsTests(unittest.TestCase):
+    def test_mistral_direct_standard_exact_identity_named_columns(self):
+        from pathlib import Path
+        source=(Path(__file__).parent/'fixtures/mistral-billing-20261030.html').read_text()
+        result=parse_billing('mistralai',source,[{'key':'mistralai/mistral-large-4'},{'key':'mistralai/mistral-large-4-plus'},{'key':'mistralai/mistral-large-3'}])
+        self.assertEqual(set(result),{'mistralai/mistral-large-4'})
+        plan=result['mistralai/mistral-large-4'][0]
+        self.assertEqual([plan[k] for k in ['input_mtok','cached_input_mtok','output_mtok']],[.7,.07,2.1])
+        self.assertNotIn('cache_write_mtok',plan)
+        self.assertNotIn('contextWindowTokens',plan)
+        # Named fields prevent a changed column order silently changing the tariff.
+        swapped=source.replace('>Input</th>','>TEMP</th>').replace('>Output</th>','>Input</th>').replace('>TEMP</th>','>Output</th>')
+        changed=parse_billing('mistralai',swapped,[{'key':'mistralai/mistral-large-4'}])['mistralai/mistral-large-4'][0]
+        self.assertEqual([changed[k] for k in ['input_mtok','cached_input_mtok','output_mtok']],[2.1,.07,.7])
+
+    def test_mistral_unknown_tier_currency_or_ambiguous_rows_do_not_verify(self):
+        from pathlib import Path
+        import re
+        source=(Path(__file__).parent/'fixtures/mistral-billing-20261030.html').read_text()
+        row=next(r for r in re.findall(r'<tr\b[^>]*>.*?</tr>',source,re.S) if 'Mistral Large 4' in r)
+        for broken in [source.replace('>Standard</button>','>Batch</button>'),
+                       source.replace('>USD</button>','>EUR</button>'),
+                       source.replace(row,row+row),source.replace('Mistral Large 4','Mistral Large 4 Plus'),
+                       source.replace('>Cached input</th>','>Cache storage</th>'),
+                       source.replace('$0.07','$0.07 / hour')]:
+            with self.assertRaises(ValueError):parse_billing('mistralai',broken,[{'key':'mistralai/mistral-large-4'}])
+
+    def test_mistral_collector_cache_refresh_and_dated_fallback(self):
+        import tempfile,json
+        from pathlib import Path
+        from datetime import datetime,timezone
+        from collector.decisions import collect,MISTRAL_BILLING_URL
+        from collector.official import FetchResult
+        source=(Path(__file__).parent/'fixtures/mistral-billing-20261030.html').read_text()
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'data').mkdir();(root/'collector/state').mkdir(parents=True)
+            (root/'data/prices.json').write_text(json.dumps({'models':[{'key':'mistralai/mistral-large-4','provider':'mistralai'}]}))
+            with patch('collector.decisions.fetch_source',return_value=FetchResult(source)):
+                collect(root,datetime(2026,10,30,tzinfo=timezone.utc))
+            cp=root/'collector/state/decisions-cache.json';saved=json.loads(cp.read_text());saved['billing']['mistralai']['parserSchema']=0;cp.write_text(json.dumps(saved))
+            with patch('collector.decisions.fetch_source',return_value=FetchResult(source)) as fetch:
+                collect(root,datetime(2026,10,30,1,tzinfo=timezone.utc))
+            self.assertTrue(any(c.args[0]==MISTRAL_BILLING_URL and c.kwargs.get('accept')=='text/html' for c in fetch.call_args_list))
+            with patch('collector.decisions.fetch_source',side_effect=OSError('source offline')):
+                collect(root,datetime(2026,11,1,tzinfo=timezone.utc))
+            entry=json.loads(cp.read_text())['billing']['mistralai'];self.assertEqual((entry['status'],entry['verifiedAt']),('last_good','2026-10-30T01:00:00Z'))
+            with patch('collector.decisions.fetch_source',side_effect=OSError('source offline')):
+                collect(root,datetime(2026,11,8,tzinfo=timezone.utc))
+            self.assertEqual(json.loads(cp.read_text())['billing']['mistralai']['status'],'stale')
+
     def test_particle_exact_identity_named_columns_and_discount_stack(self):
         from pathlib import Path
         source = (Path(__file__).parent/'fixtures/particle-billing-20261029.md').read_text()

@@ -1,5 +1,69 @@
 [
   {
+    "kind": "standalone",
+    "slug": "gpt-6-rosalind-research-pricing-access",
+    "date": "2026-10-31",
+    "checked": "2026-10-31",
+    "author": "Thordur Arnason",
+    "title": "GPT-6 Rosalind Research: posted prices, restricted access",
+    "summary": "OpenAI’s life-sciences model has a public rate card and restricted Research access. Discovery approval and ChatGPT subscriptions do not establish access or API billing eligibility.",
+    "paragraphs": [
+      "OpenAI announced GPT-6 Rosalind Research on 30 October, using API ID gpt-6-rosalind. It is rolling out in Work, Codex and the API to approved organizations and authorized users for internal research. It is not available in the Chat tab. Discovery approval does not grant Research access.",
+      "Standard short-context API rates are $15 input, $1.50 cached input and $75 output per million tokens. Long-context rates and cache-write charges differ. A published rate card is not general availability, and subscription allowances are a separate offer.",
+      "Enterprise access starts with a two-week Admin Preview, off by default. Existing GPT-5.5 Rosalind Research remains available; Discovery stays on 5.5. Budget the actual tariff, repeated runs and qualified review time. The workload calculator supports explicit rate overrides; it does not determine model eligibility."
+    ],
+    "sources": [
+      {
+        "label": "Model release notes · 30 October 2026",
+        "href": "https://help.openai.com/en/articles/9624314-model-release-notes"
+      },
+      {
+        "label": "Official API pricing · Standard and long context",
+        "href": "https://developers.openai.com/api/docs/pricing"
+      },
+      {
+        "label": "Rosalind Research approval and deployment access",
+        "href": "https://help.openai.com/en/articles/20001193-gpt-rosalind-for-life-sciences-research"
+      },
+      {
+        "label": "Budget a workload with explicit rate overrides",
+        "href": "/compare/"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "slug": "youtu-parsing-omni-deployment-license",
+    "date": "2026-10-31",
+    "checked": "2026-10-31",
+    "author": "Thordur Arnason",
+    "title": "Youtu-Parsing-Omni: public weights, deployment costs and license limits",
+    "summary": "Tencent’s 5B parser has public weights and a serving plugin. Its custom license includes an EU territorial limitation; checkpoint size alone does not establish running costs.",
+    "paragraphs": [
+      "Tencent’s Youtu-Parsing-Omni is a 5B-class model that parses documents, images, audio and video into structured JSON. We verified its public checkpoint, serving plugin and inference examples on 31 October. The publisher’s README dates the release only to October; repository creation is not a public-availability date.",
+      "Its License Terms of Youtu-Parsing include an additional territorial limitation stating that the model is not intended for use within the European Union. The terms cover inference code, parameters and weights. Check the exact license for your deployment.",
+      "The documented vLLM recipe uses BF16, 65,536-token context and one concurrent sequence, with separate pinned environments for vLLM and Transformers. It does not establish a universal GPU-memory minimum or a hosted API price. Use Rent vs Run, then measure throughput and review effort per accepted document or media job. Benchmark scores are publisher results."
+    ],
+    "sources": [
+      {
+        "label": "Exact model card and public checkpoint · checked 31 October",
+        "href": "https://huggingface.co/tencent/Youtu-Parsing-Omni/tree/77d243bfd75c3e79b9e322f0668654ca22b8b187"
+      },
+      {
+        "label": "Exact license · territorial condition and third-party terms",
+        "href": "https://huggingface.co/tencent/Youtu-Parsing-Omni/blob/77d243bfd75c3e79b9e322f0668654ca22b8b187/LICENSE"
+      },
+      {
+        "label": "Publisher serving plugin, environments and examples",
+        "href": "https://github.com/TencentCloudADP/youtu-parsing/tree/main/youtu_parsing_omni"
+      },
+      {
+        "label": "Estimate deployment costs with Rent vs Run",
+        "href": "/infrastructure/"
+      }
+    ]
+  },
+  {
     "kind": "model",
     "slug": "mistral-large-4-weights-api-license",
     "date": "2026-10-30",

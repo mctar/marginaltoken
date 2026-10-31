@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T08:00:29Z",
+  "generatedAt": "2026-10-31T08:24:50Z",
   "asOf": "2026-10-31",
   "models": [
     {
@@ -3522,12 +3522,12 @@
     },
     {
       "key": "mistralai/mistral-large-2512",
-      "display": "Mistral Large 3",
+      "display": "Mistral Large 3 2512",
       "provider": "mistralai",
       "input_mtok": 0.5,
       "output_mtok": 1.5,
-      "context": 256000,
-      "source": "firstparty",
+      "context": 262144,
+      "source": "openrouter",
       "indexEligible": false,
       "inputModalities": [
         "file",
@@ -3542,15 +3542,19 @@
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
       "routedId": "mistralai/mistral-large-2512",
-      "sourceUrl": "https://docs.mistral.ai/inference/pricing",
+      "sourceUrl": "https://openrouter.ai/mistralai/mistral-large-2512",
       "maxOutputTokens": 209715,
-      "checked": "2026-10-30",
-      "rateNote": "Standard API rate",
-      "verificationStatus": "last_good",
       "family": "mistral-large",
       "selectionOrder": 90,
       "identityReviewed": true,
       "selectedSlots": [],
+      "lifecycle": {
+        "status": "deprecated",
+        "date": "2026-10-31",
+        "successor": "mistralai/mistral-large-4",
+        "detail": "Official model card marks this model deprecated and recommends Large 4 for new integrations. Its current direct pricing row was removed; the previous official quote is historical. This does not establish an API shutdown or withdrawal of independently hosted weights/routes.",
+        "sourceUrl": "https://docs.mistral.ai/models/mistral-large-3-25-12"
+      },
       "promotionVerified": false
     },
     {
@@ -3643,6 +3647,13 @@
       "selectionOrder": 98,
       "identityReviewed": false,
       "selectedSlots": [],
+      "lifecycle": {
+        "status": "deprecated",
+        "date": "2026-10-31",
+        "successor": "mistralai/mistral-large-4",
+        "detail": "Official model card marks this model deprecated and recommends Large 4 for new integrations. Its current direct pricing row was removed; the previous official quote is historical. This does not establish an API shutdown or withdrawal of independently hosted weights/routes.",
+        "sourceUrl": "https://docs.mistral.ai/models/mistral-medium-3-5-26-04"
+      },
       "promotionVerified": false
     },
     {
@@ -3670,26 +3681,6 @@
       "sourceUrl": "https://openrouter.ai/mistralai/mistral-medium-3.1",
       "maxOutputTokens": 104857,
       "knowledgeCutoff": "2025-06-30"
-    },
-    {
-      "key": "mistralai/mistral-medium-3.5",
-      "display": "Mistral Medium 3.5",
-      "provider": "mistralai",
-      "input_mtok": 1.5,
-      "output_mtok": 7.5,
-      "context": 256000,
-      "source": "firstparty",
-      "sourceUrl": "https://docs.mistral.ai/inference/pricing",
-      "checked": "2026-10-30",
-      "rateNote": "Standard API rate",
-      "indexEligible": false,
-      "releaseStage": "stable",
-      "verificationStatus": "last_good",
-      "family": "mistral-medium",
-      "selectionOrder": 99,
-      "identityReviewed": true,
-      "selectedSlots": [],
-      "promotionVerified": false
     },
     {
       "key": "mistralai/mistral-nemo",

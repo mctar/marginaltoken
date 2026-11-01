@@ -910,6 +910,9 @@ export default function ComparePage({
             })}
           </div>
         )}
+        {models.some((model) => model.provider === 'openai') && <p className="comparison-disclaimer">
+          OpenAI FedRAMP endpoints add 10% from 1 November 2026. Use a rate multiplier of 1.10 when applicable; check endpoint terms before combining adjustments. <a href="/methodology/#endpoint-charges">Source and scope →</a>
+        </p>}
         <p className="comparison-disclaimer">
           Calculations run in your browser. Success rates and adjustments are
           user supplied; no quality is inferred from price or API

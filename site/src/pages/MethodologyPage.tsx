@@ -93,6 +93,7 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
           <p>
             These are list prices, not negotiated prices. Standard rates are used, not batch, cached, flex, priority, regional, or long-context premiums. Tokenizers differ, so equal token counts do not always represent equal text. Price says nothing by itself about model quality. Nothing here is investment advice.
           </p>
+          <p id="endpoint-charges">OpenAI FedRAMP endpoints incur a 10% uplift from 1 November 2026, according to <a href="https://developers.openai.com/api/docs/pricing">official API pricing</a>. Ordinary token rates on the Tape remain unchanged. For a scenario subject to this uplift, use 1.10 in Compare’s rate multiplier and check the endpoint’s full billing terms. The source does not establish that this should be stacked with another regional uplift.</p>
         </section>
         <section>
           <span className="method-number">10</span>

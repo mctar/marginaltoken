@@ -1,5 +1,385 @@
 [
   {
+    "kind": "weekly",
+    "slug": "ai-model-releases-2026-10-26",
+    "date": "2026-11-01",
+    "checked": "2026-11-01",
+    "author": "Thordur Arnason",
+    "title": "AI model releases: 26 October–1 November 2026",
+    "summary": "Terra and Particle expand API choices; Mistral, Liquid and specialist open-weight releases broaden local deployment. Licensing, serving plans and access conditions determine the usable offer.",
+    "periodStart": "2026-10-26",
+    "periodEnd": "2026-11-01",
+    "cutoff": "2026-11-01T16:34:54.548372Z",
+    "editionStatus": "week-so-far",
+    "modelKeys": [
+      "openai/gpt-6.1-terra",
+      "particle-ai/particle-1",
+      "mistralai/mistral-large-4",
+      "moonshotai/kimi-k2.6",
+      "moonshotai/kimi-k2.7-code",
+      "moonshotai/kimi-k3.1-pro"
+    ],
+    "paragraphs": [
+      "Cheaper API options arrived alongside specialist weights for OCR, speech and computer use. This week’s releases make more workloads practical to test. The cost decision still depends on the exact serving plan, license and access conditions."
+    ],
+    "releases": [
+      {
+        "name": "GPT-6.1 Terra",
+        "date": "2026-10-26",
+        "access": "Public API",
+        "terms": "$1 / $5 Standard.",
+        "implication": "Long-context and cache-write tiers change the bill.",
+        "links": [
+          {
+            "label": "Model card",
+            "href": "/model/openai/gpt-6.1-terra/"
+          },
+          {
+            "label": "Billing note",
+            "href": "/notes/gpt-61-terra-pricing-context-routed-pro/"
+          },
+          {
+            "label": "Release",
+            "href": "https://openai.com/index/introducing-gpt-6-1-terra/"
+          }
+        ]
+      },
+      {
+        "name": "Hy-SimulMT / Interleave",
+        "date": "2026-10-26",
+        "access": "Public weights",
+        "terms": "Apache-2.0 declared; no verified tariff.",
+        "implication": "Streaming translation produces text; speech playback needs separate TTS.",
+        "links": [
+          {
+            "label": "Publisher",
+            "href": "https://github.com/Tencent-Hunyuan/Hy-SimulMT"
+          },
+          {
+            "label": "Checkpoint",
+            "href": "https://huggingface.co/tencent/Hy-SimulMT-30B-A3B"
+          }
+        ]
+      },
+      {
+        "name": "Unlimited-OCR-2",
+        "date": "2026-10-27",
+        "access": "Public weights",
+        "terms": "MIT declared; no verified tariff.",
+        "implication": "Budget processing and review per accepted page.",
+        "links": [
+          {
+            "label": "Deployment note",
+            "href": "/notes/unlimited-ocr-2-deployment-cost-per-page/"
+          },
+          {
+            "label": "Release",
+            "href": "https://huggingface.co/baidu/Unlimited-OCR-2"
+          }
+        ]
+      },
+      {
+        "name": "LFM3 family",
+        "date": "2026-10-27",
+        "access": "Weights + API",
+        "terms": "Text 1.7B: $0.08 / $0.20; custom license.",
+        "implication": "Other modalities have different meters; four-bit size excludes runtime memory.",
+        "links": [
+          {
+            "label": "Local deployment",
+            "href": "/notes/lfm3-local-deployment-commercial-license/"
+          },
+          {
+            "label": "Tariffs",
+            "href": "https://www.liquid.ai/pricing"
+          },
+          {
+            "label": "Release",
+            "href": "https://www.liquid.ai/blog/lfm3"
+          }
+        ]
+      },
+      {
+        "name": "Qwen Audio 3.1 Realtime Flash",
+        "date": "2026-10-27",
+        "access": "API",
+        "terms": "International text $0.23 / $0.70; audio $0.93 / $1.87.",
+        "implication": "Keep all four meters separate.",
+        "links": [
+          {
+            "label": "Voice billing",
+            "href": "/notes/qwen-audio-31-realtime-flash-billing/"
+          },
+          {
+            "label": "Release",
+            "href": "https://docs.qwencloud.com/changelog/models"
+          }
+        ]
+      },
+      {
+        "name": "MAI Image 2.7",
+        "date": "2026-10-27",
+        "access": "Editing preview",
+        "terms": "Playground/Arena; no verified API tariff.",
+        "implication": "Text-to-image remains forthcoming.",
+        "links": [
+          {
+            "label": "Microsoft release",
+            "href": "https://microsoft.ai/news/mai-image-2-7-debut/"
+          }
+        ]
+      },
+      {
+        "name": "Particle-1",
+        "date": "2026-10-28",
+        "access": "Public API",
+        "terms": "Direct peak $0.25 / $1; off-peak/Flex differ.",
+        "implication": "Post-trained DeepSeek model; vendor token savings need workload testing.",
+        "links": [
+          {
+            "label": "Billing note",
+            "href": "/notes/particle-1-token-efficiency-billing/"
+          },
+          {
+            "label": "Release",
+            "href": "https://particle.ai/blog/introducing-particle-1"
+          }
+        ]
+      },
+      {
+        "name": "Nemotron 3.5 Transcribe",
+        "date": "2026-10-28",
+        "access": "Public weights",
+        "terms": "OpenMDW-1.1; FP8/NVFP4 also verified.",
+        "implication": "Measure the available serving recipe; headline NIM throughput uses different optimizations.",
+        "links": [
+          {
+            "label": "Deployment note",
+            "href": "/notes/nemotron-35-transcribe-deployment-costs/"
+          },
+          {
+            "label": "NVIDIA release",
+            "href": "https://research.nvidia.com/labs/nemotron/NVIDIA-Nemotron-3.5-Transcribe/"
+          }
+        ]
+      },
+      {
+        "name": "Mistral Large 4 weights",
+        "date": "2026-10-29",
+        "access": "Public weights + preview API",
+        "terms": "Direct $0.70 / $2.10; custom hosting conditions.",
+        "implication": "Weight access expands deployment choices; API remains Public Preview.",
+        "links": [
+          {
+            "label": "License and pricing",
+            "href": "/notes/mistral-large-4-weights-api-license/"
+          },
+          {
+            "label": "Weights release",
+            "href": "https://mistral.ai/news/mistral-large-4-oss/"
+          }
+        ]
+      },
+      {
+        "name": "Surya 2.5",
+        "date": "2026-10-29",
+        "access": "Public weights",
+        "terms": "Modified OpenRAIL-M; commercial restrictions.",
+        "implication": "Revenue, funding and competing-service conditions affect eligibility.",
+        "links": [
+          {
+            "label": "Today’s note",
+            "href": "/notes/surya-25-local-ocr-license-costs/"
+          },
+          {
+            "label": "Release",
+            "href": "https://www.datalab.to/blog/surya-2-5"
+          }
+        ]
+      },
+      {
+        "name": "SFX v3",
+        "date": "2026-10-29",
+        "access": "ElevenCreative + API",
+        "terms": "Closed service; no comparable token quote verified.",
+        "implication": "Cost generated audio and retries separately.",
+        "links": [
+          {
+            "label": "ElevenLabs release",
+            "href": "https://elevenlabs.io/blog/sound-effects-v3"
+          }
+        ]
+      },
+      {
+        "name": "GPT-6 Rosalind Research",
+        "date": "2026-10-30",
+        "access": "Approved Research customers",
+        "terms": "Short-context API $15 / $75.",
+        "implication": "Discovery approval does not grant Research access.",
+        "links": [
+          {
+            "label": "Access note",
+            "href": "/notes/gpt-6-rosalind-research-pricing-access/"
+          },
+          {
+            "label": "Release",
+            "href": "https://help.openai.com/en/articles/9624314-model-release-notes"
+          }
+        ]
+      },
+      {
+        "name": "SenseNova-Loop-9B-Preview",
+        "date": "2026-10-30",
+        "access": "Public preview weights",
+        "terms": "Apache-2.0 declared; no verified tariff.",
+        "implication": "Looped execution means parameter count alone cannot predict running cost.",
+        "links": [
+          {
+            "label": "Publisher card",
+            "href": "https://huggingface.co/sensenova/SenseNova-Loop-9B-Preview"
+          }
+        ]
+      }
+    ],
+    "takeaways": [
+      {
+        "title": "Measure accepted work",
+        "text": "Terra and Particle’s efficiency claims are vendor results. Compare retries, reasoning, cache hits and review time on your own tasks.",
+        "links": [
+          {
+            "label": "Workload calculator",
+            "href": "/compare/"
+          }
+        ]
+      },
+      {
+        "title": "Budget the complete deployment",
+        "text": "OCR and speech weights need memory, serving software and operating effort. Review license conditions before counting infrastructure savings.",
+        "links": [
+          {
+            "label": "Rent vs Run",
+            "href": "/infrastructure/"
+          }
+        ]
+      }
+    ],
+    "updates": [
+      {
+        "title": "First-party access and prices",
+        "text": "Mistral Medium 3.5/Large 3 were deprecated on 31 October. Kimi K2 closed to new API users; full retirement is planned by end-December. Independent routes remain separately sourced.",
+        "links": [
+          {
+            "label": "Kimi notice",
+            "href": "/model/moonshotai/kimi-k2.6/"
+          },
+          {
+            "label": "Mistral lifecycle",
+            "href": "/model/mistralai/mistral-large-2512/"
+          }
+        ]
+      },
+      {
+        "title": "Endpoint and tool charges",
+        "text": "OpenAI FedRAMP adds 10% from 1 November. DeepSeek’s stated server-side Search/Fetch billing start has passed: $0.75 per 1,000 successful requests, additional to tokens.",
+        "links": [
+          {
+            "label": "FedRAMP scope",
+            "href": "/methodology/#endpoint-charges"
+          },
+          {
+            "label": "DeepSeek pricing",
+            "href": "https://api-docs.deepseek.com/quick_start/pricing/"
+          }
+        ]
+      },
+      {
+        "title": "Serving and regional availability",
+        "text": "Gemini Computer Use reached GA. QwenCloud added GLM 5.3 US access. Ollama 0.40.13 lists LFM3 audio/omni support on Linux and Windows.",
+        "links": [
+          {
+            "label": "Google",
+            "href": "https://ai.google.dev/gemini-api/docs/changelog"
+          },
+          {
+            "label": "QwenCloud",
+            "href": "https://docs.qwencloud.com/changelog/models"
+          },
+          {
+            "label": "Ollama",
+            "href": "https://github.com/ollama/ollama/releases/tag/v0.40.13"
+          }
+        ]
+      },
+      {
+        "title": "Weights verified; launch dates remain uncertain",
+        "text": "Mage-VL-Cowork, LBS-27B, Ling-3.1-flash-1019 and Youtu-Parsing-Omni are accessible checkpoints. Observation dates are not release dates; Youtu’s license includes an EU territorial condition.",
+        "links": [
+          {
+            "label": "Microsoft Mage",
+            "href": "https://huggingface.co/microsoft/Mage-VL-Cowork"
+          },
+          {
+            "label": "LBS",
+            "href": "https://huggingface.co/inclusionAI/LBS-27B"
+          },
+          {
+            "label": "Ling snapshot",
+            "href": "https://huggingface.co/inclusionAI/Ling-3.1-flash-1019"
+          },
+          {
+            "label": "Youtu note",
+            "href": "/notes/youtu-parsing-omni-deployment-license/"
+          }
+        ]
+      }
+    ],
+    "watching": [
+      {
+        "title": "Restricted rollouts",
+        "text": "Gemini Carbon and Genie 4 have restricted previews; MAI Cyber 1.1 Flash serves verified MDASH customers. Cadence Maestro targets selected early-access customers. None establishes general public API access.",
+        "links": [
+          {
+            "label": "Carbon",
+            "href": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/"
+          },
+          {
+            "label": "Genie",
+            "href": "https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/"
+          },
+          {
+            "label": "MAI Cyber",
+            "href": "https://microsoft.ai/news/mai-cyber-1-1-flash/"
+          },
+          {
+            "label": "Maestro",
+            "href": "https://www.cadence.com/en_US/home/company/newsroom/press-releases/pr/2026/cadence-introduces-maestro-a-domain-specialized-ai-model.html"
+          }
+        ]
+      },
+      {
+        "title": "Kimi Pro weights pending",
+        "text": "K3.1 Pro’s promised downloads remain unverified; the published target is 4 November. K3 stays our open-weight selection.",
+        "links": [
+          {
+            "label": "Kimi access and rates",
+            "href": "/notes/kimi-k31-pro-api-pricing-weights-pending/"
+          }
+        ]
+      }
+    ],
+    "coverage": "Selected official catalogs, release notes and exact repositories checked across Microsoft, NVIDIA, Meta, Google, Anthropic, OpenAI, Mistral and major Chinese publishers. Failed/gated endpoints remain recorded; coverage is not exhaustive. Basket policies are unchanged.",
+    "sources": [
+      {
+        "label": "Related Market Notes",
+        "href": "/notes/"
+      },
+      {
+        "label": "Official pricing provenance",
+        "href": "/methodology/#source-health"
+      }
+    ]
+  },
+  {
     "kind": "standalone",
     "slug": "surya-25-local-ocr-license-costs",
     "date": "2026-11-01",

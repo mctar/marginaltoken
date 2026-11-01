@@ -29,3 +29,10 @@ export function canonicalModelKey(value: string): string {
   )
   return candidates.length === 1 ? candidates[0][0] : value
 }
+
+// Service access can change while independent routes and public weights remain.
+export function serviceAccessEvents(value: string) {
+  return modelRegister[canonicalModelKey(value)]?.events?.filter(
+    (event) => event.kind === 'service-access',
+  ) ?? []
+}

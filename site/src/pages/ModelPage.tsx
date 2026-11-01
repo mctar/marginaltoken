@@ -1,5 +1,6 @@
 import HostingPanel from '../components/HostingPanel'
 import ModelHistory from '../components/ModelHistory'
+import { serviceAccessEvents } from '../lib/register'
 import WeightsReview from '../components/WeightsReview'
 import { useState } from 'react'
 import OfferPanel from '../components/OfferPanel'
@@ -60,6 +61,7 @@ export default function ModelPage({
   const source = modelSource(model)
   const path = modelPath(model.key)
   const alternatives = cheaperMatches(model, models)
+  const accessEvents = serviceAccessEvents(model.key)
 
   const shareLink = async () => {
     const url = `${window.location.origin}${path}`
@@ -126,6 +128,13 @@ export default function ModelPage({
             <small>input tokens</small>
           </div>
         </section>
+
+        {accessEvents.length > 0 && <section className="plan-panel" aria-label="First-party service access">
+          <h2>First-party service access</h2>
+          {accessEvents.map((event) => <p key={`${event.date}:${event.sourceUrl}`}>
+            {event.label}{' '}<a href={event.sourceUrl}>Official access notice →</a>
+          </p>)}
+        </section>}
 
         <section className="model-card-body">
           <div className="model-facts">

@@ -1,6 +1,42 @@
 [
   {
     "kind": "standalone",
+    "slug": "surya-25-local-ocr-license-costs",
+    "date": "2026-11-01",
+    "checked": "2026-11-01",
+    "author": "Thordur Arnason",
+    "title": "Surya 2.5: local OCR costs and commercial-license limits",
+    "summary": "Datalab’s OCR weights are public. Their commercial terms differ from the Apache-licensed code, and measured pages per second depend on the serving setup.",
+    "paragraphs": [
+      "Datalab released Surya 2.5 on 29 October with public OCR weights. The code is Apache 2.0; the weights use modified AI Pubs Open Rail-M terms.",
+      "The weight license restricts use by entities above $5 million in prior-year gross revenue or total equity/debt funding, with personal/research exceptions. A separate restriction covers products or services competing with Datalab or its affiliates. Broader licensing requires separate terms. Read the exact license for your deployment.",
+      "Datalab reports faster processing on tested H100 and Apple Silicon setups. Those are vendor measurements at specified resolutions and concurrency. Budget rendering, inference, retries and review, then compare cost per accepted page. Rent vs Run helps estimate infrastructure costs; licensing can add a separate bill."
+    ],
+    "sources": [
+      {
+        "label": "Datalab release and measured serving setups · 29 October 2026",
+        "href": "https://www.datalab.to/blog/surya-2-5"
+      },
+      {
+        "label": "Exact public checkpoint · verified 1 November",
+        "href": "https://huggingface.co/datalab-to/surya-ocr-2.5/tree/00c843e9cae45611dca0a6dc2c9bbbf2dadaaed3"
+      },
+      {
+        "label": "Exact weight license · revenue, funding and competition restrictions",
+        "href": "https://huggingface.co/datalab-to/surya-ocr-2.5/blob/00c843e9cae45611dca0a6dc2c9bbbf2dadaaed3/LICENSE"
+      },
+      {
+        "label": "Apache-2.0 code license and serving instructions",
+        "href": "https://github.com/datalab-to/surya"
+      },
+      {
+        "label": "Estimate infrastructure costs with Rent vs Run",
+        "href": "/infrastructure/"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
     "slug": "gpt-6-rosalind-research-pricing-access",
     "date": "2026-10-31",
     "checked": "2026-10-31",

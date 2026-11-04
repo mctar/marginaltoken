@@ -1,5 +1,101 @@
 [
   {
+    "kind": "standalone",
+    "date": "2026-11-04",
+    "checked": "2026-11-04",
+    "author": "Thordur Arnason",
+    "slug": "gemini-25-pro-flash-december-api-reroutes",
+    "title": "Gemini 2.5 Pro and Flash change models and rates on 1 December",
+    "summary": "Google will reroute two legacy Gemini API IDs to different models on 1 December. Check the replacement rates and request parameters before the switch.",
+    "paragraphs": [
+      "On 2 November, Google announced that direct Gemini API requests to gemini-2.5-pro will serve Gemini 3.8 Flash from 1 December. Requests to gemini-2.5-flash will serve Gemini 3.5 Flash-Lite. Google will bill each at the replacement model’s rates.",
+      "For December, Google lists Standard rates of $0.75 input and $3.75 output per million tokens for 3.8 Flash, and $0.30 input and $2.50 output for 3.5 Flash-Lite. Google schedules 3.8 Flash to rise to $1.50 input and $7.50 output on 1 January. Test the replacement model against your own requests, especially thinking settings and tool calls. Check separate routed offers with the service you use.",
+      "The Marginal Token’s automated Google check is using its last verified prices after Google moved the pricing page to AI Studio. On 4 November we compared all five cached Google rates with the official Standard price rows and confirmed they match."
+    ],
+    "sources": [
+      {
+        "label": "Google’s 2 November announcement",
+        "href": "https://aistudio.google.com/docs/changelog#11-02-2026"
+      },
+      {
+        "label": "Gemini API deprecations and replacement IDs",
+        "href": "https://aistudio.google.com/docs/deprecations"
+      },
+      {
+        "label": "Official Gemini pricing and effective dates",
+        "href": "https://aistudio.google.com/docs/pricing"
+      },
+      {
+        "label": "Compare workload costs",
+        "href": "/compare/"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "date": "2026-11-04",
+    "checked": "2026-11-04",
+    "author": "Thordur Arnason",
+    "slug": "claude-opus-55-message-threads-billing",
+    "title": "Claude Opus 5.5 message threads shrink requests while billing stays the same",
+    "summary": "Anthropic’s Messages API beta lets clients send only the new turn. The server rebuilds the conversation, and prompt caching remains a separate setting.",
+    "paragraphs": [
+      "Anthropic’s 2 November message threads beta lets agents using Claude Opus 5.5 and other Claude models send only the new turn. Anthropic reconstructs the conversation on the server and says pricing and rate limits stay the same.",
+      "Configure prompt caching separately. When estimating costs, use the input, cache read, cache write and output counts reported by the API. Request size alone misses the history the server restores.",
+      "A thread expires after five idle minutes, so keep the history needed to replay the conversation. The beta is ineligible for zero data retention and HIPAA use."
+    ],
+    "sources": [
+      {
+        "label": "Anthropic release notes · 2 November 2026",
+        "href": "https://platform.claude.com/docs/en/release-notes/overview#november-2-2026"
+      },
+      {
+        "label": "Message threads billing, caching and expiry",
+        "href": "https://platform.claude.com/docs/en/build-with-claude/message-threads"
+      },
+      {
+        "label": "Compare workload costs",
+        "href": "/compare/"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "date": "2026-11-04",
+    "checked": "2026-11-04",
+    "author": "Thordur Arnason",
+    "slug": "glm-53-flashx-legal-direct-and-routed-pricing",
+    "title": "GLM 5.3 FlashX Legal direct and routed prices",
+    "summary": "Z.ai and OpenRouter list the same token rates for FlashX Legal. Each service uses its own model ID and documents its own hosting and cache terms.",
+    "paragraphs": [
+      "OpenRouter lists GLM 5.3 FlashX Legal from 2 November under z-ai/glm-5.3-flashx-legal. Z.ai documents the direct API ID glm-5.3-flashx-legal separately. Use the ID for the service you call.",
+      "Both services list $0.37 for uncached input, $0.075 for cache reads and $1.25 for output per million tokens. Z.ai lists direct cache storage as free for a limited time. OpenRouter lists the route without EU in-region hosting. Check the applicable terms on the service you plan to use.",
+      "Our model card records the OpenRouter quote. For a direct estimate, use Z.ai’s listed rates in the workload calculator."
+    ],
+    "sources": [
+      {
+        "label": "Z.ai’s direct model ID",
+        "href": "https://docs.z.ai/guides/vlm/glm-5.3-flash"
+      },
+      {
+        "label": "Z.ai’s direct pricing and cache storage terms",
+        "href": "https://docs.z.ai/guides/overview/pricing"
+      },
+      {
+        "label": "OpenRouter’s quote and hosting availability",
+        "href": "https://openrouter.ai/z-ai/glm-5.3-flashx-legal"
+      },
+      {
+        "label": "FlashX Legal model card",
+        "href": "/model/z-ai/glm-5.3-flashx-legal/"
+      },
+      {
+        "label": "Compare workload costs",
+        "href": "/compare/"
+      }
+    ]
+  },
+  {
     "kind": "weekly",
     "slug": "ai-model-releases-2026-10-26",
     "date": "2026-11-01",

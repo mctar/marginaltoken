@@ -1,5 +1,329 @@
 [
   {
+    "kind": "weekly",
+    "slug": "ai-model-releases-2026-11-02",
+    "date": "2026-11-09",
+    "checked": "2026-11-09",
+    "author": "Thordur Arnason",
+    "title": "AI model releases: 2–8 November 2026",
+    "summary": "Hy4, LongCat 2.5 and Inkling 2 Small expand hosted access. New image and video APIs bring separate billing meters, while local releases make license and memory checks part of the cost decision.",
+    "periodStart": "2026-11-02",
+    "periodEnd": "2026-11-08",
+    "cutoff": "2026-11-09T08:33:59.563726Z",
+    "editionStatus": "complete",
+    "modelKeys": [
+      "tencent/hy4",
+      "ricursiveai/ripple-65b-preview",
+      "google/gemini-omni-1.2-flash",
+      "moonshotai/kimi-k3.1-pro",
+      "mistralai/mistral-large-4",
+      "inception/mercury-3",
+      "google/gemini-2.5-pro",
+      "google/gemini-2.5-flash"
+    ],
+    "paragraphs": [],
+    "releases": [
+      {
+        "name": "LongCat 2.5",
+        "date": "2026-11-02",
+        "access": "Meituan API",
+        "terms": "The full model follows September’s preview.",
+        "implication": "Supports OpenAI- and Anthropic-compatible requests. Meituan announced signup credits. A standard tariff was unverified.",
+        "links": [
+          {
+            "label": "API changelog",
+            "href": "https://longcat.chat/platform/docs/ChangeLog.html"
+          }
+        ]
+      },
+      {
+        "name": "Sarvam Prism",
+        "date": "2026-11-03",
+        "access": "API and Apache 2.0 weights",
+        "terms": "The serverless endpoint charges ₹4 per million input tokens.",
+        "implication": "It returns probabilities over supplied options with no output charge.",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://www.sarvam.ai/blogs/sarvam-prism"
+          },
+          {
+            "label": "Rates",
+            "href": "https://docs.sarvam.ai/api/getting-started/pricing"
+          }
+        ]
+      },
+      {
+        "name": "Pruna P-H3-Image",
+        "date": "2026-11-03",
+        "access": "Local image generation and editing",
+        "terms": "Pruna reports 21 GB peak VRAM at 8 MP for its 4-bit ComfyUI setup.",
+        "implication": "The weight license excludes the EU, UK, South Korea and US absent a separate license.",
+        "links": [
+          {
+            "label": "Release and terms",
+            "href": "https://www.pruna.ai/blog/oss-p-h3-image-launch"
+          }
+        ]
+      },
+      {
+        "name": "Tencent Hy4",
+        "date": "2026-11-04",
+        "access": "TokenHub and OpenRouter",
+        "terms": "Direct list rates are ¥6 input and ¥18 output per million tokens, half price through 31 December Beijing time.",
+        "implication": "OpenRouter’s USD quote is separate.",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://www.tencent.com/tencent-launches-hy4-joining-the-ranks-of-the-worlds-leading-open-source-ai-models/"
+          },
+          {
+            "label": "TokenHub pricing",
+            "href": "https://cloud.tencent.com/document/product/1823/130055/"
+          }
+        ]
+      },
+      {
+        "name": "Ripple-65B Preview",
+        "date": "2026-11-04",
+        "access": "Routed API and Apache 2.0 weights",
+        "terms": "OpenRouter quoted $0.20 input and $0.60 output per million tokens.",
+        "implication": "Ricursive also released an experimental NVFP4 checkpoint.",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://www.ricursive.com/ripple"
+          },
+          {
+            "label": "Routed quote",
+            "href": "https://openrouter.ai/api/v1/models/ricursiveai/ripple-65b-preview/endpoints"
+          }
+        ]
+      },
+      {
+        "name": "GPT Image 2.6",
+        "date": "2026-11-04",
+        "access": "Flare and Sunburst APIs",
+        "terms": "Both charge $30 per million image output tokens.",
+        "implication": "SVG generation can also incur authoring-model charges.",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://openai.com/index/introducing-images-2-6/"
+          },
+          {
+            "label": "Billing guide",
+            "href": "https://developers.openai.com/api/docs/guides/image-generation"
+          }
+        ]
+      },
+      {
+        "name": "Gemini Omni 1.2 Flash",
+        "date": "2026-11-05",
+        "access": "Paid Gemini API",
+        "terms": "A 15-second 720p clip costs about $1.04 for video output, plus input.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/"
+          },
+          {
+            "label": "Rates",
+            "href": "https://aistudio.google.com/docs/pricing.md#gemini-omni-1.2-flash"
+          }
+        ]
+      },
+      {
+        "name": "GPT-6 Cyber",
+        "date": "2026-11-05",
+        "access": "Restricted API",
+        "terms": "Daybreak Red and model approval required.",
+        "implication": "Standard short-context input and output cost $20 and $100 per million tokens.",
+        "links": [
+          {
+            "label": "System card",
+            "href": "https://deploymentsafety.openai.com/gpt-6-cyber"
+          },
+          {
+            "label": "Rates",
+            "href": "https://developers.openai.com/api/docs/models/gpt-6-cyber"
+          }
+        ]
+      },
+      {
+        "name": "Inkling 2 Small",
+        "date": "2026-11-05",
+        "access": "Tinker sampling and fine-tuning",
+        "terms": "Serverless beta lists $0.30 input and $1 output per million tokens.",
+        "implication": "Training has separate rates.",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://thinkingmachines.ai/news/inkling-2-small/"
+          },
+          {
+            "label": "Rates",
+            "href": "https://tinker-docs.thinkingmachines.ai/tinker/models/models_and_pricing/"
+          }
+        ]
+      },
+      {
+        "name": "ERNIE 5.5 Flash Base",
+        "date": "2026-11-05",
+        "access": "Base weights",
+        "terms": "Baidu’s custom license excludes the EU, UK and South Korea.",
+        "implication": "The checkpoint is intended for further training.",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://ernie.baidu.com/release/ernie-5-5-flash-base/"
+          },
+          {
+            "label": "License",
+            "href": "https://huggingface.co/baidu/ERNIE-5.5-Flash-Base/blob/main/LICENSE"
+          }
+        ]
+      },
+      {
+        "name": "Arete-27B",
+        "date": "2026-11-06",
+        "access": "Apache 2.0 weights",
+        "terms": "A Qwen3.8-27B fine-tune from Nous Research.",
+        "implication": "The publisher also posted its training pairs.",
+        "links": [
+          {
+            "label": "Weights",
+            "href": "https://huggingface.co/NousResearch/Arete-27B"
+          },
+          {
+            "label": "Training pairs",
+            "href": "https://huggingface.co/datasets/NousResearch/arete-data-pairs"
+          }
+        ]
+      }
+    ],
+    "updates": [
+      {
+        "title": "Kimi K3.1 Pro",
+        "text": "launched its API in October. The weights were verified public by 5 November. The files total about 1.56 TB, and Moonshot’s custom license sets conditions for qualifying model-as-a-service businesses.",
+        "links": [
+          {
+            "label": "Checkpoint and license",
+            "href": "https://huggingface.co/moonshotai/Kimi-K3.1-Pro"
+          }
+        ]
+      },
+      {
+        "title": "Mistral Large 4",
+        "text": "showed general availability on 7 November. Direct rates held at $0.70 input and $2.10 output per million tokens. Mercury 2, 2.5 and 3 lost their OpenRouter listings by 8 November. Inception still posts direct Mercury 3 prices.",
+        "links": [
+          {
+            "label": "Mistral model card",
+            "href": "https://docs.mistral.ai/models/mistral-large-4-0"
+          },
+          {
+            "label": "OpenRouter endpoints",
+            "href": "https://openrouter.ai/api/v1/models/inception/mercury-3/endpoints"
+          },
+          {
+            "label": "Inception rates",
+            "href": "https://docs.inceptionlabs.ai/get-started/models"
+          }
+        ]
+      },
+      {
+        "title": "Legacy Gemini 2.5 Pro and Flash",
+        "text": "will serve different models at replacement rates from 1 December. Cloudflare separately moved its listed Workers AI shutdowns to 20 November.",
+        "links": [
+          {
+            "label": "Gemini migration",
+            "href": "https://marginaltoken.com/notes/gemini-25-pro-flash-december-api-reroutes/"
+          },
+          {
+            "label": "Workers AI notice",
+            "href": "https://developers.cloudflare.com/changelog/post/2026-11-05-planned-model-deprecations/"
+          }
+        ]
+      }
+    ],
+    "watching": [
+      {
+        "title": "Hy4, Inkling 2 Small and Hydrogen-1.0",
+        "text": "Tencent said final Hy4 weights would follow its API launch. Thinking Machines targeted the week of 9 November for Apache 2.0 Inkling 2 Small weights after safety testing. Neither download was verified at cutoff. Deep Principle announced Hydrogen-1.0 and lists a hosted route, while its exact weight repository requires approval.",
+        "links": [
+          {
+            "label": "Tencent",
+            "href": "https://www.tencent.com/tencent-launches-hy4-joining-the-ranks-of-the-worlds-leading-open-source-ai-models/"
+          },
+          {
+            "label": "Thinking Machines",
+            "href": "https://thinkingmachines.ai/news/inkling-2-small/"
+          },
+          {
+            "label": "Hydrogen weights",
+            "href": "https://huggingface.co/deep-principle/Hydrogen-1.0"
+          }
+        ]
+      }
+    ],
+    "takeaways": [
+      {
+        "title": "Match the bill to the workload",
+        "text": "Video output, decision input and text completion use different meters. Check the endpoint and unit before entering a rate.",
+        "links": [
+          {
+            "label": "Workload calculator",
+            "href": "https://marginaltoken.com/compare/"
+          }
+        ]
+      },
+      {
+        "title": "Check whether you can actually run it",
+        "text": "A public checkpoint still comes with license terms and a hardware bill. Model files give you a starting point for sizing memory.",
+        "links": [
+          {
+            "label": "Rent vs Run",
+            "href": "https://marginaltoken.com/infrastructure/"
+          }
+        ]
+      }
+    ],
+    "coverage": "This is a selection of verified events. Some publisher sources and gated artifacts were inaccessible.",
+    "sources": []
+  },
+  {
+    "kind": "standalone",
+    "date": "2026-11-09",
+    "checked": "2026-11-09",
+    "author": "Thordur Arnason",
+    "slug": "pruna-p-h3-image-comfyui-memory-license",
+    "title": "P-H3-Image ComfyUI memory and weight-license limits",
+    "summary": "Pruna publishes image generation and editing weights with a measured 21 GB memory example and geographic limits on use.",
+    "paragraphs": [
+      "Pruna released P-H3-Image on 3 November with downloadable weights for image generation and editing. Its 4-bit ComfyUI configuration lists about 20 GB of downloads. Pruna reports 21 GB peak VRAM at 8 megapixels for the diffusion model, text encoder and VAE. Budget separately for the prompt upsampler.",
+      "The bundled MiniMax H3 Community License excludes the EU, UK, South Korea and US. The agreement points users in those territories to MiniMax for separate licensing. If the terms cover your use, take the measured setup as a starting point for estimating hardware and running costs."
+    ],
+    "sources": [
+      {
+        "label": "Pruna release · 3 November 2026",
+        "href": "https://www.pruna.ai/blog/oss-p-h3-image-launch"
+      },
+      {
+        "label": "ComfyUI weights and memory measurements",
+        "href": "https://huggingface.co/PrunaAI/P-H3-Image-Comfy"
+      },
+      {
+        "label": "Bundled MiniMax H3 weight license",
+        "href": "https://huggingface.co/PrunaAI/P-H3-Image-Comfy/blob/main/LICENSE"
+      },
+      {
+        "label": "Rent vs Run calculator",
+        "href": "/infrastructure/"
+      }
+    ]
+  },
+  {
     "kind": "standalone",
     "date": "2026-11-04",
     "checked": "2026-11-04",
@@ -1409,20 +1733,17 @@
   {
     "slug": "mercury-3-launch-pricing-migration",
     "date": "2026-10-20",
-    "checked": "2026-10-21",
+    "checked": "2026-11-09",
     "author": "Thordur Arnason",
     "title": "Mercury 3: launch prices and the Mercury 2 migration deadline",
-    "summary": "Mercury 3 launches at half its regular token rates. Existing direct customers of Mercury 2 and 2.5 have until 15 November to migrate, with enterprise agreements treated separately.",
+    "summary": "OpenRouter’s Mercury routes have ended. Inception still posts direct Mercury 3 pricing, with separate access terms for older models.",
     "paragraphs": [
       "Mercury 3 launched on 19 October at $0.10 per million input tokens and $0.35 per million output tokens, half its regular $0.20/$0.70 rates. Cached input costs $0.01 per million tokens during the offer. No promotion end date is stated on the checked pricing pages.",
       "Inception has also closed Mercury 2 and 2.5 to new direct customers. Customers with usage before 19 October retain access until 15 November; enterprise agreements are treated separately. That is Inception’s policy, not a confirmed shutdown of every third-party route.",
-      "Budget against both tariffs and test migration before the deadline."
+      "Budget against both tariffs and test migration before the deadline.",
+      "Update, 9 November. OpenRouter listed 8 November as the expiry date for Mercury 2, 2.5 and 3. Those routes have since disappeared from its model catalog and their endpoint lists are empty.",
+      "Inception still lists the direct API model mercury-3 at $0.10 input, $0.01 cached input and $0.35 output per million tokens under its launch offer. Regular rates are $0.20, $0.02 and $0.70, respectively. A workload with one million uncached input tokens and one million output tokens costs $0.45 at the posted promotional rates or $0.90 at regular rates."
     ],
-    "modelKey": "inception/mercury-3",
-    "comparisonModelKey": "anthropic/claude-haiku-5.5",
-    "calculatorQuote": "tape",
-    "calculatorTitle": "Estimate Mercury 3 workload costs",
-    "calculatorGuidance": "Compare Mercury 3’s current routed Tape quote with Haiku 5.5’s Standard plan using your workload. For a regular-rate Mercury scenario, enter $0.20 input and $0.70 output per million tokens under Your rate overrides. Check your host’s cache terms separately; the launch offer has no stated end date.",
     "sources": [
       {
         "label": "Inception Mercury 3 launch · 19 October 2026",
@@ -1435,8 +1756,21 @@
       {
         "label": "Inception Mercury 2 and 2.5 access terms",
         "href": "https://www.inceptionlabs.ai/models"
+      },
+      {
+        "label": "OpenRouter Mercury 3 endpoint list",
+        "href": "https://openrouter.ai/api/v1/models/inception/mercury-3/endpoints"
+      },
+      {
+        "label": "Mercury 3 archived quotes",
+        "href": "/model/inception/mercury-3/"
+      },
+      {
+        "label": "Compare other models’ current rates",
+        "href": "/compare/"
       }
-    ]
+    ],
+    "kind": "standalone"
   },
   {
     "kind": "weekly",

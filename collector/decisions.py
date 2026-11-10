@@ -20,10 +20,13 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parent.parent
 PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by-4.0', 'cc0-1.0'}
 WEIGHTS_SCHEMA = 2
-ANTHROPIC_BILLING_SCHEMA = 1
+ANTHROPIC_BILLING_SCHEMA = 2
 OPENAI_BILLING_SCHEMA = 2
 PARTICLE_BILLING_SCHEMA = 1
 PARTICLE_BILLING_URL = 'https://docs.particle.ai/usage-billing'
+META_BILLING_SCHEMA = 1
+META_BILLING_URL = 'https://dev.meta.ai/docs/pricing-rate-limits'
+META_EMBER_KEY = 'meta/muse-ember'
 MISTRAL_BILLING_SCHEMA = 1
 MISTRAL_BILLING_URL = 'https://docs.mistral.ai/inference/pricing'
 MOONSHOT_BILLING_SCHEMA = 1
@@ -85,15 +88,15 @@ def tier(label, vals, **extra):
         if value is not None: result[field] = value
     return result
 
-def opus_fast_plan(text, standard):
-    """Read the reviewed Opus speed option without inventing missing cache rates."""
+def claude_fast_plan(text, standard, display):
+    """Read a reviewed speed option without inventing missing cache rates."""
     section = re.search(r'Fast mode pricing(.*?)(?=Batch processing|\Z)', text, re.S)
     if not section:
         return None
     body = section.group(1)
     if not re.search(r'\| Model \| Input \| Output \|', body):
         return None
-    rows = re.findall(r'\| Claude Opus 5\.5 \| ([^|]+) \| ([^|]+) \|', body)
+    rows = re.findall(rf'\| {re.escape(display)} \| ([^|]+) \| ([^|]+) \|', body)
     if len(rows) != 1:
         return None
     rates = [re.fullmatch(r'\s*\$\s*(\d+(?:\.\d+)?)\s*(?:USD\s*)?/\s*MTok\s*', cell) for cell in rows[0]]
@@ -102,8 +105,10 @@ def opus_fast_plan(text, standard):
     inp, output = (float(value.group(1)) for value in rates)
     if inp <= 0 or output <= 0 or standard['input_mtok'] <= 0:
         return None
-    plan = {'id': 'fast', 'label': 'Fast', 'input_mtok': inp, 'output_mtok': output,
-            'notes': 'Optional faster inference of the same Opus 5.5 model. Claude API: speed="fast"; access is available in Start, Build and Scale tiers. Also available on Azure-hosted Microsoft Foundry. No Batch or Priority Tier combination. Cache and data-residency modifiers stack on Fast rates; switching speeds invalidates the prompt cache. Cache-use assumptions must describe requests at this speed.'}
+    notes = ('Optional faster inference of the same Opus 5.5 model. Claude API: speed="fast"; access is available in Start, Build and Scale tiers. Also available on Azure-hosted Microsoft Foundry. No Batch or Priority Tier combination. Cache and data-residency modifiers stack on Fast rates; switching speeds invalidates the prompt cache. Cache-use assumptions must describe requests at this speed.'
+             if display == 'Claude Opus 5.5' else
+             'Optional Fast serving mode on the direct Claude API. Check account eligibility. Batch cannot be combined with Fast. Cache and data residency modifiers apply to the Fast rates.')
+    plan = {'id': 'fast', 'label': 'Fast', 'input_mtok': inp, 'output_mtok': output, 'notes': notes}
     # Derive only the cache rates present in the independently parsed Standard
     # row, and only while the source explicitly confirms the multiplier rule.
     cache_rule = re.sub(r'\[Prompt caching multipliers\]\(https://platform\.claude\.com/docs/en/about-claude/pricing#prompt-caching\)',
@@ -263,9 +268,48 @@ def mistral_large4_plan(source):
             'cached_input_mtok':cached,'output_mtok':output,
             'notes':'Mistral direct Standard API in USD only; routed quotes have separate terms. Cached input means observed cache hits. No cache-write or storage rate inferred. Batch, Priority and regional modifiers are not included. Reasoning is billable output: include it once in total output. Tool fees and other charges require separate assumptions.'}
 
+def muse_ember_plans(source):
+    """Read the two published direct tariffs for the exact Muse Ember API ID."""
+    text = visible_text(source)
+    sections = re.findall(
+        r'(?:^|\| )Muse Ember \| Model: \| muse-ember-1\.0 \| , in Standard mode only\. (.*?) \| Token pricing notes \|',
+        text, re.S)
+    if len(sections) != 1:
+        raise ValueError('Missing or duplicate Muse Ember Standard pricing section')
+    section = sections[0]
+    header = ('| Usage | Up to 200K input tokens (per 1M tokens) | '
+              'Over 200K input tokens (per 1M tokens) |')
+    if header not in section or 'billed at the long-context rates in full' not in section:
+        raise ValueError('Muse Ember context billing rule changed')
+    table = section.split(header, 1)[1]
+    cells = [part.strip() for part in table.strip(' |').split('|')]
+    if len(cells) != 9 or set(cells[::3]) != {'Input', 'Cached input', 'Output'}:
+        raise ValueError('Muse Ember pricing rows changed')
+    rows = {}
+    for label, standard, long_context in zip(cells[::3], cells[1::3], cells[2::3]):
+        amounts = [re.fullmatch(r'\$([0-9]+(?:\.[0-9]+)?)', rate)
+                   for rate in (standard, long_context)]
+        if not all(amounts):
+            raise ValueError('Ambiguous Muse Ember rate')
+        rows[label] = [float(amount[1]) for amount in amounts]
+    notes = ('Meta Model API Standard only. Above 200,000 input tokens, the long-context rates apply to the entire request. '
+             'Count cached input and any restored conversation history in input tokens. Add tool fees separately.')
+    return [
+        tier(label, [rows['Input'][i], rows['Cached input'][i], None, rows['Output'][i]],
+             **bounds, contextWindowTokens=1048576, maximumOutputTokens=524288, notes=notes)
+        for i, (label, bounds) in enumerate([
+            ('Standard', {'maximumPromptTokens': 200000}),
+            ('Standard long context', {'minimumPromptTokens': 200001}),
+        ])
+    ]
+
+
 def parse_billing(provider, source, models):
     result = {}
-    if provider == 'mistralai':
+    if provider == 'meta':
+        if any(m['key'] == META_EMBER_KEY for m in models):
+            result[META_EMBER_KEY] = muse_ember_plans(source)
+    elif provider == 'mistralai':
         if any(m['key'] == 'mistralai/mistral-large-4' for m in models):
             result['mistralai/mistral-large-4'] = [mistral_large4_plan(source)]
     elif provider == 'particle-ai':
@@ -356,7 +400,8 @@ def parse_billing(provider, source, models):
             if len({p['id'] for p in plans}) != len(plans): plans = []
             plans.sort(key=lambda p: p['id'] != 'standard')
             # Batch plus cache is supported by Claude; multipliers stack.
-            if plans and '50% discount on both input and output tokens' in text and 'Prompt caching and batch processing discounts apply' in text:
+            if (plans and re.search(r'50(?:%| percent) discount on both input and output tokens', text)
+                    and 'Prompt caching and batch processing discounts apply' in text):
                 for p in list(plans):
                     b = dict(p); b['id'] = p['id'].replace('standard','batch'); b['label'] = p['label'].replace('Standard','Batch')
                     for f in ['input_mtok','output_mtok','cached_input_mtok','cache_write_mtok','cacheWriteHour_mtok']:
@@ -364,8 +409,8 @@ def parse_billing(provider, source, models):
                     plans.append(b)
             # Fast is a serving option, never a successor or a discounted Batch
             # variant. Only this explicitly reviewed model is eligible.
-            if model['key'] == 'anthropic/claude-opus-5.5' and plans:
-                fast = opus_fast_plan(text, plans[0])
+            if model['key'] in {'anthropic/claude-opus-5.5', 'anthropic/claude-fable-5.2'} and plans:
+                fast = claude_fast_plan(text, plans[0], display)
                 if fast: plans.append(fast)
             if plans: result[model['key']] = plans
     elif provider == 'google':
@@ -447,9 +492,12 @@ def collect(root=ROOT, now=None):
         # containing no billing record for it.
         required = {'google/gemini-4-argon'} & {m['key'] for m in models}
         needs_argon = provider == 'google' and bool(required - set((previous or {}).get('plans', {})))
-        needs_fast = (provider == 'anthropic' and any(m['key'] == 'anthropic/claude-opus-5.5' for m in models)
-                      and ((previous or {}).get('parserSchema') != ANTHROPIC_BILLING_SCHEMA
-                           or not any(p['id'] == 'fast' for p in (previous or {}).get('plans', {}).get('anthropic/claude-opus-5.5', []))))
+        claude_fast_models = {'anthropic/claude-opus-5.5', 'anthropic/claude-fable-5.2'}
+        required_fast = claude_fast_models & {m['key'] for m in models}
+        cached_plans = (previous or {}).get('plans', {})
+        needs_fast = provider == 'anthropic' and bool(required_fast) and (
+            (previous or {}).get('parserSchema') != ANTHROPIC_BILLING_SCHEMA
+            or any(not any(p['id'] == 'fast' for p in cached_plans.get(key, [])) for key in required_fast))
         required_openai = {m['key'] for m in models if m['provider'] == 'openai' and m.get('source') == 'firstparty'}
         needs_openai = provider == 'openai' and ((previous or {}).get('parserSchema') != OPENAI_BILLING_SCHEMA
                           or bool(required_openai - set((previous or {}).get('plans', {}))))
@@ -505,6 +553,21 @@ def collect(root=ROOT, now=None):
         if entry:
             cache['billing']['particle-ai'] = entry
             billing[particle_key] = {k:v for k,v in entry.items() if k != 'parserSchema'}
+    if any(m['key'] == META_EMBER_KEY for m in models):
+        previous = cache['billing'].get('meta')
+        if previous and previous.get('parserSchema') == META_BILLING_SCHEMA and age(previous) < timedelta(hours=24):
+            entry = previous
+        else:
+            try:
+                source = fetch_source(META_BILLING_URL, accept='text/html').text or ''
+                plans = parse_billing('meta', source, models)[META_EMBER_KEY]
+                entry = {'plans': plans, 'sourceUrl': META_BILLING_URL,
+                         'verifiedAt': stamp, 'status': 'fresh', 'parserSchema': META_BILLING_SCHEMA}
+            except Exception:
+                entry = {**previous, 'status': 'stale' if age(previous) > timedelta(days=7) else 'last_good'} if previous else None
+        if entry:
+            cache['billing']['meta'] = entry
+            billing[META_EMBER_KEY] = {k: v for k, v in entry.items() if k != 'parserSchema'}
     mistral_key = 'mistralai/mistral-large-4'
     if any(m['key'] == mistral_key for m in models):
         previous = cache['billing'].get('mistralai')

@@ -4,6 +4,34 @@ from unittest.mock import patch
 from collector.decisions import weights_record, parse_billing, license_file
 
 class DecisionsTests(unittest.TestCase):
+    def test_muse_ember_exact_direct_context_tiers(self):
+        from pathlib import Path
+        source = (Path(__file__).parent / 'fixtures/meta-ember-billing-20261110.html').read_text()
+        models = [{'key': 'meta/muse-ember'}, {'key': 'meta/muse-spark'}]
+        result = parse_billing('meta', source, models)
+        self.assertEqual(set(result), {'meta/muse-ember'})
+        standard, long_context = result['meta/muse-ember']
+        self.assertEqual((standard['input_mtok'], standard['cached_input_mtok'], standard['output_mtok']), (.10, .004, .50))
+        self.assertEqual((long_context['input_mtok'], long_context['cached_input_mtok'], long_context['output_mtok']), (.30, .012, 1.50))
+        self.assertEqual(standard['maximumPromptTokens'], 200000)
+        self.assertEqual(long_context['minimumPromptTokens'], 200001)
+        self.assertTrue(all('cache_write_mtok' not in plan for plan in (standard, long_context)))
+        for changed in (source.replace('muse-ember-1.0', 'muse-spark-1.3'),
+                        source.replace('200K', '100K'), source + source):
+            with self.assertRaises(ValueError):
+                parse_billing('meta', changed, models)
+
+    def test_fable_billing_reads_current_batch_wording_and_exact_fast_row(self):
+        source = ('The following table shows pricing for all Claude models: | Name | Input | Output | 5m writes | 1h writes | Hits and refreshes | '
+                  'Claude Fable 5.2 | $8 / MTok | $40 / MTok | $10 / MTok | $16 / MTok | $0.20 / MTok | '
+                  'Fast mode pricing | Model | Input | Output | Claude Mythos 5.2 | $32 / MTok | $160 / MTok | '
+                  'Claude Fable 5.2 | $16 / MTok | $80 / MTok | Prompt caching multipliers | apply on top of fast mode pricing. | '
+                  'Batch processing | a 50 percent discount on both input and output tokens. | Prompt caching and batch processing discounts apply')
+        model = {'key': 'anthropic/claude-fable-5.2', 'display': 'Claude Fable 5.2'}
+        plans = parse_billing('anthropic', source, [model])[model['key']]
+        self.assertEqual([(p['id'], p['input_mtok'], p['output_mtok'], p['cached_input_mtok']) for p in plans],
+                         [('standard', 8, 40, .20), ('batch', 4, 20, .10), ('fast', 16, 80, .40)])
+
     def test_mistral_direct_standard_exact_identity_named_columns(self):
         from pathlib import Path
         source=(Path(__file__).parent/'fixtures/mistral-billing-20261030.html').read_text()

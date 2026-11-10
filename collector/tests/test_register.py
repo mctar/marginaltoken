@@ -73,6 +73,17 @@ class RegisterTests(unittest.TestCase):
         held = apply_register(self.models, self.register, self.now)
         self.assertEqual(held["basket"]["openai"], "openai/gpt-6.1-sol")
 
+    def test_fable_promotes_in_its_slot_only_after_fresh_direct_verification(self):
+        fable = next(m for m in self.models if m['key'] == 'anthropic/claude-fable-5.2')
+        fable['verificationStatus'] = 'manual'
+        fallback = apply_register(self.models, self.register, self.now)
+        self.assertEqual(fallback['selections']['slot:anthropic-fable'], 'anthropic/claude-fable-5.1')
+        fable['verificationStatus'] = 'fresh'
+        promoted = apply_register(self.models, self.register, self.now)
+        self.assertEqual(promoted['selections']['slot:anthropic-fable'], fable['key'])
+        self.assertEqual(promoted['basket']['anthropic'], 'anthropic/claude-opus-5.5')
+        self.assertEqual(fable['apiId'], 'claude-fable-5-2')
+
     def test_kimi_pro_promotes_only_after_its_own_fresh_verification(self):
         old='moonshotai/kimi-k3';new='moonshotai/kimi-k3.1-pro'
         pro=next(m for m in self.models if m['key']==new)

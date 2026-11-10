@@ -1,5 +1,104 @@
 [
   {
+    "slug": "claude-fable-52-pricing-data-retention",
+    "date": "2026-11-10",
+    "checked": "2026-11-10",
+    "author": "Thordur Arnason",
+    "title": "Claude Fable 5.2 lowers standard token rates",
+    "summary": "Standard input and output rates fall 20% from Fable 5.1. Anthropic applies 30-day data retention unless it expressly authorizes an exception.",
+    "paragraphs": [
+      "Anthropic released Claude Fable 5.2 on 9 November. Standard direct rates are $8 input and $40 output per million tokens, down from $10 and $50 on Fable 5.1. Cache reads cost $0.20 per million. Batch costs $4 input and $20 output. The optional Fast mode costs $16 and $80.",
+      "Fable 5.2 is available to Claude API customers. The accompanying Mythos 5.2 release is restricted to verified organizations. Both require 30-day data retention unless Anthropic expressly authorizes zero data retention.",
+      "Fable 5.1 remains active while teams test the migration. Check your own token mix and re-run workload evaluations before estimating savings."
+    ],
+    "sources": [
+      {
+        "label": "Anthropic launch · 9 November",
+        "href": "https://www.anthropic.com/claude-fable-and-mythos-5-2"
+      },
+      {
+        "label": "Fable 5.2 prices, access and migration",
+        "href": "https://platform.claude.com/docs/en/models/fable-5-2/whats-new-fable-5-2"
+      },
+      {
+        "label": "Fable 5.1 lifecycle",
+        "href": "https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1"
+      }
+    ],
+    "modelKey": "anthropic/claude-fable-5.2",
+    "comparisonModelKey": "anthropic/claude-fable-5.1",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Compare Fable 5.2 with 5.1",
+    "calculatorGuidance": "Use the same workload for both Standard plans, then adjust token volumes and cache assumptions using your own measurements."
+  },
+  {
+    "slug": "muse-ember-long-context-pricing",
+    "date": "2026-11-10",
+    "checked": "2026-11-10",
+    "author": "Thordur Arnason",
+    "title": "Muse Ember triples direct rates above 200,000 input tokens",
+    "summary": "Meta applies the long-context rates to the whole request. Cached input and restored conversation history count toward the threshold.",
+    "paragraphs": [
+      "Meta released Muse Ember on 9 November at $0.10 input, $0.004 cached input and $0.50 output per million tokens on its direct API. Above 200,000 input tokens, the entire request is billed at $0.30 input, $0.012 cached input and $1.50 output per million.",
+      "Cached input and restored conversation history count toward the threshold. A request with 210,000 uncached input tokens and 10,000 output tokens costs $0.078 before tools. At the headline rates it would cost $0.026.",
+      "The Tape quotes OpenRouter’s Muse Ember route. Check the terms for the route you use before budgeting a long prompt."
+    ],
+    "sources": [
+      {
+        "label": "Meta launch · 9 November",
+        "href": "https://research.meta.ai/blog/muse-ember"
+      },
+      {
+        "label": "Meta Model API pricing",
+        "href": "https://dev.meta.ai/docs/pricing-rate-limits#muse-ember-pricing"
+      },
+      {
+        "label": "OpenRouter endpoint quote",
+        "href": "https://openrouter.ai/api/v1/models/meta/muse-ember/endpoints"
+      }
+    ],
+    "modelKey": "meta/muse-ember",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Compare Muse Ember’s two direct tiers",
+    "calculatorGuidance": "Choose Standard through 200,000 input tokens and Standard long context for larger requests. Enter the full input count before setting the cache-hit percentage."
+  },
+  {
+    "slug": "longcat-25-weights-hosted-pricing",
+    "date": "2026-11-10",
+    "checked": "2026-11-10",
+    "author": "Thordur Arnason",
+    "title": "LongCat 2.5 weight downloads range from 1.34 TB to 3.56 TB",
+    "summary": "Meituan publishes two MIT-licensed checkpoints. ZenMux lists a separate promotional API quote.",
+    "paragraphs": [
+      "Meituan announced LongCat 2.5 on 2 November. By 10 November its publisher repositories listed two public MIT-licensed checkpoints. The main checkpoint contains about 3.56 TB of weight shards and the W4A4 package about 1.34 TB.",
+      "Those totals cover the weight files alone. Use Rent vs Run to budget for the hardware, runtime memory and utilization of your chosen serving setup.",
+      "For a hosted comparison, ZenMux listed promotional rates of $0.30 input, $0.006 cached input and $1.18 output per million tokens when checked. The corresponding regular rates were $0.75, $0.015 and $2.95. Check the current ZenMux quote before budgeting."
+    ],
+    "sources": [
+      {
+        "label": "Meituan launch · 2 November",
+        "href": "https://tech.meituan.com/2026/11/02/Meituan-LongCat-2.5.html"
+      },
+      {
+        "label": "Main checkpoint and MIT license",
+        "href": "https://huggingface.co/meituan-longcat/LongCat-2.5"
+      },
+      {
+        "label": "W4A4 checkpoint and MIT license",
+        "href": "https://huggingface.co/meituan-longcat/LongCat-2.5-W4A4"
+      },
+      {
+        "label": "ZenMux hosted pricing",
+        "href": "https://zenmux.ai/meituan/longcat-2.5"
+      },
+      {
+        "label": "Rent vs Run calculator",
+        "href": "https://marginaltoken.com/infrastructure/"
+      }
+    ],
+    "kind": "standalone"
+  },
+  {
     "kind": "weekly",
     "slug": "ai-model-releases-2026-11-02",
     "date": "2026-11-09",

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-11-01",
+  "reviewedAt": "2026-11-10",
   "policy": "Promote reviewed identities within approved families only after fresh official price verification. Discovery never changes family policy.",
   "basket": {
     "anthropic": "anthropic/claude-opus-5.5",
@@ -19,7 +19,7 @@
     "basket:moonshotai": "moonshotai/kimi-k3.1-pro",
     "basket:deepseek": "deepseek/deepseek-v4.1-flash",
     "basket:x-ai": "x-ai/grok-4.7",
-    "slot:anthropic-fable": "anthropic/claude-fable-5.1",
+    "slot:anthropic-fable": "anthropic/claude-fable-5.2",
     "slot:anthropic-opus": "anthropic/claude-opus-5.5",
     "slot:anthropic-sonnet": "anthropic/claude-sonnet-5.5",
     "slot:anthropic-haiku": "anthropic/claude-haiku-5.5",
@@ -36,6 +36,28 @@
     "slot:qwen-frontier": "qwen/qwen3.8-max-0902"
   },
   "models": {
+    "anthropic/claude-fable-5.2": {
+      "provider": "anthropic",
+      "family": "anthropic-fable",
+      "order": 200,
+      "aliases": [],
+      "approved": true,
+      "display": "Claude Fable 5.2",
+      "apiId": "claude-fable-5-2",
+      "stage": "stable",
+      "identitySource": "https://platform.claude.com/docs/en/models/fable-5-2/whats-new-fable-5-2",
+      "firstparty": {
+        "provider": "anthropic",
+        "model": "claude-fable-5.2",
+        "display": "Claude Fable 5.2",
+        "input_mtok": 8.0,
+        "output_mtok": 40.0,
+        "context": 1000000,
+        "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
+        "checked": "2026-11-10",
+        "rate_note": "Standard Claude API rate"
+      }
+    },
     "anthropic/claude-fable-5.1": {
       "provider": "anthropic",
       "family": "anthropic-fable",
@@ -1191,6 +1213,17 @@
           "sourceUrl": "https://platform.kimi.ai/docs/models"
         }
       ]
+    },
+    "meta/muse-ember": {
+      "provider": "meta",
+      "family": "meta-muse-ember",
+      "order": 100,
+      "display": "Muse Ember",
+      "apiId": "muse-ember-1.0",
+      "aliases": [],
+      "approved": true,
+      "stage": "stable",
+      "identitySource": "https://dev.meta.ai/docs/muse-ember"
     }
   },
   "apiShortlist": [

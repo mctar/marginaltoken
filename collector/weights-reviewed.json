@@ -100,6 +100,30 @@
       "nvfp4Repository": "mistralai/Mistral-Large-4-1T-A52B-NVFP4",
       "caveat": "NVFP4 targets Blackwell GPUs. Precision, runtime, context, concurrency and KV cache affect capacity; model size is not a complete running-memory budget. Measure throughput and completed tasks before estimating costs.",
       "deploymentSource": "https://huggingface.co/mistralai/Mistral-Large-4-1T-A52B-NVFP4/blob/bb6d00fe249b0e876f0cffc6b85014be02de3e68/README.md"
+    },
+    "nvidia/Kimi-K3.1-Pro-NVFP4": {
+      "reviewedAt": "2026-11-12",
+      "title": "NVIDIA Kimi K3.1 Pro NVFP4",
+      "licenseId": "other",
+      "licenseName": "Bundled Kimi K3.1 Pro license",
+      "licenseFile": "LICENSE",
+      "revision": "3af0462972c9cc07e5ba6e0867b44f961ce95e9b",
+      "licenseSource": "https://huggingface.co/nvidia/Kimi-K3.1-Pro-NVFP4/blob/3af0462972c9cc07e5ba6e0867b44f961ce95e9b/LICENSE",
+      "additionalTerms": {
+        "label": "NVIDIA Open Model Agreement",
+        "href": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-agreement/"
+      },
+      "licenseSummary": "NVIDIA names its Open Model Agreement as the governing download terms and points to Moonshot’s Kimi K3.1 Pro license for the base model. The checkpoint includes the Moonshot license text.",
+      "availability": "NVIDIA’s NVFP4 checkpoint was publicly downloadable when checked on 12 November 2026. Its 96 weight files total 1.61 TB in decimal units.",
+      "configurations": [
+        {
+          "precision": "NVFP4",
+          "hardware": "NVIDIA documents eight-way tensor parallelism in vLLM and SGLang and reports testing on GB300."
+        }
+      ],
+      "deploymentSource": "https://huggingface.co/nvidia/Kimi-K3.1-Pro-NVFP4/blob/3af0462972c9cc07e5ba6e0867b44f961ce95e9b/README.md#usage",
+      "nvfp4Repository": "nvidia/Kimi-K3.1-Pro-NVFP4",
+      "caveat": "Budget GPU memory for the runtime and KV cache as well as the weights. Measure throughput at the context length and concurrency you need. Moonshot’s hosted prices cover a separate API offer."
     }
   },
   "modelMappings": {
@@ -112,5 +136,8 @@
       "identitySource": "https://github.com/NVIDIA-NeMo/Nemotron/blob/main/usage-cookbook/Nemotron-3.5-Super-VL/README.md",
       "reason": "NVIDIA links the served Super VL model to this exact post-trained BF16 checkpoint. The shortened upstream repository returns 401 and prevents independent weights verification."
     }
+  },
+  "relatedRepositories": {
+    "moonshotai/kimi-k3.1-pro": "nvidia/Kimi-K3.1-Pro-NVFP4"
   }
 }

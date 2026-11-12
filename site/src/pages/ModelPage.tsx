@@ -218,7 +218,7 @@ export default function ModelPage({
       <ModelHistory modelKey={model.key} model={model} history={history} changes={changes} asOf={asOf} />
 
       {decision?.weights && decision.weights.repository === model.huggingFaceId && <section className="model-weights decision-entry"><strong>{weightsLabel(decision.weights)}</strong><a href={decision.weights.licenseUrl}>{decision.weights.licenseName} · license terms →</a><span>{decision.weights.gated ? 'Gated repository · ' : ''}Verified {decision.weights.verifiedAt.slice(0,10)}</span><a href={model.releaseStage === 'preview' ? '/open/?previews=1' : '/open/'}>Explore open models →</a></section>}
-      <WeightsReview repository={model.huggingFaceId} />
+      <WeightsReview repository={model.huggingFaceId} modelKey={model.key} />
       {offerModel && offersAsOf && <OfferPanel model={model} offerModel={offerModel} asOf={offersAsOf} />}
 
       <section className="model-alternatives" aria-labelledby="cheaper-matches-title">

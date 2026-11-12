@@ -13,15 +13,17 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 try:
     from collector.collect import atomic_write_json, atomic_write_text
-    from collector.official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, _money_values, openai_price_rows, openai_rate
+    from collector.official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, google_markdown_modes, _money_values, openai_price_rows, openai_rate
 except ModuleNotFoundError:
     from collect import atomic_write_json, atomic_write_text
-    from official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, _money_values, openai_price_rows, openai_rate
+    from official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, google_markdown_modes, _money_values, openai_price_rows, openai_rate
 ROOT = Path(__file__).resolve().parent.parent
 PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by-4.0', 'cc0-1.0'}
 WEIGHTS_SCHEMA = 2
 ANTHROPIC_BILLING_SCHEMA = 2
 OPENAI_BILLING_SCHEMA = 2
+GOOGLE_BILLING_SCHEMA = 1
+GOOGLE_IMPLICIT_CACHE_MODELS = {'google/gemini-4-argon', 'google/gemini-4-carbon'}
 PARTICLE_BILLING_SCHEMA = 1
 PARTICLE_BILLING_URL = 'https://docs.particle.ai/usage-billing'
 META_BILLING_SCHEMA = 1
@@ -120,8 +122,8 @@ def claude_fast_plan(text, standard, display):
                 plan[field] = round(standard[field] * multiplier, 8)
     return plan
 
-def argon_billing(segment):
-    """Read Argon's dated tariffs without treating a future rate as a context tier."""
+def google_implicit_cache_billing(segment):
+    """Read dated tariffs without treating a future rate as a context tier."""
     date_pattern = r'([A-Z][a-z]+ \d{1,2}, \d{4})'
     def dated_rates(cell):
         plain = re.findall(r'\$\s*([0-9]+(?:\.[0-9]+)?)', cell)
@@ -129,22 +131,22 @@ def argon_billing(segment):
             return {'current': (float(plain[0]), None)}
         matches = re.findall(r'\$([0-9.]+)\s+(through|starting)\s+' + date_pattern, cell)
         if len(matches) != 2 or len(plain) != 2:
-            raise ValueError('Argon dated price is missing or ambiguous')
+            raise ValueError('Google dated price is missing or ambiguous')
         rates = {kind: (float(value), datetime.strptime(date, '%B %d, %Y').date())
                  for value, kind, date in matches}
         if set(rates) != {'through', 'starting'} or rates['starting'][1] != rates['through'][1] + timedelta(days=1):
-            raise ValueError('Argon price dates do not form consecutive periods')
+            raise ValueError('Google price dates do not form consecutive periods')
         return rates
     plans = []
     for mode in ['Standard', 'Batch', 'Flex', 'Priority']:
         match = re.search(rf'\| {mode} \|(?P<body>.*?)(?=\| (?:Standard|Batch|Flex|Priority) \||\Z)', segment, re.S)
-        if not match: raise ValueError(f'Argon {mode} billing section missing')
+        if not match: raise ValueError(f'Google {mode} billing section missing')
         body = match.group('body')
         inp = re.search(r'Input price(.*?)Output price', body, re.S)
         output = re.search(r'Output price \(including thinking tokens\)(.*?)Context caching price', body, re.S)
         cache = re.search(r'Context caching price(.*?)(?:Grounding|Used to improve)', body, re.S)
         if not inp or not output or not cache or 'Implicit caching only (explicit caching is not supported)' not in cache.group(1):
-            raise ValueError(f'Argon {mode} billing columns or cache policy changed')
+            raise ValueError(f'Google {mode} billing columns or cache policy changed')
         rates = [dated_rates(cell.group(1)) for cell in [inp, output, cache]]
         metadata = {'id': mode.lower(), 'label': mode, 'cacheMode': 'implicit',
                     'minimumCachePromptTokens': 4096, 'contextWindowTokens': 1048576, 'maximumOutputTokens': 65536,
@@ -154,9 +156,9 @@ def argon_billing(segment):
             plans.append({**metadata, **{field: r['current'][0] for field, r in zip(fields, rates)}})
             continue
         if any('current' in r for r in rates):
-            raise ValueError('Argon mixes dated and undated price columns')
+            raise ValueError('Google mixes dated and undated price columns')
         if any(r['through'][1] != rates[0]['through'][1] or r['starting'][1] != rates[0]['starting'][1] for r in rates):
-            raise ValueError('Argon input, output and cache dates disagree')
+            raise ValueError('Google input, output and cache dates disagree')
         current = {field: r['through'][0] for field, r in zip(fields, rates)}
         future = {field: r['starting'][0] for field, r in zip(fields, rates)}
         plans.append({**metadata, **current,
@@ -417,14 +419,29 @@ def parse_billing(provider, source, models):
         text = visible_text(source)
         for model in models:
             name = model['key'].split('/',1)[1]; display = model['display']
-            m = re.search(rf'{re.escape(display)}\s*\|\s*{re.escape(name)}\b', text)
-            if not m: continue
-            segment = text[m.start():m.start()+9000]
-            offset = m.end() - m.start()
-            end = re.search(r'\| (?:Gemini [^|]+|Gemma [^|]+|Imagen [^|]+) \| (?:gemini|gemma|imagen)-[^\s|]+ \|',segment[offset:])
-            if end: segment = segment[:end.start()+offset]
-            if name == 'gemini-4-argon':
-                result[model['key']] = argon_billing(segment)
+            modes = google_markdown_modes(source, name)
+            if modes:
+                # Adapt the current named paid column to the existing billing
+                # readers without mixing free-tier cells or adjacent models.
+                segment = ' | '.join(
+                    [''] + [part for mode, rows in modes.items()
+                            for part in [mode, *(f'{label} | {value}' for label, value in rows.items())]]
+                )
+            else:
+                m = re.search(rf'{re.escape(display)}\s*\|\s*{re.escape(name)}\b', text)
+                if not m:
+                    continue
+                segment = text[m.start():m.start()+9000]
+                offset = m.end() - m.start()
+                end = re.search(r'\| (?:Gemini [^|]+|Gemma [^|]+|Imagen [^|]+) \| (?:gemini|gemma|imagen)-[^\s|]+ \|', segment[offset:])
+                if end:
+                    segment = segment[:end.start()+offset]
+            if model['key'] in GOOGLE_IMPLICIT_CACHE_MODELS:
+                try:
+                    result[model['key']] = google_implicit_cache_billing(segment)
+                except ValueError:
+                    if len(models) == 1:
+                        raise
                 continue
             plans=[]
             for mode in ['Standard','Batch']:
@@ -490,8 +507,10 @@ def collect(root=ROOT, now=None):
         previous=cache['billing'].get(provider)
         # A newly reviewed model or parser revision must not wait out a cache
         # containing no billing record for it.
-        required = {'google/gemini-4-argon'} & {m['key'] for m in models}
-        needs_argon = provider == 'google' and bool(required - set((previous or {}).get('plans', {})))
+        required_google = GOOGLE_IMPLICIT_CACHE_MODELS & {m['key'] for m in models}
+        needs_google = provider == 'google' and bool(required_google) and (
+            (previous or {}).get('parserSchema') != GOOGLE_BILLING_SCHEMA
+            or bool(required_google - set((previous or {}).get('plans', {}))))
         claude_fast_models = {'anthropic/claude-opus-5.5', 'anthropic/claude-fable-5.2'}
         required_fast = claude_fast_models & {m['key'] for m in models}
         cached_plans = (previous or {}).get('plans', {})
@@ -501,7 +520,7 @@ def collect(root=ROOT, now=None):
         required_openai = {m['key'] for m in models if m['provider'] == 'openai' and m.get('source') == 'firstparty'}
         needs_openai = provider == 'openai' and ((previous or {}).get('parserSchema') != OPENAI_BILLING_SCHEMA
                           or bool(required_openai - set((previous or {}).get('plans', {}))))
-        if previous and age(previous)<timedelta(hours=24) and not needs_argon and not needs_fast and not needs_openai:entry=previous
+        if previous and age(previous)<timedelta(hours=24) and not needs_google and not needs_fast and not needs_openai:entry=previous
         else:
             try:
                 source=fetch_source(PROVIDER_URLS[provider]).text
@@ -510,9 +529,21 @@ def collect(root=ROOT, now=None):
                 entry={'plans':entries,'sourceUrl':PROVIDER_PUBLIC_URLS.get(provider,PROVIDER_URLS[provider]),'verifiedAt':stamp,'status':'fresh'}
                 if provider == 'anthropic':entry['parserSchema'] = ANTHROPIC_BILLING_SCHEMA
                 if provider == 'openai':entry['parserSchema'] = OPENAI_BILLING_SCHEMA
+                if provider == 'google':entry['parserSchema'] = GOOGLE_BILLING_SCHEMA
             except Exception:
                 entry={**previous,'status':'stale' if age(previous)>timedelta(days=7) else 'last_good'} if previous else None
         if entry:
+            if provider == 'google':
+                retained = dict((previous or {}).get('retainedPlans', {}))
+                if previous and previous.get('verifiedAt') != entry.get('verifiedAt'):
+                    retained.update({
+                        key: {'plans': plans, 'sourceUrl': previous['sourceUrl'], 'verifiedAt': previous['verifiedAt']}
+                        for key, plans in previous['plans'].items() if key not in entry['plans']
+                    })
+                retained = {key: record for key, record in retained.items() if key not in entry['plans']}
+                entry['retainedPlans'] = retained
+                for key, record in retained.items():
+                    billing[key] = {**record, 'status': 'stale' if age(record) > timedelta(days=7) else 'last_good'}
             cache['billing'][provider]=entry
             for key,plans in entry['plans'].items():billing[key]={'plans':plans,**{k:entry[k] for k in ['sourceUrl','verifiedAt','status']}}
     # Moonshot's new billing adapter retains freshness independently per model.

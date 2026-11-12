@@ -72,6 +72,48 @@ class ArgonTests(unittest.TestCase):
         self.assertEqual(qwen['source'], 'openrouter')
         self.assertFalse(qwen['promotionVerified'])
 
+    def test_markdown_paid_column_and_calendar_boundary_for_carbon_and_argon(self):
+        def section(name, rates):
+            modes = []
+            for mode, (input_rate, output_rate, cache_rate) in zip(
+                ('Standard', 'Batch', 'Flex', 'Priority'), rates,
+            ):
+                rows = ['  * Feature\n  * Free Tier\n  * Paid Tier, per 1M tokens in USD']
+                for label, value in zip(
+                    ('Input price', 'Output price (including thinking tokens)', 'Context caching price'),
+                    (input_rate, output_rate, cache_rate),
+                ):
+                    rows.append(
+                        f'  * {label}\n  * $0.00\n  * ${value} through November 30, 2026.\n'
+                        f'  ${value * 2} starting December 1, 2026.'
+                    )
+                rows[-1] += '\n  Implicit caching only (explicit caching is not supported).'
+                rows.append('  * Used to improve our products\n  * Yes\n  * No')
+                modes.append(
+                    '{% tab title="' + mode + '" %}\n{% table %}\n'
+                    + '\n  ---\n'.join(rows) + '\n{% /table %}\n{% /tab %}'
+                )
+            return '## Gemini 4  {% id="' + name + '" %}\n' + '\n'.join(modes)
+
+        carbon = {'key': 'google/gemini-4-carbon', 'provider': 'google', 'display': 'Gemini 4 Carbon'}
+        source = section('gemini-4-carbon', [(2, 10, .1), (1, 5, .05), (1, 5, .05), (3.6, 18, .18)])
+        source += '\n' + section('gemini-4-argon', [(3, 12, .2), (1, 5, .05), (1, 5, .05), (3.6, 18, .18)])
+        models = [carbon, MODEL]
+        rows = [{**model, 'model': model['key'].split('/')[1]} for model in models]
+        self.assertEqual(
+            parse_google(source, rows, datetime(2026, 11, 30, 23, 59, tzinfo=timezone.utc)),
+            {'gemini-4-carbon': (2, 10), 'gemini-4-argon': (3, 12)},
+        )
+        self.assertEqual(
+            parse_google(source, rows, datetime(2026, 12, 1, tzinfo=timezone.utc)),
+            {'gemini-4-carbon': (4, 20), 'gemini-4-argon': (6, 24)},
+        )
+        plans = parse_billing('google', source, models)[carbon['key']]
+        self.assertEqual([plan['id'] for plan in plans], ['standard', 'batch', 'flex', 'priority'])
+        self.assertEqual(plans[0]['cached_input_mtok'], .1)
+        self.assertEqual(plans[0]['scheduledRates'][0]['cached_input_mtok'], .2)
+        self.assertEqual(plans[0]['maximumOutputTokens'], 65536)
+
     def test_new_argon_record_refreshes_an_unexpired_google_cache(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);(root/'data').mkdir();(root/'collector/state').mkdir(parents=True)

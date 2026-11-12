@@ -32,7 +32,7 @@ PARSER_SCHEMAS = {"openai": 1}
 PROVIDER_URLS = {
     "anthropic": "https://platform.claude.com/docs/en/about-claude/pricing",
     "openai": "https://developers.openai.com/api/docs/pricing.md",
-    "google": "https://ai.google.dev/gemini-api/docs/pricing",
+    "google": "https://aistudio.google.com/docs/pricing.md",
     "mistralai": "https://docs.mistral.ai/inference/pricing",
     "moonshotai": "https://platform.kimi.ai/",
     "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
@@ -41,6 +41,7 @@ PROVIDER_URLS = {
 
 PROVIDER_PUBLIC_URLS = {
     "openai": "https://developers.openai.com/api/docs/pricing",
+    "google": "https://aistudio.google.com/docs/pricing",
 }
 
 
@@ -268,6 +269,39 @@ def parse_anthropic(source: str, rows: list[dict[str, Any]], now: datetime) -> d
     return result
 
 
+def google_markdown_modes(source: str, model: str) -> dict[str, dict[str, str]]:
+    """Extract the paid column by exact model, serving mode and feature."""
+    header = rf'^## [^\n]+?\{{% id="{re.escape(model)}" %\}}[^\S\n]*$'
+    sections = re.findall(header + r'\n(.*?)(?=^## |\Z)', source, re.M | re.S)
+    if len(sections) != 1:
+        return {}
+
+    modes = {}
+    for mode, body in re.findall(r'\{% tab title="([^"]+)" %\}(.*?)\{% /tab %\}', sections[0], re.S):
+        if mode in modes:
+            raise OfficialSourceError(f"Google billing mode ambiguous: {model} {mode}")
+        tables = re.findall(r'\{% table(?: [^\n]*?)? %\}(.*?)\{% /table %\}', body, re.S)
+        if len(tables) != 1:
+            continue
+        groups = re.split(r'^\s*---[ \t]*$', tables[0], flags=re.M)
+        cells = [re.split(r'^[ \t]*\* ', group, flags=re.M)[1:] for group in groups]
+        if not cells or len(cells[0]) != 3:
+            continue
+        headers = [cell.strip() for cell in cells[0]]
+        if headers[:2] != ["Feature", "Free Tier"] or not headers[2].startswith("Paid Tier, per 1M tokens in USD"):
+            continue
+        features = {}
+        for row in cells[1:]:
+            if len(row) != 3:
+                continue
+            label, _, paid = (cell.strip() for cell in row)
+            if label in features:
+                raise OfficialSourceError(f"Google billing feature ambiguous: {model} {mode} {label}")
+            features[label] = " ".join(paid.split())
+        modes[mode] = features
+    return modes
+
+
 def parse_google(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
     text = visible_text(source)
 
@@ -287,6 +321,16 @@ def parse_google(source: str, rows: list[dict[str, Any]], now: datetime) -> dict
 
     result: dict[str, tuple[float, float]] = {}
     for row in rows:
+        model = str(row["model"])
+        modes = google_markdown_modes(source, model)
+        if modes:
+            standard = modes.get("Standard", {})
+            output = standard.get("Output price (including thinking tokens)", standard.get("Output price", ""))
+            result[model] = (
+                active_price(standard.get("Input price", ""), f"{model} input"),
+                active_price(output, f"{model} output"),
+            )
+            continue
         marker = f"{row['display']} | {row['model']}"
         start = text.find(marker)
         if start < 0:
@@ -666,7 +710,9 @@ def refresh_firstparty(
         used_alternate = False
         if url and parser:
             try:
-                fetched = fetcher(url, cached)
+                # Google's scheduled rates can change with the date even if
+                # the pricing document and its ETag stay the same.
+                fetched = fetcher(url, None if provider == "google" else cached)
                 if fetched.not_modified:
                     complete = _last_good_prices(cached, rows)
                     if complete is None or cached.get("failedModels"):
@@ -687,7 +733,7 @@ def refresh_firstparty(
                     if errors and fetcher is fetch_source:
                         failed_rows = [row for row in rows if str(row["model"]) in errors]
                         try:
-                            alternate = fetch_source_with_curl(url, cached)
+                            alternate = fetch_source_with_curl(url, None if provider == "google" else cached)
                             if alternate.text is None:
                                 raise OfficialSourceError("curl source returned no content")
                             recovered, remaining = _parse_rows(parser, alternate.text, failed_rows, now)

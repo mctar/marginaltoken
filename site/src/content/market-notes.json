@@ -1,5 +1,216 @@
 [
   {
+    "kind": "standalone",
+    "slug": "qwen4-max-preview-token-plan",
+    "date": "2026-11-12",
+    "checked": "2026-11-12",
+    "author": "Thordur Arnason",
+    "title": "Qwen4-Max Preview is available through Alibaba’s Token Plan",
+    "summary": "The subscription preview runs through 25 November. Alibaba has posted no pay-as-you-go token price.",
+    "paragraphs": [
+      "Alibaba opened qwen4-max-preview on 11 November at 10:00 UTC+8. The preview ends at midnight UTC+8 after 25 November, and Alibaba says the model will retire then. It is available through Token Plan only.",
+      "The international Personal Lite plan lists $6 a month for 20,000 credits. Alibaba limits Personal access to interactive coding and agent tools. Credit use depends on the plan and time of day, so the allowance gives subscribers a budget in credits.",
+      "For a metered comparison, the Shortlist still tracks Qwen3.8 Max (0902). Alibaba has yet to publish a pay-as-you-go rate for Qwen4-Max Preview."
+    ],
+    "sources": [
+      {
+        "label": "Alibaba preview access and dates",
+        "href": "https://www.alibabacloud.com/help/en/model-studio/qwen4-max-preview"
+      },
+      {
+        "label": "International Personal Token Plan",
+        "href": "https://www.alibabacloud.com/help/en/model-studio/token-plan-personal-overview"
+      },
+      {
+        "label": "Qwen3.8 Max (0902) pricing card",
+        "href": "https://marginaltoken.com/model/qwen/qwen3.8-max-0902/"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "slug": "gemini-decision-1-input-pricing",
+    "date": "2026-11-12",
+    "checked": "2026-11-12",
+    "author": "Thordur Arnason",
+    "title": "Gemini Decision 1 charges for input when scoring predefined choices",
+    "summary": "Google’s Decisions API can score up to 1,000 questions against shared input, at $0.10 per million input tokens.",
+    "paragraphs": [
+      "Google launched Gemini Decision 1 on 11 November. The Decisions API scores predefined options or criteria against supplied text, images, audio, video or documents. The paid API charges $0.10 per million input tokens and bills no output tokens for the returned scores.",
+      "The input meter includes shared material and the tokens used by each question. A request with 50,000 shared input tokens and 1,000 question tokens costs $0.0051. A request can contain up to 1,000 independent questions within the combined limit of 262,144 input tokens.",
+      "Budget text generation separately if your workflow also writes a response or explanation."
+    ],
+    "sources": [
+      {
+        "label": "Google launch · 11 November",
+        "href": "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/"
+      },
+      {
+        "label": "Decisions API pricing",
+        "href": "https://aistudio.google.com/docs/pricing#gemini-decision"
+      },
+      {
+        "label": "Decisions API limits and billing",
+        "href": "https://aistudio.google.com/docs/decisions-api#limits"
+      },
+      {
+        "label": "Workload calculator for text generation",
+        "href": "https://marginaltoken.com/compare/"
+      }
+    ]
+  },
+  {
+    "slug": "kimi-k31-pro-nvidia-nvfp4-deployment",
+    "date": "2026-11-12",
+    "checked": "2026-11-12",
+    "author": "Thordur Arnason",
+    "title": "NVIDIA’s Kimi K3.1 Pro NVFP4 weights total 1.61 TB",
+    "summary": "NVIDIA documents eight-way tensor parallelism. Budget separately for the runtime and the KV cache.",
+    "paragraphs": [
+      "NVIDIA’s Kimi K3.1 Pro NVFP4 checkpoint was publicly downloadable when checked on 12 November. Its 96 weight files total 1.61 TB. NVIDIA provides vLLM and SGLang examples using eight-way tensor parallelism and reports testing on GB300.",
+      "The file total is a storage figure. Runtime overhead, context length and concurrent requests also affect the GPU memory and throughput your workload needs.",
+      "NVIDIA identifies its Open Model Agreement as the governing download terms and links Moonshot’s license for the base model. The Kimi model card separately lists Moonshot’s hosted API rates."
+    ],
+    "sources": [
+      {
+        "label": "NVIDIA checkpoint and deployment examples",
+        "href": "https://huggingface.co/nvidia/Kimi-K3.1-Pro-NVFP4/blob/3af0462972c9cc07e5ba6e0867b44f961ce95e9b/README.md"
+      },
+      {
+        "label": "Weight file listing",
+        "href": "https://huggingface.co/nvidia/Kimi-K3.1-Pro-NVFP4/tree/3af0462972c9cc07e5ba6e0867b44f961ce95e9b"
+      },
+      {
+        "label": "NVIDIA Open Model Agreement",
+        "href": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-agreement/"
+      },
+      {
+        "label": "Moonshot base-model license",
+        "href": "https://huggingface.co/moonshotai/Kimi-K3.1-Pro/blob/main/LICENSE"
+      }
+    ],
+    "modelKey": "moonshotai/kimi-k3.1-pro",
+    "calculatorKind": "infrastructure",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Estimate hosted and self-hosted costs",
+    "calculatorGuidance": "Rent vs Run opens the standard Kimi API quote in custom deployment mode. Enter your measured throughput, utilization and infrastructure costs for the NVIDIA package."
+  },
+  {
+    "slug": "gemini-4-carbon-paid-api-pricing",
+    "date": "2026-11-11",
+    "checked": "2026-11-11",
+    "author": "Thordur Arnason",
+    "title": "Gemini 4 Carbon opens its paid API at Argon’s rates",
+    "summary": "Google opened paid API access on 10 November. Standard input, output and implicit cache-read rates double on 1 December.",
+    "paragraphs": [
+      "Google opened Gemini 4 Carbon to paid Gemini API customers on 10 November, following an October rollout to selected users. The API model ID is gemini-4-carbon. Google lists no free API tier.",
+      "Direct Standard rates are $2 input, $10 output and $0.10 for implicit cache reads per million tokens through 30 November. From 1 December they rise to $4, $20 and $0.20. Batch, Flex and Priority rates also double.",
+      "Argon has the same posted Standard rates. Include thinking in your output budget and compare actual token use and task success on the same workload."
+    ],
+    "sources": [
+      {
+        "label": "Google paid API release · 10 November",
+        "href": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available/"
+      },
+      {
+        "label": "Carbon direct rates and serving modes",
+        "href": "https://aistudio.google.com/docs/pricing#gemini-4-carbon"
+      },
+      {
+        "label": "Carbon API model and limits",
+        "href": "https://aistudio.google.com/docs/models/gemini-4-carbon"
+      }
+    ],
+    "modelKey": "google/gemini-4-carbon",
+    "comparisonModelKey": "google/gemini-4-argon",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Compare Carbon with Argon",
+    "calculatorGuidance": "Choose the same serving plan and workload. Use the scheduled rates for traffic from 1 December, and adjust each model’s token use using your own measurements."
+  },
+  {
+    "kind": "standalone",
+    "slug": "minimax-h3-image-api-pricing-weights-license",
+    "date": "2026-11-11",
+    "checked": "2026-11-11",
+    "author": "Thordur Arnason",
+    "title": "MiniMax H3-Image API pricing and weight-license limits",
+    "summary": "MiniMax meters text and images separately. Its 4K promotion ends on 17 November, and its downloadable weights have territorial and commercial limits.",
+    "paragraphs": [
+      "MiniMax announced H3-Image on 11 November. The Standard API charges $2.30 for text input, $1.50 for image input and $3.80 for image output per million tokens. MiniMax’s 4K text-to-image example costs about $0.034 at the promotional rate and $0.069 at list rates. The 50% discount applies to outputs of at least 16.6 million pixels and ends at 16:00 UTC on 17 November.",
+      "MiniMax lists a 68.65 GB checkpoint and a separate 66.7 GB text encoder. Its community weight license excludes the EU, UK, South Korea and US. It requires prior written authorization for third-party hosting or annualized revenue above $1 million."
+    ],
+    "sources": [
+      {
+        "label": "MiniMax launch · 11 November",
+        "href": "https://www.minimax.io/blog/minimax-h3-image"
+      },
+      {
+        "label": "MiniMax API pricing",
+        "href": "https://platform.minimax.io/docs/pricing/overview#image"
+      },
+      {
+        "label": "Publisher checkpoint and component sizes",
+        "href": "https://huggingface.co/MiniMaxAI/MiniMax-H3-Image"
+      },
+      {
+        "label": "Community weight license",
+        "href": "https://huggingface.co/MiniMaxAI/MiniMax-H3-Image/blob/main/LICENSE"
+      },
+      {
+        "label": "Rent vs Run calculator",
+        "href": "https://marginaltoken.com/infrastructure/"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "slug": "ernie-55-flash-preview-qianfan-pricing-weights",
+    "date": "2026-11-11",
+    "checked": "2026-11-12",
+    "author": "Thordur Arnason",
+    "title": "ERNIE 5.5 Flash Preview Qianfan prices and weight access",
+    "summary": "Baidu publishes peak and off-peak rates in yuan. The separately downloadable Flash Base checkpoint has its own license.",
+    "paragraphs": [
+      "Baidu’s 10 November Qianfan rate card lists promotional peak rates of ¥1 input, ¥4 output and ¥0.10 cached input per million tokens from 08:00 to 22:00. From 22:00 to 08:00 they fall to ¥0.50, ¥2 and ¥0.05. List rates are twice those amounts. The promotion page gives 23:59:59 on 30 November as the end time, with the timezone unspecified.",
+      "The earlier OpenRouter quote was $0.28 input and $1.13 output per million tokens. On 12 November the route returned no active endpoints. Baidu still listed direct Qianfan access.",
+      "Baidu published the separate Flash Base checkpoint on 5 November under a custom license. Baidu says it plans to release Flash Preview weights under Apache 2.0. The exact Preview download remained unverified on 12 November."
+    ],
+    "sources": [
+      {
+        "label": "Baidu Flash Preview release",
+        "href": "https://ernie.baidu.com/release/ernie-5-5-flash-preview"
+      },
+      {
+        "label": "Qianfan rate card · 10 November",
+        "href": "https://cloud.baidu.com/doc/qianfan/s/wmh4sv6ya"
+      },
+      {
+        "label": "Qianfan promotion and end time",
+        "href": "https://cloud.baidu.com/product/qianfan_home/model_3.html?track=home_banner"
+      },
+      {
+        "label": "OpenRouter endpoint record",
+        "href": "https://openrouter.ai/api/v1/models/baidu/ernie-5.5-flash-preview/endpoints"
+      },
+      {
+        "label": "Flash Base release · 5 November",
+        "href": "https://ernie.baidu.com/zh/release/ernie-5-5-flash-base/"
+      },
+      {
+        "label": "Flash Base model license",
+        "href": "https://huggingface.co/baidu/ERNIE-5.5-Flash-Base/blob/main/LICENSE"
+      },
+      {
+        "label": "Flash Preview repository · download unverified",
+        "href": "https://huggingface.co/baidu/ERNIE-5.5-Flash-Preview"
+      },
+      {
+        "label": "Preview quote history",
+        "href": "https://marginaltoken.com/model/baidu/ernie-5.5-flash-preview/"
+      }
+    ]
+  },
+  {
     "slug": "claude-fable-52-pricing-data-retention",
     "date": "2026-11-10",
     "checked": "2026-11-10",

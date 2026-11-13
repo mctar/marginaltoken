@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-11-12",
+  "reviewedAt": "2026-11-13",
   "policy": "Promote reviewed identities within approved families only after fresh official price verification. Discovery never changes family policy.",
   "models": {
     "anthropic/claude-fable-5.2": {
@@ -1194,8 +1194,8 @@
     },
     "google/gemini-4-carbon": {
       "provider": "google",
-      "family": "google-carbon",
-      "order": 0,
+      "family": "google-argon",
+      "order": 300,
       "aliases": [],
       "approved": true,
       "stage": "stable",
@@ -1251,6 +1251,37 @@
           "kind": "service-access",
           "label": "OpenRouter returned no active endpoints when checked. Direct Qianfan access is separately listed.",
           "sourceUrl": "https://openrouter.ai/api/v1/models/baidu/ernie-5.5-flash-preview/endpoints"
+        }
+      ]
+    },
+    "google/gemini-4-hydrogen": {
+      "provider": "google",
+      "family": "google-hydrogen",
+      "order": 0,
+      "aliases": [],
+      "approved": true,
+      "stage": "stable",
+      "display": "Gemini 4 Hydrogen",
+      "apiId": "gemini-4-hydrogen",
+      "apiIdSource": "https://aistudio.google.com/docs/whats-new-gemini-4-hydrogen",
+      "identitySource": "https://aistudio.google.com/docs/changelog#11-12-2026",
+      "firstparty": {
+        "provider": "google",
+        "model": "gemini-4-hydrogen",
+        "display": "Gemini 4 Hydrogen",
+        "input_mtok": 1.5,
+        "output_mtok": 7.5,
+        "context": 1048576,
+        "source_url": "https://aistudio.google.com/docs/pricing#gemini-4-hydrogen",
+        "checked": "2026-11-13",
+        "rate_note": "Paid Standard: flat across the unified 1,048,576-token window. Output includes thinking. Implicit cache reads cost $0.075 per million. The synchronous output limit is 65,536 tokens. A rate-limited free tier is available."
+      },
+      "events": [
+        {
+          "date": "2026-11-12",
+          "kind": "launch",
+          "label": "Gemini 4 Hydrogen becomes generally available on the free and paid Gemini API tiers.",
+          "sourceUrl": "https://aistudio.google.com/docs/changelog#11-12-2026"
         }
       ]
     }
@@ -1402,9 +1433,10 @@
       "slots": [
         {
           "id": "google-argon",
-          "tier": "Argon",
+          "tier": "Premium",
           "provider": "google",
           "candidates": [
+            "google/gemini-4-carbon",
             "google/gemini-4-argon",
             "google/gemini-3.1-pro-preview",
             "google/gemini-2.5-pro"

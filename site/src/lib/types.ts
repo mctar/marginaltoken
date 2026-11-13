@@ -349,6 +349,7 @@ export type BillingPlan = {
     input_mtok: number
     output_mtok: number
     cached_input_mtok: number
+    cache_storage_mtok_hour?: number
   }>
   cacheMode?: 'implicit'
   minimumCachePromptTokens?: number

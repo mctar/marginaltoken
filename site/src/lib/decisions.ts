@@ -142,7 +142,10 @@ export function validDecisions(value: unknown): value is DecisionsFeed {
                             r.input_mtok,
                             r.output_mtok,
                             r.cached_input_mtok,
-                          ].every((n) => Number.isFinite(n) && n >= 0),
+                          ].every((n) => Number.isFinite(n) && n >= 0) &&
+                          (r.cache_storage_mtok_hour === undefined ||
+                            (Number.isFinite(r.cache_storage_mtok_hour) &&
+                              r.cache_storage_mtok_hour >= 0)),
                       ) &&
                       new Set(p.scheduledRates.map((r) => r.effectiveFrom))
                         .size === p.scheduledRates.length)),

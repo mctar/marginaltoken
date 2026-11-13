@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T07:00:29Z",
+  "generatedAt": "2026-11-13T07:59:29Z",
   "asOf": "2026-11-13",
   "models": [
     {
@@ -2117,9 +2117,7 @@
       "family": "google-argon",
       "selectionOrder": 200,
       "identityReviewed": true,
-      "selectedSlots": [
-        "google-argon"
-      ],
+      "selectedSlots": [],
       "apiId": "gemini-4-argon",
       "promotionVerified": true
     },
@@ -2152,10 +2150,12 @@
       "checked": "2026-11-13",
       "rateNote": "Standard API: $2 input / $10 output per million tokens through 2026-11-30; $4 / $20 from 2026-12-01. Output includes thinking. Implicit caching only. Default synchronous output is capped at 65,536 tokens; background long decode shares the 1,048,576-token input/output window.",
       "verificationStatus": "fresh",
-      "family": "google-carbon",
-      "selectionOrder": 0,
+      "family": "google-argon",
+      "selectionOrder": 300,
       "identityReviewed": true,
-      "selectedSlots": [],
+      "selectedSlots": [
+        "google-argon"
+      ],
       "apiId": "gemini-4-carbon",
       "promotionVerified": true
     },
@@ -2166,7 +2166,7 @@
       "input_mtok": 1.5,
       "output_mtok": 7.5,
       "context": 1048576,
-      "source": "openrouter",
+      "source": "firstparty",
       "indexEligible": false,
       "inputModalities": [
         "audio",
@@ -2183,8 +2183,17 @@
       "supportsStructuredOutput": true,
       "releaseStage": "stable",
       "routedId": "google/gemini-4-hydrogen",
-      "sourceUrl": "https://openrouter.ai/google/gemini-4-hydrogen",
-      "maxOutputTokens": 943718
+      "sourceUrl": "https://aistudio.google.com/docs/pricing",
+      "maxOutputTokens": 943718,
+      "checked": "2026-11-13",
+      "rateNote": "Paid Standard: flat across the unified 1,048,576-token window. Output includes thinking. Implicit cache reads cost $0.075 per million. The synchronous output limit is 65,536 tokens. A rate-limited free tier is available.",
+      "verificationStatus": "fresh",
+      "family": "google-hydrogen",
+      "selectionOrder": 0,
+      "identityReviewed": true,
+      "selectedSlots": [],
+      "apiId": "gemini-4-hydrogen",
+      "promotionVerified": true
     },
     {
       "key": "google/gemini-nano-banana-2.1",
@@ -6858,6 +6867,7 @@
       "sourceUrl": "https://openrouter.ai/qwen/qwen3-vl-30b-a3b-thinking",
       "maxOutputTokens": 235929,
       "knowledgeCutoff": "2025-03-31",
+      "expirationDate": "2026-11-15",
       "huggingFaceId": "Qwen/Qwen3-VL-30B-A3B-Thinking"
     },
     {
@@ -6998,8 +7008,8 @@
       "key": "qwen/qwen3.5-9b",
       "display": "Qwen3.5-9B",
       "provider": "qwen",
-      "input_mtok": 0.101,
-      "output_mtok": 0.149,
+      "input_mtok": 0.082,
+      "output_mtok": 0.121,
       "context": 262144,
       "source": "openrouter",
       "indexEligible": false,
@@ -7812,6 +7822,7 @@
       "routedId": "stepfun/step-3.5-flash",
       "sourceUrl": "https://openrouter.ai/stepfun/step-3.5-flash",
       "maxOutputTokens": 65536,
+      "expirationDate": "2026-11-15",
       "huggingFaceId": "stepfun-ai/Step-3.5-Flash"
     },
     {
@@ -7889,6 +7900,7 @@
       "sourceUrl": "https://openrouter.ai/tencent/hunyuan-a13b-instruct",
       "maxOutputTokens": 117964,
       "knowledgeCutoff": "2025-03-31",
+      "expirationDate": "2026-11-15",
       "huggingFaceId": "tencent/Hunyuan-A13B-Instruct"
     },
     {

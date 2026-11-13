@@ -22,8 +22,12 @@ PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by
 WEIGHTS_SCHEMA = 2
 ANTHROPIC_BILLING_SCHEMA = 2
 OPENAI_BILLING_SCHEMA = 2
-GOOGLE_BILLING_SCHEMA = 1
-GOOGLE_IMPLICIT_CACHE_MODELS = {'google/gemini-4-argon', 'google/gemini-4-carbon'}
+GOOGLE_BILLING_SCHEMA = 2
+GOOGLE_IMPLICIT_CACHE_MODELS = {
+    'google/gemini-4-argon', 'google/gemini-4-carbon', 'google/gemini-4-hydrogen',
+}
+GOOGLE_FLASH_SCHEDULE_KEY = 'google/gemini-3.8-flash'
+GOOGLE_REVIEWED_BILLING_MODELS = GOOGLE_IMPLICIT_CACHE_MODELS | {GOOGLE_FLASH_SCHEDULE_KEY}
 PARTICLE_BILLING_SCHEMA = 1
 PARTICLE_BILLING_URL = 'https://docs.particle.ai/usage-billing'
 META_BILLING_SCHEMA = 1
@@ -122,7 +126,7 @@ def claude_fast_plan(text, standard, display):
                 plan[field] = round(standard[field] * multiplier, 8)
     return plan
 
-def google_implicit_cache_billing(segment):
+def google_scheduled_billing(segment, implicit_cache):
     """Read dated tariffs without treating a future rate as a context tier."""
     date_pattern = r'([A-Z][a-z]+ \d{1,2}, \d{4})'
     def dated_rates(cell):
@@ -145,13 +149,26 @@ def google_implicit_cache_billing(segment):
         inp = re.search(r'Input price(.*?)Output price', body, re.S)
         output = re.search(r'Output price \(including thinking tokens\)(.*?)Context caching price', body, re.S)
         cache = re.search(r'Context caching price(.*?)(?:Grounding|Used to improve)', body, re.S)
-        if not inp or not output or not cache or 'Implicit caching only (explicit caching is not supported)' not in cache.group(1):
-            raise ValueError(f'Google {mode} billing columns or cache policy changed')
-        rates = [dated_rates(cell.group(1)) for cell in [inp, output, cache]]
-        metadata = {'id': mode.lower(), 'label': mode, 'cacheMode': 'implicit',
-                    'minimumCachePromptTokens': 4096, 'contextWindowTokens': 1048576, 'maximumOutputTokens': 65536,
-                    'notes': 'Implicit cache hits only; explicit cache writes and storage are unsupported. Thinking is billed as output. Calculator uses the 65,536-token synchronous output limit; input and generated tokens share the 1,048,576-token window.'}
+        if not inp or not output or not cache:
+            raise ValueError(f'Google {mode} billing columns changed')
+        cache_cell = cache.group(1)
+        metadata = {'id': mode.lower(), 'label': mode}
+        cells = [inp.group(1), output.group(1), cache_cell]
         fields = ['input_mtok', 'output_mtok', 'cached_input_mtok']
+        if implicit_cache:
+            if 'Implicit caching only (explicit caching is not supported)' not in cache_cell:
+                raise ValueError(f'Google {mode} implicit cache policy changed')
+            metadata.update(cacheMode='implicit', minimumCachePromptTokens=4096,
+                            contextWindowTokens=1048576, maximumOutputTokens=65536,
+                            notes='Implicit cache hits only. Thinking is billed as output. The calculator uses the 65,536-token synchronous output limit. Input and generated tokens share the 1,048,576-token window.')
+        else:
+            storage = re.search(r'\$[0-9.]+ / 1,000,000 tokens per hour \(storage price\)', cache_cell)
+            if not storage:
+                raise ValueError(f'Google {mode} explicit cache storage price missing')
+            cells[-1] = cache_cell[:storage.start()]
+            cells.append(cache_cell[storage.start():].replace(' / 1,000,000 tokens per hour (storage price)', ''))
+            fields.append('cache_storage_mtok_hour')
+        rates = [dated_rates(cell) for cell in cells]
         if all('current' in r for r in rates):
             plans.append({**metadata, **{field: r['current'][0] for field, r in zip(fields, rates)}})
             continue
@@ -436,9 +453,9 @@ def parse_billing(provider, source, models):
                 end = re.search(r'\| (?:Gemini [^|]+|Gemma [^|]+|Imagen [^|]+) \| (?:gemini|gemma|imagen)-[^\s|]+ \|', segment[offset:])
                 if end:
                     segment = segment[:end.start()+offset]
-            if model['key'] in GOOGLE_IMPLICIT_CACHE_MODELS:
+            if model['key'] in GOOGLE_REVIEWED_BILLING_MODELS:
                 try:
-                    result[model['key']] = google_implicit_cache_billing(segment)
+                    result[model['key']] = google_scheduled_billing(segment, model['key'] in GOOGLE_IMPLICIT_CACHE_MODELS)
                 except ValueError:
                     if len(models) == 1:
                         raise
@@ -507,7 +524,7 @@ def collect(root=ROOT, now=None):
         previous=cache['billing'].get(provider)
         # A newly reviewed model or parser revision must not wait out a cache
         # containing no billing record for it.
-        required_google = GOOGLE_IMPLICIT_CACHE_MODELS & {m['key'] for m in models}
+        required_google = GOOGLE_REVIEWED_BILLING_MODELS & {m['key'] for m in models}
         needs_google = provider == 'google' and bool(required_google) and (
             (previous or {}).get('parserSchema') != GOOGLE_BILLING_SCHEMA
             or bool(required_google - set((previous or {}).get('plans', {}))))

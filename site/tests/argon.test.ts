@@ -179,7 +179,7 @@ test('malformed scheduled billing is rejected', () => {
   }
 })
 
-test('reviewed Argon and Qwen slots update even before old selected-slot metadata refreshes', () => {
+test('reviewed Carbon and Qwen slots update even before old selected-slot metadata refreshes', () => {
   const oldQwen = {
     ...model,
     key: 'qwen/qwen3.7-max',
@@ -200,12 +200,14 @@ test('reviewed Argon and Qwen slots update even before old selected-slot metadat
     selectedSlots: ['google-pro'],
     selectionOrder: 100,
   }
-  const slots = selectShortlist([oldQwen, qwen, pro, model]).flatMap(
+  const oldArgon = { ...model, selectedSlots: ['google-argon'], selectionOrder: 200 }
+  const carbon = { ...model, key: 'google/gemini-4-carbon' }
+  const slots = selectShortlist([oldQwen, qwen, pro, oldArgon, carbon]).flatMap(
     (c) => c.selections,
   )
   assert.equal(
     slots.find((s) => s.id === 'google-argon')?.model?.key,
-    model.key,
+    carbon.key,
   )
   assert.equal(
     slots.find((s) => s.id === 'qwen-frontier')?.model?.key,

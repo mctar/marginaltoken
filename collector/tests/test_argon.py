@@ -62,7 +62,10 @@ class ArgonTests(unittest.TestCase):
         models = [{'key': f"{r['provider']}/{r['model']}", 'provider': r['provider'], 'source': 'firstparty', 'checked': '2026-10-14', 'verificationStatus': 'fresh'} for r in rows]
         models.append({'key':'qwen/qwen3.8-max-0902','provider':'qwen','source':'openrouter'})
         result = apply_register(models, register, datetime(2026,10,14,tzinfo=timezone.utc), {'slot:qwen-frontier':'qwen/qwen3.7-max'})
-        self.assertEqual(result['selections']['slot:google-argon'], MODEL['key'])
+        self.assertEqual(result['selections']['slot:google-argon'], 'google/gemini-4-carbon')
+        fallback = apply_register([m for m in models if m['key'] != 'google/gemini-4-carbon'], register,
+                                  datetime(2026,10,14,tzinfo=timezone.utc), result['selections'])
+        self.assertEqual(fallback['selections']['slot:google-argon'], MODEL['key'])
         self.assertEqual(result['selections']['slot:qwen-frontier'], 'qwen/qwen3.8-max-0902')
         self.assertEqual(result['basket']['google'], 'google/gemini-3.8-flash')
         self.assertEqual(result['basket']['openai'], 'openai/gpt-6.1-sol')
@@ -73,7 +76,7 @@ class ArgonTests(unittest.TestCase):
         self.assertFalse(qwen['promotionVerified'])
 
     def test_markdown_paid_column_and_calendar_boundary_for_carbon_and_argon(self):
-        def section(name, rates):
+        def section(name, rates, flash=False, dated=True):
             modes = []
             for mode, (input_rate, output_rate, cache_rate) in zip(
                 ('Standard', 'Batch', 'Flex', 'Priority'), rates,
@@ -83,11 +86,16 @@ class ArgonTests(unittest.TestCase):
                     ('Input price', 'Output price (including thinking tokens)', 'Context caching price'),
                     (input_rate, output_rate, cache_rate),
                 ):
-                    rows.append(
-                        f'  * {label}\n  * $0.00\n  * ${value} through November 30, 2026.\n'
-                        f'  ${value * 2} starting December 1, 2026.'
-                    )
-                rows[-1] += '\n  Implicit caching only (explicit caching is not supported).'
+                    cell = f'${value}'
+                    if dated:
+                        end, start = ('December 31, 2026', 'January 1, 2027') if flash else ('November 30, 2026', 'December 1, 2026')
+                        cell += f' through {end}.\n  ${value * 2} starting {start}.'
+                    rows.append(f'  * {label}\n  * $0.00\n  * {cell}')
+                if flash:
+                    rows[-1] += ('\n  $0.50 / 1,000,000 tokens per hour (storage price) through December 31, 2026.'
+                                 '\n  $1.00 / 1,000,000 tokens per hour (storage price) starting January 1, 2027.')
+                else:
+                    rows[-1] += '\n  Implicit caching only (explicit caching is not supported).'
                 rows.append('  * Used to improve our products\n  * Yes\n  * No')
                 modes.append(
                     '{% tab title="' + mode + '" %}\n{% table %}\n'
@@ -113,6 +121,23 @@ class ArgonTests(unittest.TestCase):
         self.assertEqual(plans[0]['cached_input_mtok'], .1)
         self.assertEqual(plans[0]['scheduledRates'][0]['cached_input_mtok'], .2)
         self.assertEqual(plans[0]['maximumOutputTokens'], 65536)
+
+        hydrogen = {'key': 'google/gemini-4-hydrogen', 'provider': 'google', 'display': 'Gemini 4 Hydrogen'}
+        flash = {'key': 'google/gemini-3.8-flash', 'provider': 'google', 'display': 'Gemini 3.8 Flash'}
+        source += '\n' + section('gemini-4-hydrogen', [(1.5, 7.5, .075)] * 4, dated=False)
+        source += '\n' + section('gemini-3.8-flash', [(.75, 3.75, .075)] * 4, flash=True)
+        billing = parse_billing('google', source, [hydrogen, flash])
+        standard = billing[hydrogen['key']][0]
+        self.assertEqual((standard['input_mtok'], standard['output_mtok'], standard['cached_input_mtok']), (1.5, 7.5, .075))
+        self.assertEqual(standard['cacheMode'], 'implicit')
+        self.assertNotIn('scheduledRates', standard)
+        flash_standard = billing[flash['key']][0]
+        self.assertEqual(flash_standard['cache_storage_mtok_hour'], .5)
+        self.assertEqual(flash_standard['validThrough'], '2026-12-31')
+        self.assertEqual(flash_standard['scheduledRates'], [{
+            'effectiveFrom': '2027-01-01', 'input_mtok': 1.5, 'output_mtok': 7.5,
+            'cached_input_mtok': .15, 'cache_storage_mtok_hour': 1.0,
+        }])
 
     def test_new_argon_record_refreshes_an_unexpired_google_cache(self):
         with tempfile.TemporaryDirectory() as directory:

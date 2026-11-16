@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-11-13",
+  "reviewedAt": "2026-11-16",
   "policy": "Promote reviewed identities within approved families only after fresh official price verification. Discovery never changes family policy.",
   "basket": {
     "anthropic": "anthropic/claude-opus-5.5",
@@ -33,7 +33,7 @@
     "slot:mistral-frontier": "mistralai/mistral-large-4",
     "slot:deepseek-frontier": "deepseek/deepseek-v4.1-flash",
     "slot:kimi-frontier": "moonshotai/kimi-k3.1-pro",
-    "slot:qwen-frontier": "qwen/qwen3.8-max-0902"
+    "slot:qwen-frontier": "qwen/qwen4-max"
   },
   "models": {
     "anthropic/claude-fable-5.2": {
@@ -1060,6 +1060,38 @@
           "kind": "scheduled-price",
           "label": "Posted standard rates rise to $4 input / $20 output per million tokens; cached input $0.20. Batch, Flex and Priority rates also double.",
           "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing"
+        }
+      ]
+    },
+    "qwen/qwen4-max": {
+      "provider": "qwen",
+      "family": "qwen-frontier",
+      "order": 300,
+      "aliases": [],
+      "approved": true,
+      "stage": "stable",
+      "display": "Qwen4-Max",
+      "apiId": "qwen4-max",
+      "apiIdSource": "https://docs.qwencloud.com/developer-guides/getting-started/latest-model",
+      "identitySource": "https://docs.qwencloud.com/changelog/models",
+      "firstparty": {
+        "provider": "qwen",
+        "model": "qwen4-max",
+        "display": "Qwen4-Max",
+        "input_mtok": 1.5,
+        "output_mtok": 4.5,
+        "context": 1000000,
+        "max_output_tokens": 262144,
+        "source_url": "https://www.alibabacloud.com/help/en/model-studio/model-pricing",
+        "checked": "2026-11-16",
+        "rate_note": "Alibaba Cloud Model Studio direct pay-as-you-go, Singapore (International) in USD. Output includes thinking. Non-thinking responses are capped at 131,072 output tokens. Other regions have separate tariffs."
+      },
+      "events": [
+        {
+          "date": "2026-11-16",
+          "kind": "launch",
+          "label": "Production Qwen4-Max released with metered API access. The separate qwen4-max-preview remains Token Plan only.",
+          "sourceUrl": "https://docs.qwencloud.com/changelog/models"
         }
       ]
     },

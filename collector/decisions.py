@@ -13,10 +13,18 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 try:
     from collector.collect import atomic_write_json, atomic_write_text
-    from collector.official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, google_markdown_modes, _money_values, openai_price_rows, openai_rate
+    from collector.official import (
+        PROVIDER_PUBLIC_URLS, PROVIDER_URLS, QWEN_PRICING_URL, _money_values, fetch_source,
+        google_markdown_modes, openai_price_rows, openai_rate, qwen_max_singapore,
+        qwen_standard_rates, qwen_table_rows, qwen_usd, visible_text,
+    )
 except ModuleNotFoundError:
     from collect import atomic_write_json, atomic_write_text
-    from official import fetch_source, visible_text, PROVIDER_URLS, PROVIDER_PUBLIC_URLS, google_markdown_modes, _money_values, openai_price_rows, openai_rate
+    from official import (
+        PROVIDER_PUBLIC_URLS, PROVIDER_URLS, QWEN_PRICING_URL, _money_values, fetch_source,
+        google_markdown_modes, openai_price_rows, openai_rate, qwen_max_singapore,
+        qwen_standard_rates, qwen_table_rows, qwen_usd, visible_text,
+    )
 ROOT = Path(__file__).resolve().parent.parent
 PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by-4.0', 'cc0-1.0'}
 WEIGHTS_SCHEMA = 2
@@ -35,6 +43,7 @@ META_BILLING_URL = 'https://dev.meta.ai/docs/pricing-rate-limits'
 META_EMBER_KEY = 'meta/muse-ember'
 MISTRAL_BILLING_SCHEMA = 1
 MISTRAL_BILLING_URL = 'https://docs.mistral.ai/inference/pricing'
+QWEN4_MAX = 'qwen/qwen4-max'
 MOONSHOT_BILLING_SCHEMA = 1
 MOONSHOT_BILLING_URL = 'https://platform.kimi.ai/docs/pricing/chat'
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
@@ -323,6 +332,30 @@ def muse_ember_plans(source):
     ]
 
 
+def qwen4_max_plan(source):
+    section = qwen_max_singapore(source)
+    inp, output = qwen_standard_rates(section, 'qwen4-max')
+    tables = re.findall(
+        r'<strong\b[^>]*>qwen4-max — Cache price \(per million tokens\)</strong>\s*</p>\s*(<table\b[^>]*>.*?</table>)',
+        section, re.I | re.S,
+    )
+    headers = ['Cache write (5m)', 'Cache write (1h)', 'Explicit/implicit cache read']
+    rows = qwen_table_rows(tables[0]) if len(tables) == 1 else []
+    if len(rows) != 2 or len(rows[1]) != len(headers) or set(rows[0]) != set(headers):
+        raise ValueError('Missing or ambiguous Qwen4-Max Singapore cache tariff')
+    rates = {header: qwen_usd(value, header) for header, value in zip(*rows)}
+    return {
+        'id': 'standard', 'label': 'Direct Standard (Singapore)',
+        'input_mtok': inp, 'output_mtok': output,
+        'cached_input_mtok': rates[headers[2]],
+        'cache_write_mtok': rates[headers[0]], 'cacheWriteHour_mtok': rates[headers[1]],
+        'contextWindowTokens': 1000000, 'maximumOutputTokens': 262144,
+        'notes': ('Alibaba Cloud Model Studio, International deployment in Singapore. Output includes thinking. '
+                  'Non-thinking responses are limited to 131,072 output tokens. Cache reads apply to both '
+                  'implicit and explicit hits. Write rates apply to explicit caching for the selected lifetime.'),
+    }
+
+
 def parse_billing(provider, source, models):
     result = {}
     if provider == 'meta':
@@ -331,6 +364,9 @@ def parse_billing(provider, source, models):
     elif provider == 'mistralai':
         if any(m['key'] == 'mistralai/mistral-large-4' for m in models):
             result['mistralai/mistral-large-4'] = [mistral_large4_plan(source)]
+    elif provider == 'qwen':
+        if any(m['key'] == QWEN4_MAX for m in models):
+            result[QWEN4_MAX] = [qwen4_max_plan(source)]
     elif provider == 'particle-ai':
         if any(m['key'] == 'particle-ai/particle-1' for m in models):
             result['particle-ai/particle-1'] = particle_plans(source)
@@ -631,6 +667,21 @@ def collect(root=ROOT, now=None):
         if entry:
             cache['billing']['mistralai'] = entry
             billing[mistral_key] = {k:v for k,v in entry.items() if k != 'parserSchema'}
+    if any(m['key'] == QWEN4_MAX for m in models):
+        previous = cache['billing'].get('qwen')
+        if previous and age(previous) < timedelta(hours=24):
+            entry = previous
+        else:
+            try:
+                source = fetch_source(QWEN_PRICING_URL, accept='text/html').text or ''
+                plans = parse_billing('qwen', source, models)[QWEN4_MAX]
+                entry = {'plans': plans, 'sourceUrl': QWEN_PRICING_URL,
+                         'verifiedAt': stamp, 'status': 'fresh'}
+            except Exception:
+                entry = {**previous, 'status': 'stale' if age(previous) > timedelta(days=7) else 'last_good'} if previous else None
+        if entry:
+            cache['billing']['qwen'] = entry
+            billing[QWEN4_MAX] = entry
     records=[]
     for m in models:
         row={'key':m['key']}

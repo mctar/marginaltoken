@@ -16,6 +16,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from functools import partial
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Callable
@@ -28,6 +29,7 @@ LAST_GOOD_FILE = "firstparty-last-good.json"
 HEARTBEAT_FILE = "firstparty-heartbeat.json"
 # Old positional OpenAI snapshots may contain cache-write rates as output.
 PARSER_SCHEMAS = {"openai": 1}
+QWEN_PRICING_URL = "https://www.alibabacloud.com/help/en/model-studio/model-pricing"
 
 PROVIDER_URLS = {
     "anthropic": "https://platform.claude.com/docs/en/about-claude/pricing",
@@ -37,6 +39,7 @@ PROVIDER_URLS = {
     "moonshotai": "https://platform.kimi.ai/",
     "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
     "x-ai": "https://docs.x.ai/developers/pricing",
+    "qwen": QWEN_PRICING_URL,
 }
 
 PROVIDER_PUBLIC_URLS = {
@@ -580,6 +583,59 @@ def parse_xai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[st
     return result
 
 
+def qwen_max_singapore(source: str) -> str:
+    headings = list(re.finditer(r"<h([34])\b[^>]*>(.*?)</h\1>", source, re.I | re.S))
+    family = None
+    for index, heading in enumerate(headings):
+        name = visible_text(heading[2])
+        if heading[1] == "3":
+            family = name
+        elif family == "Qwen-Max" and name == "Singapore":
+            end = headings[index + 1].start() if index + 1 < len(headings) else len(source)
+            return source[heading.end():end]
+    raise OfficialSourceError("Qwen-Max Singapore price section missing")
+
+
+def qwen_table_rows(source: str) -> list[list[str]]:
+    return [
+        [visible_text(cell) for cell in re.findall(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", row, re.I | re.S)]
+        for row in re.findall(r"<tr\b[^>]*>(.*?)</tr>", source, re.I | re.S)
+    ]
+
+
+def qwen_usd(cell: str, label: str) -> float:
+    amount = re.fullmatch(r"\$\s*([0-9]+(?:\.[0-9]+)?)", cell)
+    if amount is None:
+        raise OfficialSourceError(f"Ambiguous Qwen Singapore rate: {label}")
+    return price(amount[1], label)
+
+
+def qwen_standard_rates(section: str, model: str) -> tuple[float, float]:
+    headers = [
+        "Model ID", "Deployment scope", "Mode", "Input tokens per request",
+        "Input price (per 1 million tokens)",
+        "Output price (per 1 million tokens) | Chain of thought + answer",
+    ]
+    matches = []
+    for table in re.findall(r"<table\b[^>]*>.*?</table>", section, re.I | re.S):
+        table_rows = qwen_table_rows(table)
+        if table_rows and table_rows[0][:len(headers)] == headers:
+            matches.extend(cells for cells in table_rows[1:]
+                           if cells and cells[0].split(" | ", 1)[0] == model)
+    if len(matches) != 1 or len(matches[0]) < len(headers) or matches[0][1:4] != [
+        "International", "Non-Thinking and Thinking modes", "0<Token≤1M",
+    ]:
+        raise OfficialSourceError(f"Missing or ambiguous Qwen Singapore price row: {model}")
+    return (qwen_usd(matches[0][4], f"{model} input"),
+            qwen_usd(matches[0][5], f"{model} output"))
+
+
+def parse_qwen(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
+    del now
+    section = qwen_max_singapore(source)
+    return {str(row["model"]): qwen_standard_rates(section, str(row["model"])) for row in rows}
+
+
 PARSERS: dict[str, Callable[[str, list[dict[str, Any]], datetime], dict[str, tuple[float, float]]]] = {
     "anthropic": parse_anthropic,
     "openai": parse_openai,
@@ -588,6 +644,7 @@ PARSERS: dict[str, Callable[[str, list[dict[str, Any]], datetime], dict[str, tup
     "moonshotai": parse_moonshot,
     "deepseek": parse_deepseek,
     "x-ai": parse_xai,
+    "qwen": parse_qwen,
 }
 
 
@@ -709,16 +766,20 @@ def refresh_firstparty(
         content_hash = cached.get("contentHash")
         used_alternate = False
         if url and parser:
+            source_fetcher = (
+                partial(fetch_source, accept="text/html")
+                if provider == "qwen" and fetcher is fetch_source else fetcher
+            )
             try:
                 # Google's scheduled rates can change with the date even if
                 # the pricing document and its ETag stay the same.
-                fetched = fetcher(url, None if provider == "google" else cached)
+                fetched = source_fetcher(url, None if provider == "google" else cached)
                 if fetched.not_modified:
                     complete = _last_good_prices(cached, rows)
                     if complete is None or cached.get("failedModels"):
                         # New or previously failed rows need another parse, even
                         # if the provider retains the same cache validators.
-                        fetched = fetcher(url, None)
+                        fetched = source_fetcher(url, None)
                         if fetched.not_modified:
                             raise OfficialSourceError("unconditional refresh returned 304")
                     else:
@@ -733,7 +794,11 @@ def refresh_firstparty(
                     if errors and fetcher is fetch_source:
                         failed_rows = [row for row in rows if str(row["model"]) in errors]
                         try:
-                            alternate = fetch_source_with_curl(url, None if provider == "google" else cached)
+                            curl_fetcher = (
+                                partial(fetch_source_with_curl, accept="text/html")
+                                if provider == "qwen" else fetch_source_with_curl
+                            )
+                            alternate = curl_fetcher(url, None if provider == "google" else cached)
                             if alternate.text is None:
                                 raise OfficialSourceError("curl source returned no content")
                             recovered, remaining = _parse_rows(parser, alternate.text, failed_rows, now)

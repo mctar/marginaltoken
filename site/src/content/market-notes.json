@@ -1,5 +1,344 @@
 [
   {
+    "kind": "weekly",
+    "slug": "ai-model-releases-2026-11-09",
+    "date": "2026-11-16",
+    "checked": "2026-11-16",
+    "author": "Thordur Arnason",
+    "title": "AI model releases: 9–15 November 2026",
+    "summary": "Fable 5.2 lowers token rates, Gemini 4 Hydrogen reaches the API, and DeepSeek and Perplexity change how common workflows are billed. Token-price pairs give input and output per million tokens. Dollar prices are USD.",
+    "periodStart": "2026-11-09",
+    "periodEnd": "2026-11-15",
+    "cutoff": "2026-11-16T06:10:15.212181+00:00",
+    "editionStatus": "complete",
+    "modelKeys": [
+      "anthropic/claude-fable-5.2",
+      "meta/muse-ember",
+      "google/gemini-4-hydrogen",
+      "google/gemini-4-carbon",
+      "deepseek/deepseek-v4.1-flash",
+      "thinkingmachines/inkling-2-small",
+      "moonshotai/kimi-k3.1-pro"
+    ],
+    "paragraphs": [],
+    "releases": [
+      {
+        "name": "Claude Fable 5.2",
+        "date": "2026-11-09",
+        "access": "direct API",
+        "terms": "Standard $8/$40, 20% below 5.1. Fast is $16/$80. Mythos 5.2 requires organization verification.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Fable billing note",
+            "href": "https://marginaltoken.com/notes/claude-fable-52-pricing-data-retention/"
+          },
+          {
+            "label": "Anthropic release",
+            "href": "https://www.anthropic.com/claude-fable-and-mythos-5-2"
+          }
+        ]
+      },
+      {
+        "name": "Meta Muse Ember",
+        "date": "2026-11-09",
+        "access": "direct API",
+        "terms": "$0.10/$0.50 through 200,000 input tokens. Above that threshold, all token rates triple for the whole request, including cache reads.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Billing note",
+            "href": "https://marginaltoken.com/notes/muse-ember-long-context-pricing/"
+          }
+        ]
+      },
+      {
+        "name": "Zyphra ZONOS3-Mini",
+        "date": "2026-11-09",
+        "access": "speech API and Apache 2.0 weights",
+        "terms": "$10 per million UTF-8 bytes.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Zyphra rates and model",
+            "href": "https://www.zyphra.com/models/zonos3-mini"
+          }
+        ]
+      },
+      {
+        "name": "NVIDIA Alpamayo 2 Edge",
+        "date": "2026-11-10",
+        "access": "downloadable weights",
+        "terms": "OpenMDW 1.1 weights and Apache 2.0 code for onboard deployment.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Model card",
+            "href": "https://huggingface.co/nvidia/Alpamayo2-Edge"
+          }
+        ]
+      },
+      {
+        "name": "IFM PAN 2",
+        "date": "2026-11-10",
+        "access": "downloadable world-model weights",
+        "terms": "Apache 2.0 weights for interactive video simulation.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Announcement",
+            "href": "https://ifm.ai/pan2/press-release/"
+          },
+          {
+            "label": "Weights",
+            "href": "https://huggingface.co/IFM/PAN2"
+          }
+        ]
+      },
+      {
+        "name": "Baidu ERNIE 5.5 Flash Preview",
+        "date": "2026-11-10",
+        "access": "Qianfan and OpenRouter",
+        "terms": "Qianfan’s promotional rates are CNY 1/4 peak and CNY 0.50/2 off-peak. OpenRouter’s quote is separate.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Pricing and access note",
+            "href": "https://marginaltoken.com/notes/ernie-55-flash-preview-qianfan-pricing-weights/"
+          }
+        ]
+      },
+      {
+        "name": "Gemini Decision 1",
+        "date": "2026-11-11",
+        "access": "specialist API",
+        "terms": "$0.10 per million input tokens for decisions over supplied choices. Output tokens are zero.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Billing note",
+            "href": "https://marginaltoken.com/notes/gemini-decision-1-input-pricing/"
+          }
+        ]
+      },
+      {
+        "name": "MiniMax H3-Image",
+        "date": "2026-11-11",
+        "access": "API and downloadable weights",
+        "terms": "The API meters image tokens. The custom weight license excludes the EU, UK, South Korea and US absent separate permission.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Pricing and license note",
+            "href": "https://marginaltoken.com/notes/minimax-h3-image-api-pricing-weights-license/"
+          }
+        ]
+      },
+      {
+        "name": "Gemini 4 Hydrogen",
+        "date": "2026-11-12",
+        "access": "free and paid API tiers",
+        "terms": "Paid Standard $1.50/$7.50, matching Gemini 3.8 Flash’s scheduled January rates.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Comparison",
+            "href": "https://marginaltoken.com/notes/gemini-4-hydrogen-flash-pricing/"
+          }
+        ]
+      },
+      {
+        "name": "Perplexity Decider and Flash v1.3",
+        "date": "2026-11-12",
+        "access": "API and Apache 2.0 weights",
+        "terms": "$0.02 and $0.01 per million input tokens, respectively. Both bill shared input once per request.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Decider Flash shared-input billing",
+            "href": "/notes/perplexity-decider-13-shared-input-billing/"
+          },
+          {
+            "label": "Direct API docs",
+            "href": "https://docs.perplexity.ai/docs/decisions/quickstart"
+          }
+        ]
+      },
+      {
+        "name": "Higurashi Haru-4B",
+        "date": "2026-11-13",
+        "access": "Apache 2.0 research weights",
+        "terms": "The full-duplex speech checkpoint is 10.54 GB on disk.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://blog.higurashi.ai/melte/haru4b/"
+          },
+          {
+            "label": "Model card",
+            "href": "https://huggingface.co/higurashi-ai/Haru-4B"
+          }
+        ]
+      },
+      {
+        "name": "Dreamina Seedance 2.5 Flash",
+        "date": "2026-11-15",
+        "access": "BytePlus ModelArk API",
+        "terms": "A five-second 720p example with no video input costs $0.76, matching Seedance 2.0.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Release register",
+            "href": "https://ai.byteplus.com/ark/region%3Aap-southeast-1/docs/model-release-announcement"
+          },
+          {
+            "label": "Rates",
+            "href": "https://docs.byteplus.com/en/docs/modelark/model-pricing"
+          }
+        ]
+      },
+      {
+        "name": "LongCat-Video-Avatar 1.6",
+        "date": "2026-11-15",
+        "access": "downloadable weights",
+        "terms": "Meituan’s card specifies MIT. Its INT8 base is 15.9 GB on disk before adapters.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://github.com/meituan-longcat/LongCat-Video"
+          },
+          {
+            "label": "Weights",
+            "href": "https://huggingface.co/meituan-longcat/LongCat-Video-Avatar-1.6"
+          }
+        ]
+      },
+      {
+        "name": "Huawei openPangu-2.1-Pro",
+        "date": "2026-11-15",
+        "access": "Guiyang MaaS API",
+        "terms": "CNY 0.80/3.20 for verified accounts. Exact weights remain unverified.",
+        "implication": "",
+        "links": [
+          {
+            "label": "Release",
+            "href": "https://support.huaweicloud.com/bulletin-maas/bulletin-maas-0001.html"
+          },
+          {
+            "label": "Rates",
+            "href": "https://support.huaweicloud.com/price-maas/price-maas-0002.html"
+          }
+        ]
+      }
+    ],
+    "updates": [
+      {
+        "title": "10 Nov · Gemini 4 Carbon",
+        "text": "Google opened its paid API at $2/$10 through 30 November. The rates rise to $4/$20 on 1 December.",
+        "links": [
+          {
+            "label": "Carbon pricing",
+            "href": "/notes/gemini-4-carbon-paid-api-pricing/"
+          }
+        ]
+      },
+      {
+        "title": "11 Nov · Seedance 1.5 Pro",
+        "text": "BytePlus deactivated the ModelArk version without automatic migration.",
+        "links": [
+          {
+            "label": "ModelArk notice",
+            "href": "https://ai.byteplus.com/ark/region%3Aap-southeast-1/docs/model-deprecation-notice"
+          }
+        ]
+      },
+      {
+        "title": "12 Nov · Inkling 2 Small and Kimi K3.1 Pro",
+        "text": "Inkling 2 Small’s Apache 2.0 weights became downloadable. Thinking Machines specifies 500 GB of aggregate GPU memory for NVFP4. NVIDIA’s separate Kimi K3.1 Pro NVFP4 package was verified at 1.61 TB on disk.",
+        "links": [
+          {
+            "label": "Inkling weights",
+            "href": "https://huggingface.co/thinkingmachines/Inkling-2-Small"
+          },
+          {
+            "label": "Kimi deployment note",
+            "href": "/notes/kimi-k31-pro-nvidia-nvfp4-deployment/"
+          }
+        ]
+      },
+      {
+        "title": "13 Nov · DeepSeek V4.1 Flash",
+        "text": "The existing direct API gained hosted tools. Searches and fetches each cost $0.75 per 1,000 billable uses.",
+        "links": [
+          {
+            "label": "DeepSeek tool fees and worked example",
+            "href": "/notes/deepseek-v41-flash-hosted-tool-fees/"
+          },
+          {
+            "label": "Provider pricing",
+            "href": "https://api-docs.deepseek.com/quick_start/pricing/"
+          }
+        ]
+      }
+    ],
+    "watching": [
+      {
+        "title": "Qwen4-Max and Aion Instruct",
+        "text": "Alibaba opened Qwen4-Max Preview through Token Plan on 11 November. Its metered API launched on 16 November, outside this review period. Microsoft targeted 20 November for the Aion Instruct Insider rollout and offered an existing developer test package.",
+        "links": [
+          {
+            "label": "Qwen release log",
+            "href": "https://docs.qwencloud.com/changelog/models"
+          },
+          {
+            "label": "Microsoft timetable",
+            "href": "https://devblogs.microsoft.com/foundry-on-windows/aion-instruct-local-ai-windows-gpu/"
+          }
+        ]
+      },
+      {
+        "title": "Hy4 and ERNIE 5.5 Flash Preview",
+        "text": "Exact final Hy4 and ERNIE 5.5 Flash Preview downloads stayed unverified.",
+        "links": [
+          {
+            "label": "Tencent release",
+            "href": "https://www.tencent.com/tencent-launches-hy4-joining-the-ranks-of-the-worlds-leading-open-source-ai-models/"
+          },
+          {
+            "label": "Baidu access note",
+            "href": "/notes/ernie-55-flash-preview-qianfan-pricing-weights/"
+          }
+        ]
+      }
+    ],
+    "takeaways": [
+      {
+        "title": "Price the actual request",
+        "text": "Include long-prompt tiers, shared input, cache hits and billable tools.",
+        "links": [
+          {
+            "label": "Workload calculator",
+            "href": "/compare/"
+          }
+        ]
+      },
+      {
+        "title": "Size the deployment",
+        "text": "Check weight licenses and measure peak memory and throughput on your workload.",
+        "links": [
+          {
+            "label": "Rent vs Run",
+            "href": "/infrastructure/"
+          }
+        ]
+      }
+    ],
+    "coverage": "Some publisher sources and gated files were inaccessible.",
+    "sources": []
+  },
+  {
     "kind": "standalone",
     "slug": "deepseek-v41-flash-hosted-tool-fees",
     "date": "2026-11-16",

@@ -454,16 +454,24 @@
     "kind": "standalone",
     "slug": "qwen4-max-preview-token-plan",
     "date": "2026-11-12",
-    "checked": "2026-11-12",
+    "checked": "2026-11-16",
     "author": "Thordur Arnason",
-    "title": "Qwen4-Max Preview is available through Alibaba’s Token Plan",
-    "summary": "The subscription preview runs through 25 November. Alibaba has posted no pay-as-you-go token price.",
+    "title": "Qwen4-Max adds pay-as-you-go API access",
+    "summary": "Alibaba’s production model costs $1.50 input and $4.50 output per million tokens in Singapore. The separate preview remains Token Plan only.",
     "paragraphs": [
-      "Alibaba opened qwen4-max-preview on 11 November at 10:00 UTC+8. The preview ends at midnight UTC+8 after 25 November, and Alibaba says the model will retire then. It is available through Token Plan only.",
-      "The international Personal Lite plan lists $6 a month for 20,000 credits. Alibaba limits Personal access to interactive coding and agent tools. Credit use depends on the plan and time of day, so the allowance gives subscribers a budget in credits.",
-      "For a metered comparison, the Shortlist still tracks Qwen3.8 Max (0902). Alibaba has yet to publish a pay-as-you-go rate for Qwen4-Max Preview."
+      "Updated 16 November. Alibaba released the production qwen4-max API with metered access. In Singapore’s International deployment, uncached input costs $1.50 and output costs $4.50 per million tokens, 25% below Qwen3.8 Max (0902) at the same location. Other regions have their own published rates.",
+      "Singapore cache hits cost $0.075 per million tokens. Explicit cache writes cost $1.875 for a five-minute lifetime or $3 for one hour. Thinking tokens count as output. The Shortlist now tracks Qwen4-Max and keeps Qwen3.8 Max (0902) as its fallback.",
+      "The separate qwen4-max-preview opened on 11 November and remains Token Plan only. Alibaba schedules its retirement for midnight at the end of 25 November, UTC+8. The Personal Lite plan lists $6 a month for 20,000 credits, with consumption varying by plan and time of day."
     ],
     "sources": [
+      {
+        "label": "QwenCloud release notice, 16 November",
+        "href": "https://docs.qwencloud.com/changelog/models"
+      },
+      {
+        "label": "Alibaba Model Studio pricing and cache rates",
+        "href": "https://www.alibabacloud.com/help/en/model-studio/model-pricing"
+      },
       {
         "label": "Alibaba preview access and dates",
         "href": "https://www.alibabacloud.com/help/en/model-studio/qwen4-max-preview"
@@ -476,7 +484,12 @@
         "label": "Qwen3.8 Max (0902) pricing card",
         "href": "https://marginaltoken.com/model/qwen/qwen3.8-max-0902/"
       }
-    ]
+    ],
+    "modelKey": "qwen/qwen4-max",
+    "comparisonModelKey": "qwen/qwen3.8-max-0902",
+    "calculatorQuote": "lab:standard",
+    "calculatorTitle": "Estimate Qwen4-Max API costs",
+    "calculatorGuidance": "Select Direct Standard (Singapore) for Qwen4-Max and enter cached input and explicit writes separately. The comparison uses the routed Tape quote for Qwen3.8 Max (0902)."
   },
   {
     "kind": "standalone",

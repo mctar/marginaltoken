@@ -59,7 +59,7 @@ class ArgonTests(unittest.TestCase):
         argon = next(r for r in rows if r['model'] == 'gemini-4-argon')
         self.assertEqual(parse_google(pricing_source(), [argon], datetime(2026,11,30,23,59,tzinfo=timezone.utc))['gemini-4-argon'], (2,10))
         self.assertEqual(parse_google(pricing_source(), [argon], datetime(2026,12,1,tzinfo=timezone.utc))['gemini-4-argon'], (4,20))
-        models = [{'key': f"{r['provider']}/{r['model']}", 'provider': r['provider'], 'source': 'firstparty', 'checked': '2026-10-14', 'verificationStatus': 'fresh'} for r in rows]
+        models = [{'key': f"{r['provider']}/{r['model']}", 'provider': r['provider'], 'source': 'firstparty', 'checked': '2026-10-14', 'verificationStatus': 'fresh'} for r in rows if r['provider'] != 'qwen']
         models.append({'key':'qwen/qwen3.8-max-0902','provider':'qwen','source':'openrouter'})
         result = apply_register(models, register, datetime(2026,10,14,tzinfo=timezone.utc), {'slot:qwen-frontier':'qwen/qwen3.7-max'})
         self.assertEqual(result['selections']['slot:google-argon'], 'google/gemini-4-carbon')

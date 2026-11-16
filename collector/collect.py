@@ -305,6 +305,10 @@ def normalize_firstparty(payload: Any) -> list[dict[str, Any]]:
         )
         if stage is not None:
             entries[-1]["releaseStage"] = stage
+        if (max_output := raw.get("max_output_tokens")) is not None:
+            if type(max_output) is not int or not 0 < max_output <= context:
+                raise CollectorError(f"{key} max_output_tokens must be a positive integer within context")
+            entries[-1]["maxOutputTokens"] = max_output
         verification = raw.get("verification_status")
         if verification is not None:
             if verification not in ("fresh", "last_good", "stale", "manual"):
@@ -312,9 +316,9 @@ def normalize_firstparty(payload: Any) -> list[dict[str, Any]]:
             entries[-1]["verificationStatus"] = verification
     eligible_counts: dict[str, int] = {}
     for entry in entries:
-        eligible_counts.setdefault(entry["provider"], 0)
         if entry["indexEligible"]:
-            eligible_counts[entry["provider"]] += 1
+            provider = entry["provider"]
+            eligible_counts[provider] = eligible_counts.get(provider, 0) + 1
     invalid_providers = [
         provider for provider, count in eligible_counts.items() if count != 1
     ]

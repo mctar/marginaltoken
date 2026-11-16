@@ -39,8 +39,8 @@ class FirstPartyCatalogTests(unittest.TestCase):
             rows = [model for model in self.models if model["provider"] == provider]
             self.assertGreaterEqual(len(rows), 3, provider)
 
-    def test_every_first_party_provider_has_one_index_representative(self) -> None:
-        providers = {model["provider"] for model in self.models}
+    def test_only_basket_providers_have_one_index_representative(self) -> None:
+        providers = {model["provider"] for model in self.models if model["indexEligible"]}
         self.assertEqual(
             providers,
             {"anthropic", "openai", "google", "mistralai", "moonshotai", "deepseek", "x-ai"},
@@ -48,6 +48,9 @@ class FirstPartyCatalogTests(unittest.TestCase):
         for provider in providers:
             rows = [model for model in self.models if model["provider"] == provider]
             self.assertEqual(sum(model["indexEligible"] for model in rows), 1, provider)
+        qwen = next(model for model in self.models if model["key"] == "qwen/qwen4-max")
+        self.assertFalse(qwen["indexEligible"])
+        self.assertEqual(qwen["maxOutputTokens"], 262144)
 
     def test_new_first_party_tiers_have_expected_rates(self) -> None:
         by_key = {model["key"]: model for model in self.models}

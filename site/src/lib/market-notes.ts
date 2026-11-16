@@ -17,6 +17,7 @@ export type ModelNote = NoteBase & {
   kind?: 'model'
   modelKey: string
   comparisonModelKey?: string
+  comparisonQuote?: string
   calculatorKind?: 'infrastructure'
   calculatorQuote: string
   calculatorTitle: string
@@ -75,7 +76,7 @@ export function marketNotePath(note: Pick<MarketNote, 'slug'>): string {
   return `/notes/${encodeURIComponent(note.slug)}/`
 }
 
-export function marketNoteCalculatorPath(note: Pick<ModelNote, 'modelKey' | 'comparisonModelKey' | 'calculatorQuote' | 'calculatorKind'>): string {
+export function marketNoteCalculatorPath(note: Pick<ModelNote, 'modelKey' | 'comparisonModelKey' | 'comparisonQuote' | 'calculatorQuote' | 'calculatorKind'>): string {
   if (note.calculatorKind === 'infrastructure') {
     return `/infrastructure/?${new URLSearchParams({ mode: 'custom', model: note.modelKey, quote: note.calculatorQuote })}`
   }
@@ -84,7 +85,7 @@ export function marketNoteCalculatorPath(note: Pick<ModelNote, 'modelKey' | 'com
   if (note.comparisonModelKey) params.append('model', note.comparisonModelKey)
   params.set('assumptions', JSON.stringify({
     [note.modelKey]: { quote: note.calculatorQuote },
-    ...(note.comparisonModelKey ? { [note.comparisonModelKey]: { quote: 'lab:standard' } } : {}),
+    ...(note.comparisonModelKey ? { [note.comparisonModelKey]: { quote: note.comparisonQuote ?? 'lab:standard' } } : {}),
   }))
   return `/compare/?${params.toString()}`
 }

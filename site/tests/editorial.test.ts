@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { frontPageStories, marketNotes, type WeeklyReview } from '../src/lib/market-notes.ts'
+import { frontPageStories, marketNoteCalculatorPath, marketNotes, type WeeklyReview } from '../src/lib/market-notes.ts'
 import { feedItems } from '../scripts/feeds.mjs'
 
 // Fixed dates keep time-dependent behavior independent of the newest edition.
@@ -41,6 +41,17 @@ test('standalone notes reach editorial RSS without inventing a ledger identity',
   assert.equal(item.kind, 'note')
   assert.deepEqual(item.keys, [])
   assert.equal(item.link, `https://marginaltoken.com/notes/${note.slug}/`)
+})
+
+test('the Qwen4-Max note opens the direct plan and 0902 routed quote', () => {
+  const note = marketNotes.find((note) => note.slug === 'qwen4-max-preview-token-plan')!
+  assert.equal(note.kind, 'model')
+  const url = new URL(marketNoteCalculatorPath(note), 'https://marginaltoken.com')
+  assert.deepEqual(url.searchParams.getAll('model'), ['qwen/qwen4-max', 'qwen/qwen3.8-max-0902'])
+  assert.deepEqual(JSON.parse(url.searchParams.get('assumptions')!), {
+    'qwen/qwen4-max': { quote: 'lab:standard' },
+    'qwen/qwen3.8-max-0902': { quote: 'tape' },
+  })
 })
 
 test('weekly release dates stay inside the stated window and links have explicit destinations', () => {

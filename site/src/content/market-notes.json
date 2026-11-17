@@ -1,5 +1,69 @@
 [
   {
+    "kind": "standalone",
+    "slug": "haru-4b-local-speech-latency-costs",
+    "date": "2026-11-17",
+    "checked": "2026-11-17",
+    "author": "Thordur Arnason",
+    "title": "Haru-4B’s 65 ms speech latency excludes audio framing",
+    "summary": "Higurashi’s Apache 2.0 research release has a 10.54 GB BF16 checkpoint. Its MacBook latency measurement uses INT8 weights and wired audio.",
+    "paragraphs": [
+      "Higurashi announced Haru-4B on 13 November as a pretrained research model that can listen and speak simultaneously. The Apache 2.0 BF16 checkpoint is 10.54 GB on disk. The publisher provides a macOS app, a PyTorch demo and a vLLM-Omni serving plugin.",
+      "Higurashi measured a median of about 65 ms on an M1 Max MacBook using INT8 weights and wired audio. That measurement excludes up to 133 ms of audio framing. Test the runtime and audio devices you plan to use, including how well the model handles interruptions.",
+      "For a budget, measure peak memory and the number of simultaneous streams that meet your latency target. Divide your hourly running cost by the usable conversation-hours you can serve in that hour. Include idle capacity if you need to keep the service ready."
+    ],
+    "sources": [
+      {
+        "label": "Higurashi release and latency breakdown · 13 November",
+        "href": "https://blog.higurashi.ai/melte/haru4b/"
+      },
+      {
+        "label": "Haru-4B model card and weight license",
+        "href": "https://huggingface.co/higurashi-ai/Haru-4B"
+      },
+      {
+        "label": "Checkpoint files and sizes",
+        "href": "https://huggingface.co/higurashi-ai/Haru-4B/tree/main"
+      },
+      {
+        "label": "Estimate hardware and operating costs with Rent vs Run",
+        "href": "/infrastructure/?mode=custom"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "slug": "longcat-video-avatar-16-local-rendering-costs",
+    "date": "2026-11-17",
+    "checked": "2026-11-17",
+    "author": "Thordur Arnason",
+    "title": "LongCat-Video-Avatar 1.6’s INT8 base weights total 15.9 GB",
+    "summary": "Meituan’s video avatar model ships two base checkpoints and separate adapters. Its two-GPU examples give buyers a starting point for measuring render cost.",
+    "paragraphs": [
+      "Meituan’s LongCat-Video-Avatar 1.6 animates a speaker from audio. Its base weight files total 31.7 GB, or 15.9 GB for the optional INT8 checkpoint. The examples use a separate 2.52 GB adapter file and two GPUs. Meituan lists the weights under MIT in the model card.",
+      "Those are download sizes. A running deployment also needs memory for other model components and the rendering workload. Measure peak memory and elapsed time on the resolution and clip length you intend to ship.",
+      "To budget a render, multiply the billed hours on each GPU by its hourly rate, include retries and review, and divide the total by approved video minutes. Rent vs Run can help estimate hardware costs. We found no verified hosted tariff for this exact version."
+    ],
+    "sources": [
+      {
+        "label": "Meituan model card, two-GPU examples and MIT declaration",
+        "href": "https://huggingface.co/meituan-longcat/LongCat-Video-Avatar-1.6"
+      },
+      {
+        "label": "Base checkpoint and adapter files",
+        "href": "https://huggingface.co/meituan-longcat/LongCat-Video-Avatar-1.6/tree/main"
+      },
+      {
+        "label": "Meituan inference code",
+        "href": "https://github.com/meituan-longcat/LongCat-Video"
+      },
+      {
+        "label": "Estimate hardware and operating costs with Rent vs Run",
+        "href": "/infrastructure/?mode=custom"
+      }
+    ]
+  },
+  {
     "kind": "weekly",
     "slug": "ai-model-releases-2026-11-09",
     "date": "2026-11-16",
@@ -172,6 +236,10 @@
         "implication": "",
         "links": [
           {
+            "label": "Haru-4B latency and local costs",
+            "href": "/notes/haru-4b-local-speech-latency-costs/"
+          },
+          {
             "label": "Release",
             "href": "https://blog.higurashi.ai/melte/haru4b/"
           },
@@ -205,6 +273,10 @@
         "terms": "Meituan’s card specifies MIT. Its INT8 base is 15.9 GB on disk before adapters.",
         "implication": "",
         "links": [
+          {
+            "label": "LongCat checkpoint sizes and render costs",
+            "href": "/notes/longcat-video-avatar-16-local-rendering-costs/"
+          },
           {
             "label": "Release",
             "href": "https://github.com/meituan-longcat/LongCat-Video"

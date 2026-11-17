@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-17T17:03:39Z",
+  "generatedAt": "2026-11-17T20:03:39Z",
   "asOf": "2026-11-17",
   "models": [
     {
@@ -1721,7 +1721,7 @@
         "licenseName": "MiniMax Community License",
         "licenseClass": "custom",
         "gated": false,
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh",
         "weightsAvailable": true,
         "metadataSchema": 2,
@@ -2413,7 +2413,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -2463,7 +2463,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -2513,7 +2513,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -2563,7 +2563,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -2613,7 +2613,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -2663,7 +2663,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -2713,7 +2713,7 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -2774,32 +2774,6 @@
             "minimumPromptTokens": 272001
           },
           {
-            "id": "flex",
-            "label": "Flex",
-            "input_mtok": 0.5,
-            "output_mtok": 2.5,
-            "cached_input_mtok": 0.025,
-            "cacheWrite30Minute_mtok": 0.625,
-            "cacheWrite12Hour_mtok": 1.25,
-            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
-            "contextWindowTokens": 1050000,
-            "maximumOutputTokens": 128000,
-            "maximumPromptTokens": 272000
-          },
-          {
-            "id": "flex-long-context",
-            "label": "Flex long context",
-            "input_mtok": 1.0,
-            "output_mtok": 3.75,
-            "cached_input_mtok": 0.05,
-            "cacheWrite30Minute_mtok": 1.25,
-            "cacheWrite12Hour_mtok": 2.5,
-            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests. Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.",
-            "contextWindowTokens": 1050000,
-            "maximumOutputTokens": 128000,
-            "minimumPromptTokens": 272001
-          },
-          {
             "id": "fast",
             "label": "Fast",
             "input_mtok": 2.0,
@@ -2827,7 +2801,107 @@
           }
         ],
         "sourceUrl": "https://developers.openai.com/api/docs/pricing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
+        "status": "fresh"
+      }
+    },
+    {
+      "key": "openai/gpt-6.2-astra",
+      "billing": {
+        "plans": [
+          {
+            "id": "standard",
+            "label": "Standard",
+            "input_mtok": 8.0,
+            "output_mtok": 40.0,
+            "cached_input_mtok": 0.4,
+            "cacheWrite30Minute_mtok": 10.0,
+            "cacheWrite12Hour_mtok": 20.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+          },
+          {
+            "id": "standard-long-context",
+            "label": "Standard long context",
+            "input_mtok": 16.0,
+            "output_mtok": 60.0,
+            "cached_input_mtok": 0.8,
+            "cacheWrite30Minute_mtok": 20.0,
+            "cacheWrite12Hour_mtok": 40.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+          },
+          {
+            "id": "batch",
+            "label": "Batch",
+            "input_mtok": 4.0,
+            "output_mtok": 20.0,
+            "cached_input_mtok": 0.2,
+            "cacheWrite30Minute_mtok": 5.0,
+            "cacheWrite12Hour_mtok": 10.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+          },
+          {
+            "id": "batch-long-context",
+            "label": "Batch long context",
+            "input_mtok": 8.0,
+            "output_mtok": 30.0,
+            "cached_input_mtok": 0.4,
+            "cacheWrite30Minute_mtok": 10.0,
+            "cacheWrite12Hour_mtok": 20.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+          }
+        ],
+        "sourceUrl": "https://developers.openai.com/api/docs/pricing",
+        "verifiedAt": "2026-11-17T20:03:39Z",
+        "status": "fresh"
+      }
+    },
+    {
+      "key": "openai/gpt-6.2-sol",
+      "billing": {
+        "plans": [
+          {
+            "id": "standard",
+            "label": "Standard",
+            "input_mtok": 2.0,
+            "output_mtok": 10.0,
+            "cached_input_mtok": 0.1,
+            "cacheWrite30Minute_mtok": 2.5,
+            "cacheWrite12Hour_mtok": 5.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+          },
+          {
+            "id": "standard-long-context",
+            "label": "Standard long context",
+            "input_mtok": 4.0,
+            "output_mtok": 15.0,
+            "cached_input_mtok": 0.2,
+            "cacheWrite30Minute_mtok": 5.0,
+            "cacheWrite12Hour_mtok": 10.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+          },
+          {
+            "id": "batch",
+            "label": "Batch",
+            "input_mtok": 1.0,
+            "output_mtok": 5.0,
+            "cached_input_mtok": 0.05,
+            "cacheWrite30Minute_mtok": 1.25,
+            "cacheWrite12Hour_mtok": 2.5,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+          },
+          {
+            "id": "batch-long-context",
+            "label": "Batch long context",
+            "input_mtok": 2.0,
+            "output_mtok": 7.5,
+            "cached_input_mtok": 0.1,
+            "cacheWrite30Minute_mtok": 2.5,
+            "cacheWrite12Hour_mtok": 5.0,
+            "notes": "Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests."
+          }
+        ],
+        "sourceUrl": "https://developers.openai.com/api/docs/pricing",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -2925,7 +2999,7 @@
           }
         ],
         "sourceUrl": "https://docs.particle.ai/usage-billing",
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh"
       }
     },
@@ -3521,7 +3595,7 @@
         "licenseName": "StepFun Model License 1.0",
         "licenseClass": "custom",
         "gated": false,
-        "verifiedAt": "2026-11-16T20:03:39Z",
+        "verifiedAt": "2026-11-17T20:03:39Z",
         "status": "fresh",
         "weightsAvailable": true,
         "metadataSchema": 2,

@@ -586,14 +586,17 @@ def parse_xai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[st
 def qwen_max_singapore(source: str) -> str:
     headings = list(re.finditer(r"<h([34])\b[^>]*>(.*?)</h\1>", source, re.I | re.S))
     family = None
+    sections = []
     for index, heading in enumerate(headings):
         name = visible_text(heading[2])
         if heading[1] == "3":
             family = name
-        elif family == "Qwen-Max" and name == "Singapore":
+        elif family in {"Qwen-Max", "Qwen Max"} and name == "Singapore":
             end = headings[index + 1].start() if index + 1 < len(headings) else len(source)
-            return source[heading.end():end]
-    raise OfficialSourceError("Qwen-Max Singapore price section missing")
+            sections.append(source[heading.end():end])
+    if len(sections) != 1:
+        raise OfficialSourceError("Qwen Max Singapore price section missing or ambiguous")
+    return sections[0]
 
 
 def qwen_table_rows(source: str) -> list[list[str]]:
@@ -611,19 +614,20 @@ def qwen_usd(cell: str, label: str) -> float:
 
 
 def qwen_standard_rates(section: str, model: str) -> tuple[float, float]:
-    headers = [
-        "Model ID", "Deployment scope", "Mode", "Input tokens per request",
-        "Input price (per 1 million tokens)",
-        "Output price (per 1 million tokens) | Chain of thought + answer",
-    ]
+    headers = (
+        ["Model ID", "Deployment scope", "Mode", "Input tokens per request",
+         "Input price (per 1 million tokens)", "Output price (per 1 million tokens) | Chain of thought + answer"],
+        ["Model ID", "Service Deployment Scope", "Pattern", "Input tokens per request",
+         "Input unit price (per million tokens)", "Output unit price (per million tokens) | Chain-of-thought + response"],
+    )
     matches = []
     for table in re.findall(r"<table\b[^>]*>.*?</table>", section, re.I | re.S):
         table_rows = qwen_table_rows(table)
-        if table_rows and table_rows[0][:len(headers)] == headers:
+        if table_rows and table_rows[0][:6] in headers:
             matches.extend(cells for cells in table_rows[1:]
                            if cells and cells[0].split(" | ", 1)[0] == model)
-    if len(matches) != 1 or len(matches[0]) < len(headers) or matches[0][1:4] != [
-        "International", "Non-Thinking and Thinking modes", "0<Token≤1M",
+    if len(matches) != 1 or len(matches[0]) < 6 or [cell.casefold() for cell in matches[0][1:4]] != [
+        "international", "non-thinking and thinking modes", "0<token≤1m",
     ]:
         raise OfficialSourceError(f"Missing or ambiguous Qwen Singapore price row: {model}")
     return (qwen_usd(matches[0][4], f"{model} input"),

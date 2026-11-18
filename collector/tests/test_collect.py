@@ -63,6 +63,8 @@ class FirstPartyCatalogTests(unittest.TestCase):
             "anthropic/claude-haiku-4.5": (1.0, 5.0, 200000),
             "anthropic/claude-haiku-5.5": (0.1, 0.5, 1000000),
             "moonshotai/kimi-k3": (3.0, 15.0, 1048576),
+            "openai/gpt-6.2-astra": (8.0, 40.0, 1050000),
+            "openai/gpt-6.2-sol": (2.0, 10.0, 1050000),
             "openai/gpt-6-astra": (10.0, 50.0, 1050000),
             "openai/gpt-6.1-sol": (2.0, 10.0, 1050000),
             "openai/gpt-6-sol": (2.0, 10.0, 1050000),

@@ -127,9 +127,8 @@ export function validDecisions(value: unknown): value is DecisionsFeed {
                   ].every(
                     (n) => n === undefined || (Number.isFinite(n) && n >= 0),
                   ) &&
-                  [p.validThrough, p.effectiveFrom].every(
-                    (d) => d === undefined || validBillingDate(d),
-                  ) &&
+                  (p.validThrough === undefined || validBillingDate(p.validThrough)) &&
+                  (p.effectiveFrom === undefined || validBillingStart(p.effectiveFrom)) &&
                   (p.notes === undefined || typeof p.notes === 'string') &&
                   (p.cacheMode === undefined || p.cacheMode === 'implicit') &&
                   (p.scheduledRates === undefined ||
@@ -137,15 +136,14 @@ export function validDecisions(value: unknown): value is DecisionsFeed {
                       p.scheduledRates.every(
                         (r) =>
                           r &&
-                          validBillingDate(r.effectiveFrom) &&
+                          validBillingStart(r.effectiveFrom) &&
                           [
                             r.input_mtok,
                             r.output_mtok,
                             r.cached_input_mtok,
                           ].every((n) => Number.isFinite(n) && n >= 0) &&
-                          (r.cache_storage_mtok_hour === undefined ||
-                            (Number.isFinite(r.cache_storage_mtok_hour) &&
-                              r.cache_storage_mtok_hour >= 0)),
+                          [r.cache_storage_mtok_hour, r.cacheWrite30Minute_mtok, r.cacheWrite12Hour_mtok]
+                            .every((n) => n === undefined || (Number.isFinite(n) && n >= 0)),
                       ) &&
                       new Set(p.scheduledRates.map((r) => r.effectiveFrom))
                         .size === p.scheduledRates.length)),
@@ -199,4 +197,13 @@ export function openShortlist(
       ...slot.map((key) => byKey.get(key)),
     ].find(Boolean),
   ).filter((m): m is PriceModel => Boolean(m))
+}
+
+function validBillingStart(value: string): boolean {
+  return validBillingDate(value) || (
+    typeof value === 'string' &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value) &&
+    Number.isFinite(Date.parse(value)) &&
+    new Date(value).toISOString() === value.replace('Z', '.000Z')
+  )
 }

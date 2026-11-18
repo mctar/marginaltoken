@@ -11,6 +11,7 @@ from urllib.parse import quote, unquote, urlsplit
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 try:
     from collector.collect import atomic_write_json, atomic_write_text
     from collector.official import (
@@ -29,7 +30,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PERMISSIVE = {'apache-2.0', 'mit', 'bsd-2-clause', 'bsd-3-clause', 'isc', 'cc-by-4.0', 'cc0-1.0'}
 WEIGHTS_SCHEMA = 2
 ANTHROPIC_BILLING_SCHEMA = 2
-OPENAI_BILLING_SCHEMA = 2
+OPENAI_BILLING_SCHEMA = 3
+OPENAI_GPT62_IDS = {"gpt-6.2-sol", "gpt-6.2-astra"}
 GOOGLE_BILLING_SCHEMA = 2
 GOOGLE_IMPLICIT_CACHE_MODELS = {
     'google/gemini-4-argon', 'google/gemini-4-carbon', 'google/gemini-4-hydrogen',
@@ -44,6 +46,7 @@ META_EMBER_KEY = 'meta/muse-ember'
 MISTRAL_BILLING_SCHEMA = 1
 MISTRAL_BILLING_URL = 'https://docs.mistral.ai/inference/pricing'
 QWEN4_MAX = 'qwen/qwen4-max'
+QWEN_BILLING_SCHEMA = 1
 MOONSHOT_BILLING_SCHEMA = 1
 MOONSHOT_BILLING_URL = 'https://platform.kimi.ai/docs/pricing/chat'
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
@@ -336,24 +339,118 @@ def qwen4_max_plan(source):
     section = qwen_max_singapore(source)
     inp, output = qwen_standard_rates(section, 'qwen4-max')
     tables = re.findall(
-        r'<strong\b[^>]*>qwen4-max — Cache price \(per million tokens\)</strong>\s*</p>\s*(<table\b[^>]*>.*?</table>)',
+        r'<strong\b[^>]*>qwen4-max — Cache (?:price|unit prices) \(per million tokens\)</strong>\s*</p>\s*(<table\b[^>]*>.*?</table>)',
         section, re.I | re.S,
     )
-    headers = ['Cache write (5m)', 'Cache write (1h)', 'Explicit/implicit cache read']
+    columns = (
+        {'Cache write (5m)': 'cache_write_mtok', 'Cache write (1h)': 'cacheWriteHour_mtok',
+         'Explicit/implicit cache read': 'cached_input_mtok'},
+        {'Cache creation (5m)': 'cache_write_mtok', 'Cache creation (1h)': 'cacheWriteHour_mtok',
+         'Explicit/implicit cache hit': 'cached_input_mtok'},
+    )
     rows = qwen_table_rows(tables[0]) if len(tables) == 1 else []
-    if len(rows) != 2 or len(rows[1]) != len(headers) or set(rows[0]) != set(headers):
+    headers = next((fields for fields in columns if rows and set(rows[0]) == fields.keys()), None)
+    if headers is None or len(rows) != 2 or len(rows[0]) != 3 or len(rows[1]) != 3:
         raise ValueError('Missing or ambiguous Qwen4-Max Singapore cache tariff')
-    rates = {header: qwen_usd(value, header) for header, value in zip(*rows)}
+    rates = {headers[header]: qwen_usd(value, header) for header, value in zip(*rows)}
     return {
         'id': 'standard', 'label': 'Direct Standard (Singapore)',
         'input_mtok': inp, 'output_mtok': output,
-        'cached_input_mtok': rates[headers[2]],
-        'cache_write_mtok': rates[headers[0]], 'cacheWriteHour_mtok': rates[headers[1]],
+        **rates,
         'contextWindowTokens': 1000000, 'maximumOutputTokens': 262144,
         'notes': ('Alibaba Cloud Model Studio, International deployment in Singapore. Output includes thinking. '
                   'Non-thinking responses are limited to 131,072 output tokens. Cache reads apply to both '
                   'implicit and explicit hits. Write rates apply to explicit caching for the selected lifetime.'),
     }
+
+
+def openai_billing_rates(cells, prefix):
+    rates = {
+        'input_mtok': openai_rate(cells, prefix+'input'),
+        'output_mtok': openai_rate(cells, prefix+'output'),
+    }
+    for column, field in [('cached input', 'cached_input_mtok'),
+                          ('cache writes', 'cache_write_mtok'),
+                          ('30m write', 'cacheWrite30Minute_mtok'),
+                          ('12h write', 'cacheWrite12Hour_mtok')]:
+        if prefix+column in cells and cells[prefix+column] != '-':
+            rates[field] = openai_rate(cells, prefix+column)
+    return rates
+
+
+def openai_ultrafast_schedule(source, names):
+    switch = re.search(
+        r'For GPT[-‑]6\.2 Astra and GPT[-‑]6\.2 Sol, Ultrafast costs 3 times the Standard rate through '
+        r'([A-Za-z]+ \d{1,2}, \d{4}), and 6 times the Standard rate starting '
+        r'([A-Za-z]+ \d{1,2}, \d{4}) \(Pacific time\)\.', source,
+    )
+    if not switch:
+        return None
+    last_day, first_day = (datetime.strptime(day, '%B %d, %Y') for day in switch.groups())
+    if first_day - last_day != timedelta(days=1):
+        raise ValueError('OpenAI Ultrafast promotion and list dates do not align')
+    effective = first_day.replace(tzinfo=ZoneInfo('America/Los_Angeles')).astimezone(timezone.utc)
+    promo = openai_price_rows(source, 'Ultrafast promotion', names)
+    list_rates = openai_price_rows(source, 'Ultrafast list', names)
+    if set(promo) != names or set(list_rates) != names:
+        raise ValueError('OpenAI Ultrafast promotion or list rate missing')
+    return promo, list_rates, effective.strftime('%Y-%m-%dT%H:%M:%SZ'), first_day.date().isoformat()
+
+
+def openai_billing_plans(source, models):
+    names = {model['key'].split('/', 1)[1] for model in models}
+    sections = {mode: openai_price_rows(source, mode, names) for mode in ['Standard', 'Batch']}
+    gpt62 = names & OPENAI_GPT62_IDS
+    terra = names & {'gpt-6.1-terra'}
+    if terra:
+        flex = re.search(r'^#### Flex\s*\n(?P<body>.*?)(?=^#### |^### |\Z)', source, re.S | re.M)
+        if re.search(r'^### Flex pricing data\s*$', source, re.M):
+            sections['Flex'] = openai_price_rows(source, 'Flex', terra)
+        elif flex:
+            sections['Flex'] = openai_price_rows('### Flex pricing data\n'+flex.group('body'), 'Flex', terra)
+    if gpt62 | terra and re.search(r'^### Fast pricing data\s*$', source, re.M):
+        sections['Fast'] = openai_price_rows(source, 'Fast', gpt62 | terra)
+    ultrafast = openai_ultrafast_schedule(source, gpt62) if gpt62 else None
+    if ultrafast:
+        sections['Ultrafast'] = ultrafast[0]
+
+    result = {}
+    for model in models:
+        name = model['key'].split('/', 1)[1]
+        plans = []
+        for mode, rows in sections.items():
+            cells = rows.get(name)
+            if cells is None:
+                continue
+            # Qualified legacy rows have different naming and need separate review.
+            for prefix, label in [('Short context ', mode), ('Long context ', mode+' long context')]:
+                if prefix+'input' not in cells:
+                    continue
+                plan = {'id': label.lower().replace(' ', '-'), 'label': label,
+                        **openai_billing_rates(cells, prefix)}
+                notes = []
+                if 'cacheWrite30Minute_mtok' in plan or 'cacheWrite12Hour_mtok' in plan:
+                    notes.append('Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests.')
+                if name in gpt62 | terra:
+                    plan.update(contextWindowTokens=1050000, maximumOutputTokens=128000)
+                    if prefix == 'Short context ':
+                        plan['maximumPromptTokens'] = 272000
+                    else:
+                        plan['minimumPromptTokens'] = 272001
+                    notes.append('Above 272,000 input tokens the long-context rates apply to the entire request.')
+                    notes.append('Regional processing adds 10% where available. Tool fees are additional. Check serving-mode availability for your account.')
+                    if name in terra:
+                        notes.append('Tool calling requires the Responses API.')
+                if mode == 'Ultrafast':
+                    _, list_rates, effective, local_date = ultrafast
+                    plan['scheduledRates'] = [{'effectiveFrom': effective, **openai_billing_rates(list_rates[name], prefix)}]
+                    notes.append(f'Ultrafast costs three times Standard before {local_date} and six times Standard from that date, Pacific time.')
+                if notes:
+                    plan['notes'] = ' '.join(notes)
+                plans.append(plan)
+        if plans:
+            result[model['key']] = plans
+    return result
 
 
 def parse_billing(provider, source, models):
@@ -382,42 +479,7 @@ def parse_billing(provider, source, models):
                 except ValueError: pass
             result[model['key']] = plans
     elif provider == 'openai':
-        names = {model['key'].split('/', 1)[1] for model in models}
-        sections = {mode: openai_price_rows(source, mode, names) for mode in ['Standard', 'Batch']}
-        # Terra's extra modes are explicitly reviewed; keep other model plans unchanged.
-        if 'gpt-6.1-terra' in names:
-            flex = re.search(r'^#### Flex\s*\n(?P<body>.*?)(?=^#### |^### |\Z)', source, re.S | re.M)
-            if flex:
-                sections['Flex'] = openai_price_rows('### Flex pricing data\n'+flex.group('body'), 'Flex', {'gpt-6.1-terra'})
-            if re.search(r'^### Fast pricing data\s*$', source, re.M):
-                sections['Fast'] = openai_price_rows(source, 'Fast', {'gpt-6.1-terra'})
-        for model in models:
-            name = model['key'].split('/', 1)[1]; plans = []
-            for mode, rows in sections.items():
-                cells = rows.get(name)
-                if cells is None: continue
-                # Keep exact API IDs; qualified legacy rows need a separate review.
-                for prefix, label in [('Short context ', mode), ('Long context ', mode+' long context')]:
-                    if prefix+'input' not in cells: continue
-                    p = {'id': label.lower().replace(' ', '-'), 'label': label,
-                         'input_mtok': openai_rate(cells, prefix+'input'),
-                         'output_mtok': openai_rate(cells, prefix+'output')}
-                    for column, field in [('cached input', 'cached_input_mtok'),
-                                          ('cache writes', 'cache_write_mtok'),
-                                          ('30m write', 'cacheWrite30Minute_mtok'),
-                                          ('12h write', 'cacheWrite12Hour_mtok')]:
-                        if prefix+column in cells and cells[prefix+column] != '-':
-                            p[field] = openai_rate(cells, prefix+column)
-                    if 'cacheWrite30Minute_mtok' in p or 'cacheWrite12Hour_mtok' in p:
-                        p['notes'] = 'Cache writes have separate 30-minute and 12-hour rates. Select the retention duration used by your requests.'
-                    if name == 'gpt-6.1-terra':
-                        p['contextWindowTokens'] = 1050000
-                        p['maximumOutputTokens'] = 128000
-                        if prefix == 'Short context ': p['maximumPromptTokens'] = 272000
-                        else: p['minimumPromptTokens'] = 272001
-                        p['notes'] = (p.get('notes', '')+' Above 272,000 prompt tokens the long context rates apply to the entire request. Regional processing adds 10% where available; apply the regional multiplier separately. Tool fees are additional. Tool calling requires the Responses API. Check serving-mode availability for your account.').strip()
-                    plans.append(p)
-            if plans: result[model['key']] = plans
+        result = openai_billing_plans(source, models)
     elif provider == 'anthropic':
         text = visible_text(source); start = text.find('The following table shows pricing for all Claude models:')
         boundaries = [text.find(label, start) for label in ['Cloud platform pricing', 'Feature-specific pricing', 'Fast mode pricing', 'Batch processing']]
@@ -669,19 +731,19 @@ def collect(root=ROOT, now=None):
             billing[mistral_key] = {k:v for k,v in entry.items() if k != 'parserSchema'}
     if any(m['key'] == QWEN4_MAX for m in models):
         previous = cache['billing'].get('qwen')
-        if previous and age(previous) < timedelta(hours=24):
+        if previous and previous.get('parserSchema') == QWEN_BILLING_SCHEMA and age(previous) < timedelta(hours=24):
             entry = previous
         else:
             try:
                 source = fetch_source(QWEN_PRICING_URL, accept='text/html').text or ''
                 plans = parse_billing('qwen', source, models)[QWEN4_MAX]
                 entry = {'plans': plans, 'sourceUrl': QWEN_PRICING_URL,
-                         'verifiedAt': stamp, 'status': 'fresh'}
+                         'verifiedAt': stamp, 'status': 'fresh', 'parserSchema': QWEN_BILLING_SCHEMA}
             except Exception:
                 entry = {**previous, 'status': 'stale' if age(previous) > timedelta(days=7) else 'last_good'} if previous else None
         if entry:
             cache['billing']['qwen'] = entry
-            billing[QWEN4_MAX] = entry
+            billing[QWEN4_MAX] = {k: v for k, v in entry.items() if k != 'parserSchema'}
     records=[]
     for m in models:
         row={'key':m['key']}

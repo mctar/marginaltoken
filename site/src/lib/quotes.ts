@@ -24,15 +24,15 @@ export function datedBillingPlans(
   return plans.flatMap((plan) => {
     const { scheduledRates = [], ...base } = plan
     const schedule = [...scheduledRates].sort((a, b) =>
-      a.effectiveFrom.localeCompare(b.effectiveFrom),
+      Date.parse(a.effectiveFrom) - Date.parse(b.effectiveFrom),
     )
-    const active = schedule.filter((rate) => rate.effectiveFrom <= today).at(-1)
+    const active = schedule.filter((rate) => Date.parse(rate.effectiveFrom) <= now).at(-1)
     const current = active
       ? {
           ...base,
           ...active,
           validThrough: undefined,
-          label: `${base.label} · from ${active.effectiveFrom}`,
+          label: `${base.label} · from ${active.effectiveFrom.slice(0, 10)}`,
         }
       : {
           ...base,
@@ -44,13 +44,13 @@ export function datedBillingPlans(
     return [
       ...(available ? [current] : []),
       ...schedule
-        .filter((rate) => rate.effectiveFrom > today)
+        .filter((rate) => Date.parse(rate.effectiveFrom) > now)
         .map((rate) => ({
           ...base,
           ...rate,
           validThrough: undefined,
           id: `${base.id}-from-${rate.effectiveFrom}`,
-          label: `${base.label} · from ${rate.effectiveFrom}`,
+          label: `${base.label} · from ${rate.effectiveFrom.slice(0, 10)}`,
         })),
     ]
   })
@@ -113,7 +113,7 @@ export function quotesFor(
                     }),
               }
             : plan,
-        source: `${plan.effectiveFrom && plan.effectiveFrom > new Date(now).toISOString().slice(0, 10) ? 'Scheduled' : 'Published'} lab plan${billing.status === 'last_good' ? ' · Last good' : ''}`,
+        source: `${plan.effectiveFrom && Date.parse(plan.effectiveFrom) > now ? 'Scheduled' : 'Published'} lab plan${billing.status === 'last_good' ? ' · Last good' : ''}`,
         sourceUrl: billing.sourceUrl,
         verifiedAt: billing.verifiedAt,
         context: plan.contextWindowTokens ?? model.context,

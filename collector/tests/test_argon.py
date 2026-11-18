@@ -68,7 +68,7 @@ class ArgonTests(unittest.TestCase):
         self.assertEqual(fallback['selections']['slot:google-argon'], MODEL['key'])
         self.assertEqual(result['selections']['slot:qwen-frontier'], 'qwen/qwen3.8-max-0902')
         self.assertEqual(result['basket']['google'], 'google/gemini-3.8-flash')
-        self.assertEqual(result['basket']['openai'], 'openai/gpt-6.1-sol')
+        self.assertEqual(result['basket']['openai'], 'openai/gpt-6.2-sol')
         self.assertEqual(result['basket']['anthropic'], 'anthropic/claude-opus-5.5')
         qwen = models[-1]
         self.assertEqual(qwen['apiId'], 'qwen3.8-max-0902')

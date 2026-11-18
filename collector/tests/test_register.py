@@ -17,7 +17,7 @@ class RegisterTests(unittest.TestCase):
     def test_terra_is_reviewed_without_changing_curated_families_or_aliasing_pro(self):
         from collector.register import canonical_key
         result = apply_register(self.models, self.register, self.now)
-        self.assertEqual(result['basket']['openai'], 'openai/gpt-6.1-sol')
+        self.assertEqual(result['basket']['openai'], 'openai/gpt-6.2-sol')
         self.assertEqual(result['basket']['anthropic'], 'anthropic/claude-opus-5.5')
         base = next(m for m in self.models if m['key']=='openai/gpt-6.1-terra')
         self.assertEqual(base['selectedSlots'], [])
@@ -30,9 +30,9 @@ class RegisterTests(unittest.TestCase):
         self.assertIn('openai/gpt-6.1-terra-pro', load_reviewed_firstparty(Path(__file__).parents[1]/'firstparty-reviewed.json'))
 
     def test_only_verified_same_family_successor_promotes(self):
-        old = "openai/gpt-6.1-sol"
+        old = "openai/gpt-6.2-sol"
         new = "openai/future-sol"
-        self.register["models"][new] = {**copy.deepcopy(self.register["models"][old]), "order": 200}
+        self.register["models"][new] = {**copy.deepcopy(self.register["models"][old]), "order": 300}
         row = {**next(m for m in self.models if m["key"] == old), "key": new}
         self.models.append(row)
         row["verificationStatus"] = "manual"
@@ -42,9 +42,22 @@ class RegisterTests(unittest.TestCase):
         self.register["models"][new]["family"] = "openai-frontier"
         self.assertEqual(apply_register(self.models, self.register, self.now)["basket"]["openai"], old)
 
+    def test_gpt62_sol_promotes_both_slots_after_fresh_verification(self):
+        sol = next(m for m in self.models if m['key'] == 'openai/gpt-6.2-sol')
+        sol['verificationStatus'] = 'last_good'
+        fallback = apply_register(self.models, self.register, self.now)
+        self.assertEqual(fallback['basket']['openai'], 'openai/gpt-6.1-sol')
+        self.assertEqual(fallback['selections']['slot:openai-sol'], 'openai/gpt-6.1-sol')
+        sol['verificationStatus'] = 'fresh'
+        promoted = apply_register(self.models, self.register, self.now, fallback['selections'])
+        self.assertEqual(promoted['basket']['openai'], sol['key'])
+        self.assertEqual(promoted['selections']['slot:openai-sol'], sol['key'])
+        self.assertEqual(promoted['selections']['slot:openai-frontier'], 'openai/gpt-6-astra')
+        self.assertEqual(promoted['basket']['anthropic'], 'anthropic/claude-opus-5.5')
+
     def test_no_discovery_or_stale_source_changes_policy(self):
         new = "anthropic/future-opus"
-        self.register["models"][new] = {**copy.deepcopy(self.register["models"]["anthropic/claude-opus-5.5"]), "order": 200}
+        self.register["models"][new] = {**copy.deepcopy(self.register["models"]["anthropic/claude-opus-5.5"]), "order": 300}
         row = {"key": new, "provider": "anthropic", "source": "firstparty", "checked": "2026-10-01", "verificationStatus": "fresh"}
         self.models.append(row)
         result = apply_register(self.models, self.register, self.now)
@@ -52,9 +65,9 @@ class RegisterTests(unittest.TestCase):
         self.assertFalse(row["promotionVerified"])
 
     def test_verified_successor_is_retained_when_its_price_source_fails(self):
-        old = "openai/gpt-6.1-sol"
+        old = "openai/gpt-6.2-sol"
         new = "openai/future-sol"
-        self.register["models"][new] = {**copy.deepcopy(self.register["models"][old]), "order": 200, "apiId": "future-sol"}
+        self.register["models"][new] = {**copy.deepcopy(self.register["models"][old]), "order": 300, "apiId": "future-sol"}
         row = {**next(m for m in self.models if m["key"] == old), "key": new}
         self.models.append(row)
         promoted = apply_register(self.models, self.register, self.now)
@@ -68,8 +81,9 @@ class RegisterTests(unittest.TestCase):
         self.assertEqual(apply_register(self.models, self.register, self.now, held["selections"])["basket"]["openai"], old)
 
     def test_clean_older_source_cannot_downgrade_the_reviewed_fallback(self):
-        row = next(m for m in self.models if m["key"] == "openai/gpt-6.1-sol")
-        row["verificationStatus"] = "manual"
+        for model in self.models:
+            if model["provider"] == "openai":
+                model["verificationStatus"] = "manual"
         held = apply_register(self.models, self.register, self.now)
         self.assertEqual(held["basket"]["openai"], "openai/gpt-6.1-sol")
 

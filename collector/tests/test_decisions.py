@@ -263,6 +263,42 @@ class DecisionsTests(unittest.TestCase):
         self.assertEqual([p['cacheWrite12Hour_mtok'] for p in plans], [5, 10, 2.5, 5])
         self.assertTrue(all('cache_write_mtok' not in p and 'cacheWriteHour_mtok' not in p for p in plans))
 
+    def test_gpt62_exact_billing_tables_and_ultrafast_rollover(self):
+        from pathlib import Path
+        source = (Path(__file__).parent/'fixtures/openai-gpt62-pricing-20261118.md').read_text()
+        sol, astra, pro = ('openai/gpt-6.2-sol', 'openai/gpt-6.2-astra', 'openai/gpt-6.2-sol-pro')
+        result = parse_billing('openai', source, [{'key':key} for key in (sol, astra, pro)])
+        self.assertEqual(set(result), {sol, astra})
+        plans = {plan['id']:plan for plan in result[sol]}
+        self.assertEqual(set(plans), {'standard','standard-long-context','batch','batch-long-context','fast',
+                                      'fast-long-context','ultrafast','ultrafast-long-context'})
+        self.assertEqual(plans['standard']['output_mtok'], 10)
+        self.assertEqual(plans['standard']['maximumPromptTokens'], 272000)
+        self.assertEqual(plans['standard-long-context']['minimumPromptTokens'], 272001)
+        self.assertEqual(plans['ultrafast']['output_mtok'], 30)
+        future = plans['ultrafast']['scheduledRates'][0]
+        self.assertEqual((future['effectiveFrom'], future['output_mtok'], future['cached_input_mtok'],
+                          future['cacheWrite30Minute_mtok'], future['cacheWrite12Hour_mtok']),
+                         ('2027-03-01T08:00:00Z',60,.6,15,30))
+        self.assertEqual(result[astra][0]['output_mtok'], 40)
+
+    def test_qwen_singapore_renamed_token_and_cache_tables(self):
+        from datetime import datetime, timezone
+        from pathlib import Path
+        from collector.official import OfficialSourceError, parse_qwen
+        source = (Path(__file__).parent/'fixtures/qwen-max-singapore-20261118.html').read_text()
+        model = 'qwen4-max'
+        key = 'qwen/'+model
+        self.assertEqual(parse_qwen(source, [{'model':model}], datetime.now(timezone.utc)), {model:(1.5,4.5)})
+        plan = parse_billing('qwen', source, [{'key':key}])[key][0]
+        self.assertEqual((plan['input_mtok'],plan['output_mtok'],plan['cached_input_mtok'],
+                          plan['cache_write_mtok'],plan['cacheWriteHour_mtok']), (1.5,4.5,.075,1.875,3))
+        with self.assertRaises(OfficialSourceError):
+            parse_billing('qwen', source.replace('>International<','>Global<'), [{'key':key}])
+        broken = source.replace('>Explicit/implicit cache hit<','>Other price<',1)
+        with self.assertRaises(ValueError):
+            parse_billing('qwen', broken, [{'key':key}])
+
     def test_openai_new_schema_refreshes_a_recent_billing_snapshot(self):
         import tempfile, json
         from pathlib import Path

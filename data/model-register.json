@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "reviewedAt": "2026-11-16",
+  "reviewedAt": "2026-11-18",
   "policy": "Promote reviewed identities within approved families only after fresh official price verification. Discovery never changes family policy.",
   "basket": {
     "anthropic": "anthropic/claude-opus-5.5",
-    "openai": "openai/gpt-6.1-sol",
+    "openai": "openai/gpt-6.2-sol",
     "google": "google/gemini-3.8-flash",
     "mistralai": "mistralai/mistral-large-4",
     "moonshotai": "moonshotai/kimi-k3.1-pro",
@@ -13,7 +13,7 @@
   },
   "selections": {
     "basket:anthropic": "anthropic/claude-opus-5.5",
-    "basket:openai": "openai/gpt-6.1-sol",
+    "basket:openai": "openai/gpt-6.2-sol",
     "basket:google": "google/gemini-3.8-flash",
     "basket:mistralai": "mistralai/mistral-large-4",
     "basket:moonshotai": "moonshotai/kimi-k3.1-pro",
@@ -24,7 +24,7 @@
     "slot:anthropic-sonnet": "anthropic/claude-sonnet-5.5",
     "slot:anthropic-haiku": "anthropic/claude-haiku-5.5",
     "slot:openai-frontier": "openai/gpt-6-astra",
-    "slot:openai-sol": "openai/gpt-6.1-sol",
+    "slot:openai-sol": "openai/gpt-6.2-sol",
     "slot:openai-luna": "openai/gpt-6-luna",
     "slot:google-argon": "google/gemini-4-carbon",
     "slot:google-flash": "google/gemini-3.8-flash",
@@ -230,6 +230,29 @@
         "rate_note": "Standard Claude API rate"
       }
     },
+    "openai/gpt-6.2-astra": {
+      "provider": "openai",
+      "family": "openai-frontier",
+      "order": 99,
+      "aliases": [],
+      "approved": true,
+      "display": "GPT-6.2 Astra",
+      "apiId": "gpt-6.2-astra",
+      "stage": "stable",
+      "identitySource": "https://developers.openai.com/api/docs/models/gpt-6.2-astra",
+      "firstparty": {
+        "provider": "openai",
+        "model": "gpt-6.2-astra",
+        "display": "GPT-6.2 Astra",
+        "input_mtok": 8.0,
+        "output_mtok": 40.0,
+        "context": 1050000,
+        "max_output_tokens": 128000,
+        "source_url": "https://developers.openai.com/api/docs/pricing",
+        "checked": "2026-11-18",
+        "rate_note": "Standard rate for prompts up to 272,000 input tokens"
+      }
+    },
     "openai/gpt-6-astra": {
       "provider": "openai",
       "family": "openai-frontier",
@@ -249,6 +272,29 @@
         "context": 1050000,
         "source_url": "https://developers.openai.com/api/docs/pricing",
         "checked": "2026-10-06",
+        "rate_note": "Standard rate for prompts up to 272,000 input tokens"
+      }
+    },
+    "openai/gpt-6.2-sol": {
+      "provider": "openai",
+      "family": "openai-sol",
+      "order": 200,
+      "aliases": [],
+      "approved": true,
+      "display": "GPT-6.2 Sol",
+      "apiId": "gpt-6.2-sol",
+      "stage": "stable",
+      "identitySource": "https://developers.openai.com/api/docs/models/gpt-6.2-sol",
+      "firstparty": {
+        "provider": "openai",
+        "model": "gpt-6.2-sol",
+        "display": "GPT-6.2 Sol",
+        "input_mtok": 2.0,
+        "output_mtok": 10.0,
+        "context": 1050000,
+        "max_output_tokens": 128000,
+        "source_url": "https://developers.openai.com/api/docs/pricing",
+        "checked": "2026-11-18",
         "rate_note": "Standard rate for prompts up to 272,000 input tokens"
       }
     },

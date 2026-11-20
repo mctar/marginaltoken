@@ -1,5 +1,11 @@
 export const tasks = [
   { id: 'language', label: 'Work with text', detail: 'Summarise, write and answer questions.' },
+  { id: 'coding', label: 'Coding', detail: 'Explore a codebase, fix a bug or write a feature.' },
+  {
+    id: 'agentic-automation',
+    label: 'Agentic automation',
+    detail: 'Have a model use tools to complete a task in several steps.',
+  },
   {
     id: 'vision',
     label: 'Read images & documents',
@@ -51,6 +57,29 @@ export const profiles: Profile[] = [
     ledgerKey: 'openai/gpt-6.2-sol',
     note: 'gpt-62-sol-astra-api-pricing-ultrafast',
     source: 'https://developers.openai.com/api/docs/models/gpt-6.2-sol',
+  },
+  {
+    id: 'flint',
+    name: 'Flint',
+    tasks: ['coding'],
+    access: 'Download',
+    summary: 'Run a coding model locally to investigate a codebase, fix bugs and implement features.',
+    terms: 'Apache-2.0 weights. The optimized Mac runtime needs a supported chip and at least 48 GB of unified memory.',
+    checked: '2026-10-22',
+    note: 'flint-local-coding-hardware-running-costs',
+    source: 'https://huggingface.co/RecursiveSI/flint',
+  },
+  {
+    id: 'deepseek-v41-flash',
+    name: 'DeepSeek V4.1 Flash',
+    tasks: ['agentic-automation'],
+    access: 'API',
+    summary: 'Give the model a research task that requires searching the web, reading sources and summarising what it finds.',
+    terms: 'On the direct API, billable searches, page fetches and document processing add to the token bill.',
+    checked: '2026-11-16',
+    ledgerKey: 'deepseek/deepseek-v4.1-flash',
+    note: 'deepseek-v41-flash-hosted-tool-fees',
+    source: 'https://api-docs.deepseek.com/guides/search/',
   },
   {
     id: 'aion',
@@ -175,7 +204,9 @@ export function findProfiles(task: string, query: string) {
   return profiles.filter(
     (profile) =>
       (!task || profile.tasks.some((t) => t === task)) &&
-      [profile.name, profile.summary, profile.access, profile.terms, ...profile.tasks]
+      [profile.name, profile.summary, profile.access, profile.terms, ...profile.tasks,
+        ...tasks.filter((task) => profile.tasks.includes(task.id)).map((task) => task.label),
+      ]
         .join(' ')
         .toLowerCase()
         .includes(term),

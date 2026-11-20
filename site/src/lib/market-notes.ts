@@ -4,6 +4,9 @@ export type EditorialLink = { label: string; href: string }
 
 type NoteBase = {
   slug: string
+  frontHeadline?: string
+  frontSummary?: string
+  featureUntil?: string
   date: string
   checked: string
   author: string
@@ -68,7 +71,9 @@ export function frontPageStories(notes: readonly MarketNote[], now = new Date())
   const published = notes.filter((note) => note.date <= now.toISOString().slice(0, 10))
   const weekly = published.find((note) => note.kind === 'weekly'
     && now.getTime() - Date.parse(`${note.periodEnd}T23:59:59Z`) <= 14 * 86_400_000)
-  const lead = weekly ?? published[0]
+  const today = now.toISOString().slice(0, 10)
+  const featured = published.find(note => note.featureUntil && note.featureUntil >= today)
+  const lead = featured ?? weekly ?? published[0]
   return { lead, recent: published.filter((note) => note.slug !== lead?.slug).slice(0, 2) }
 }
 

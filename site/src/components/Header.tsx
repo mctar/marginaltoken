@@ -7,36 +7,28 @@ type HeaderProps = {
 }
 
 const navigation = [
-  { href: '/', label: 'Front' },
-  { href: '/notes/', label: 'Market notes' },
-  { href: '/tape/', label: 'The Tape' },
-  { href: '/open/', label: 'Open models' },
-  { href: '/spreads/', label: 'Spreads' },
-  { href: '/compare/', label: 'Compare' },
-  { href: '/plan/', label: 'Plan' },
-  { href: '/infrastructure/', label: 'Rent vs Run' },
-  { href: '/methodology/', label: 'Methodology' },
+  { href: '/', label: 'This week', sections: ['/', '/notes/'] },
+  { href: '/explore/', label: 'Explore models', sections: ['/explore/', '/model/', '/open/', '/tape/', '/ledger/'] },
+  { href: '/understand/', label: 'Understand', sections: ['/understand/'] },
+  { href: '/costs/', label: 'Compare costs', sections: ['/costs/', '/compare/', '/infrastructure/', '/plan/', '/spreads/', '/watch/'] },
+  { href: '/methodology/', label: 'About & sources', sections: ['/methodology/'] },
 ]
 
 export default function Header({ asOf, route, dateline }: HeaderProps) {
   return (
     <header className="publication-header">
       <div className="mx-auto max-w-publication px-4 sm:px-6">
-        <div className="edition-line">
-          <span>Price of intelligence</span>
-          <span className="hidden sm:inline">Independent open data</span>
-        </div>
         <div className="masthead-rule">
           <a className="masthead" href="/" aria-label="The Marginal Token front page">
             The Marginal Token
           </a>
         </div>
-        <p className="dateline">{dateline ?? `Price file as of ${longDate(asOf)}`}</p>
+        {!dateline && asOf && <p className="dateline">Price file as of {longDate(asOf)}</p>}
         <nav className="section-nav" aria-label="Primary navigation">
           {navigation.map((item) => {
-            const active = item.href === route
+            const active = item.sections.includes(route)
             return (
-              <a key={item.href} href={item.href} aria-current={active ? 'page' : undefined}>
+              <a key={item.href} href={item.href} aria-current={active ? (item.href === route ? 'page' : 'location') : undefined}>
                 {item.label}
               </a>
             )

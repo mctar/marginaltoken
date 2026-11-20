@@ -4,6 +4,7 @@ import { contextSize, price, providerName } from '../lib/format'
 import { modelPath } from '../lib/models'
 import {
   filterSpreadRows,
+  documentBillRange,
   marketSpreadRows,
   type SpreadConfidence,
   type SpreadRow,
@@ -47,7 +48,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
     initialEnum('confidence', ['declared', 'nominal', 'all'] as const, 'declared'),
   )
   const [sort, setSort] = useState<SpreadSort>(() =>
-    initialEnum('sort', ['widest', 'output', 'input'] as const, 'widest'),
+    initialEnum('sort', ['documents', 'widest', 'output', 'input'] as const, 'documents'),
   )
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
@@ -74,7 +75,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     if (confidence !== 'declared') params.set('confidence', confidence)
-    if (sort !== 'widest') params.set('sort', sort)
+    if (sort !== 'documents') params.set('sort', sort)
     const nextSearch = params.toString()
     window.history.replaceState(null, '', `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}`)
   }, [confidence, query, sort])
@@ -85,7 +86,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
         <p className="section-kicker">Venue market</p>
         <div className="spreads-title-row">
           <h1>The Spreads</h1>
-          {offers && rows.length > 0 && (
+          {offers && rows.length > 0 && sort !== 'documents' && (
             <ShareImageButton
               createImage={() => createSpreadsShareImage({
                 rows,
@@ -100,7 +101,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
           )}
         </div>
         <p>
-          Where the same reported serving configuration carries different list prices. Ranked by the premium on the highest posted quote over the lowest.
+          Where the same reported serving configuration carries different list prices. Precision and context can match while latency, reliability and output quality differ. Check those on your workload before choosing a host.
         </p>
       </header>
 
@@ -164,6 +165,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
               <label className="spread-sort">
                 <span>Rank by</span>
                 <select value={sort} onChange={(event) => setSort(event.target.value as SpreadSort)}>
+                  <option value="documents">Bill difference · 1,000 documents</option>
                   <option value="widest">Widest gap</option>
                   <option value="output">Output gap</option>
                   <option value="input">Input gap</option>
@@ -178,7 +180,7 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
                 <p className="section-kicker">Like for like</p>
                 <h2 id="spread-results-title">{rows.length.toLocaleString('en-US')} price {rows.length === 1 ? 'gap' : 'gaps'}</h2>
               </div>
-              <p>Highest quote premium over the lowest quote in each matching configuration.</p>
+              <p>{sort === 'documents' ? 'Ranked by the dollar difference across real venue offers for 1,000 requests of 2,000 input and 200 output tokens. Standard posted rates before discounts or extra fees.' : 'Highest quote premium over the lowest quote in each matching configuration.'}</p>
             </header>
 
             {visibleRows.length > 0 ? (
@@ -190,12 +192,15 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
                       <th scope="col">Model &amp; configuration</th>
                       <th scope="col">Input / Mtok</th>
                       <th scope="col">Output / Mtok</th>
+                      {sort === 'documents' && <th scope="col">Example bill</th>}
                       <th scope="col">Market</th>
                       <th scope="col"><span className="sr-only">Open model card</span></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {visibleRows.map((row, index) => (
+                    {visibleRows.map((row, index) => {
+                      const range = sort === 'documents' ? documentBillRange(row) : null
+                      return (
                       <tr key={`${row.model.key}:${row.group.key}`}>
                         <td className="spread-rank">{index + 1}</td>
                         <th scope="row">
@@ -214,13 +219,14 @@ export default function SpreadsPage({ prices, offers }: { prices: PricesFeed; of
                           <strong>{price(row.group.output_mtok.min)}–{price(row.group.output_mtok.max)}</strong>
                           <small>{spreadText(row.outputSpreadPct)}</small>
                         </td>
+                        {sort === 'documents' && <td>{range ? price(range.min) + '–' + price(range.max) : 'Unavailable'}</td>}
                         <td className="spread-market-cell">
                           <strong>{row.group.offerCount} offers · {row.group.venueCount} venues</strong>
                           <small title={row.venues.join(', ')}>{row.venues.join(' · ')}</small>
                         </td>
                         <td className="spread-open-cell"><a href={groupPath(row)} aria-label={`Open ${row.model.display} matching offers`}>Open group →</a></td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               </div>

@@ -11,7 +11,9 @@ function eventText(event: ChangeEvent): string {
     const side = event.field === 'input_mtok' ? 'Input' : 'Output'
     const verb = event.to < event.from ? 'fell' : 'rose'
     const percent = event.pct === null ? '' : ` ${Math.abs(event.pct).toFixed(1)}%`
-    return `${event.display}: ${side.toLowerCase()} ${verb}${percent}, from ${price(event.from)} to ${price(event.to)} per million tokens.`
+    const scope = event.quoteSourceBefore && event.quoteSourceAfter && event.quoteSourceBefore !== event.quoteSourceAfter
+      ? 'cross-source' : event.quoteSourceAfter === 'openrouter' ? 'routed' : event.quoteSourceAfter === 'firstparty' ? 'direct' : 'observed'
+    return `${event.display}: ${side.toLowerCase()} ${scope} quote ${verb}${percent}, from ${price(event.from)} to ${price(event.to)} per million tokens.`
   }
   if (event.type === 'listed') return `${event.display} entered the tape.`
   if (event.type === 'delisted') return `${event.display} left the tape.`
@@ -21,7 +23,7 @@ function eventText(event: ChangeEvent): string {
 export default function LatestMoves({ events, baseDate }: { events: ChangeEvent[]; baseDate: string }) {
   return (
     <section aria-labelledby="latest-moves-title">
-      <div className="section-kicker">Cut log</div>
+      <div className="section-kicker">Price observations</div>
       <h2 id="latest-moves-title" className="section-title">
         Latest moves
       </h2>

@@ -3,7 +3,7 @@ import type { OfferComparisonGroup, OfferModel, PriceModel, VenueOffer } from '.
 export const MAX_VISIBLE_OFFER_GROUPS = 4
 
 export type SpreadConfidence = 'declared' | 'nominal' | 'all'
-export type SpreadSort = 'widest' | 'output' | 'input'
+export type SpreadSort = 'documents' | 'widest' | 'output' | 'input'
 
 export type SpreadRow = {
   model: PriceModel
@@ -89,6 +89,14 @@ export function marketSpreadRows(prices: PriceModel[], offerModels: OfferModel[]
   return sortSpreadRows(rows, 'widest')
 }
 
+// One thousand requests of 2,000 input and 200 output tokens, evaluated per real offer.
+export function documentBillRange(row: SpreadRow) {
+  const costs = row.offerModel.offers.filter(offer => offer.configurationKey === row.group.key)
+    .map(offer => 2 * offer.input_mtok + 0.2 * offer.output_mtok)
+  if (costs.length < 2) return null
+  return { min: Math.min(...costs), max: Math.max(...costs) }
+}
+
 export function filterSpreadRows(
   rows: SpreadRow[],
   filters: { query: string; confidence: SpreadConfidence; sort: SpreadSort },
@@ -117,6 +125,10 @@ export function filterSpreadRows(
 
 export function sortSpreadRows(rows: SpreadRow[], sort: SpreadSort): SpreadRow[] {
   const metric = (row: SpreadRow) => {
+    if (sort === 'documents') {
+      const range = documentBillRange(row)
+      return range ? range.max - range.min : -1
+    }
     if (sort === 'input') return row.inputSpreadPct
     if (sort === 'output') return row.outputSpreadPct
     return row.widestSpreadPct

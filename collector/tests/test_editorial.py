@@ -81,6 +81,13 @@ class EditorialTests(unittest.TestCase):
     def packet(self) -> dict:
         return fact_packet(self.events, self.meta["asOf"], self.meta["indexValue"])
 
+    def test_whole_dollar_and_percentage_facts_keep_trailing_zeros(self):
+        event = {**self.events[0], "from": 20, "to": 10, "pct": -50,
+                 "quoteSourceBefore": "openrouter", "quoteSourceAfter": "openrouter"}
+        fact = fact_packet([event], self.meta["asOf"], 100)["events"][0]
+        self.assertIn("routed quote moved from $20 to $10", fact)
+        self.assertIn("50 percent", fact)
+
     def test_prompt_marks_facts_as_untrusted_data(self) -> None:
         prompt = prompt_for(self.packet())
         self.assertIn("untrusted data", prompt)

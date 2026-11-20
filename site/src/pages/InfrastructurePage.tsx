@@ -719,8 +719,8 @@ function NimInfrastructurePage({
               {!result.complete
                 ? 'Plan incomplete.'
                 : apiWins
-                  ? 'Rent is cheaper here.'
-                  : 'Run is cheaper here.'}
+                  ? 'Lower modeled cost: hosted API'
+                  : 'Lower modeled cost: self-hosting'}
             </h2>
             <p>
               {hardwareLabel(selectedHardware)} ·{' '}
@@ -729,7 +729,7 @@ function NimInfrastructurePage({
                 : 'profile unavailable'}{' '}
               · {tokenVolume(totalMillions)} tokens per month ·{' '}
               {result.replicas} modeled{' '}
-              {result.replicas === 1 ? 'deployment' : 'deployments'}.
+              {result.replicas === 1 ? 'deployment' : 'deployments'}. The estimate depends on the throughput and utilisation you entered. Zero-valued operating costs contribute nothing to this total.
             </p>
           </div>
           <div className="compare-share">

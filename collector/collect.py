@@ -564,6 +564,9 @@ def diff_models(
                     "from": before,
                     "to": after,
                     "pct": percentage_change(before, after),
+                    "quoteSourceBefore": previous_model.get("source"),
+                    "quoteSourceAfter": current_model.get("source"),
+                    "sourceUrl": current_model.get("sourceUrl"),
                 }
             )
     return events, changed_price_keys

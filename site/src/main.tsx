@@ -5,9 +5,10 @@ import App from './App'
 import './tokens.css'
 import './index.css'
 import './editorial.css'
+import './reader.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <React.Suspense fallback={<p role="status" className="loading-page">Opening the tool…</p>}><App /></React.Suspense>
   </React.StrictMode>,
 )

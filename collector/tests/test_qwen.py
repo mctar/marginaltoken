@@ -57,7 +57,7 @@ class QwenTests(unittest.TestCase):
 
     def test_promotes_verified_production_and_keeps_0902_fallback(self):
         register = read_register()
-        catalog = [{"key": f"{r['provider']}/{r['model']}", "provider": r["provider"]}
+        catalog = [{"key": f"{r['provider']}/{r['model']}", "provider": r["provider"], "source": "firstparty"}
                    for r in firstparty_catalog(register) if r["provider"] != "qwen"]
         slot = "slot:qwen-frontier"
         production = {**MODEL, "source": "firstparty", "checked": "2026-11-16"}

@@ -1,6 +1,5 @@
 import DeflatorChart from './DeflatorChart'
 import LatestMoves from './LatestMoves'
-import MachineNote from './MachineNote'
 import SourceWatch from './SourceWatch'
 import ShareImageButton from './ShareImageButton'
 import Shortlist from './Shortlist'
@@ -53,11 +52,11 @@ export default function FrontLedger({ data }: { data: FeedData }) {
         <div><dt>Token price deflator</dt><dd>{meta.indexValue.toFixed(2)}</dd><dd className="snapshot-detail">{direction(meta.indexValue)}</dd></div>
         <div><dt>Price file</dt><dd className="snapshot-date">{longDate(meta.asOf)}</dd><dd className="snapshot-detail">Posted rates · <a href="/methodology/">Sources &amp; methodology →</a></dd></div>
       </dl>
-      <SourceWatch provenance={data.provenance} />
+      {(data.provenance?.degradedProviderCount ?? 0) > 0 && <SourceWatch provenance={data.provenance} />}
 
       {latestMove && (
         <a className={`front-signal ${latestMove.to < latestMove.from ? 'cut' : 'rise'}`} href={modelPath(latestMove.key)}>
-          <span>Latest verified move</span>
+          <span>Latest observed quote</span>
           <strong>{latestMove.display}</strong>
           <span>{moveSummary(latestMove)}</span>
           <small>Model card →</small>
@@ -129,13 +128,13 @@ export default function FrontLedger({ data }: { data: FeedData }) {
         </div>
       </section>
 
-      <MachineNote brief={data.brief} revision={meta.generatedAt} />
+
 
       <div className="mt-16 grid gap-12 border-t border-ink pt-7 md:grid-cols-[1.5fr_1fr]">
         <LatestMoves events={changes.changes} baseDate={meta.indexBaseDate} />
         <aside className="brief-note">
           <p className="section-kicker">Reading the tape</p>
-          <h2 className="font-serif text-2xl font-semibold">A price, not a verdict</h2>
+          <h2 className="font-serif text-2xl font-semibold">How to read a quote</h2>
           <p>
             Token rates measure the posted cost of model use. They do not measure output quality, negotiated terms, or the number of tokens a task requires.
           </p>

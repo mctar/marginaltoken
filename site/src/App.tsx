@@ -1,4 +1,8 @@
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
+import ExplorePage from './pages/ExplorePage'
+import UnderstandPage from './pages/UnderstandPage'
+import CostsPage from './pages/CostsPage'
+import FrontLedger from './components/FrontLedger'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import SourceWatch from './components/SourceWatch'
@@ -6,27 +10,29 @@ import { loadFeed } from './lib/data'
 import type { FeedData } from './lib/types'
 import OpenPage from './pages/OpenPage'
 import FrontPage from './pages/FrontPage'
-import ComparePage from './pages/ComparePage'
-import InfrastructurePage from './pages/InfrastructurePage'
 import MethodologyPage from './pages/MethodologyPage'
 import ModelPage, { MissingModelPage } from './pages/ModelPage'
-import SpreadsPage from './pages/SpreadsPage'
 import TapePage from './pages/TapePage'
 import NotesPage from './pages/NotesPage'
-import PlanPage from './pages/PlanPage'
-import WatchPage from './pages/WatchPage'
 import { canonicalModelKey } from './lib/register'
 import { marketNotes } from './lib/market-notes'
+
+const ComparePage = lazy(() => import('./pages/ComparePage'))
+const InfrastructurePage = lazy(() => import('./pages/InfrastructurePage'))
+const SpreadsPage = lazy(() => import('./pages/SpreadsPage'))
+const PlanPage = lazy(() => import('./pages/PlanPage'))
+const WatchPage = lazy(() => import('./pages/WatchPage'))
 
 type State =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   | { status: 'ready'; data: FeedData }
 
-type Route = '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/' | '/open/' | '/notes/' | '/plan/' | '/watch/'
+type Route = '/explore/' | '/understand/' | '/costs/' | '/ledger/' | '/' | '/tape/' | '/spreads/' | '/compare/' | '/infrastructure/' | '/methodology/' | '/model/' | '/open/' | '/notes/' | '/plan/' | '/watch/'
 
 function routeFor(pathname: string): Route {
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
+  if (normalized === '/explore/' || normalized === '/understand/' || normalized === '/costs/' || normalized === '/ledger/') return normalized
   if (normalized === '/open/') return '/open/'
   if (normalized === '/plan/') return '/plan/'
   if (normalized === '/watch/') return '/watch/'
@@ -56,7 +62,7 @@ export default function App() {
   const modelKey = route === '/model/' ? modelKeyFor(window.location.pathname) : null
 
   useEffect(() => {
-    if (route === '/notes/') return
+    if (route === '/notes/' || route === '/explore/' || route === '/understand/') return
     loadFeed(
       route === '/model/' || route === '/spreads/' || route === '/infrastructure/' || route === '/compare/' || route === '/plan/' || route === '/watch/',
       route === '/infrastructure/',
@@ -65,6 +71,14 @@ export default function App() {
       .catch((error: unknown) => setState({ status: 'error', message: error instanceof Error ? error.message : String(error) }))
   }, [route])
 
+  if (route === '/explore/' || route === '/understand/' || route === '/costs/') {
+    return <div className="min-h-screen"><a className="skip-link" href="#main">Skip to content</a>
+      <Header route={route} asOf="" dateline="An independent guide to the model market" />
+      {route === '/explore/' && <ExplorePage />}
+      {route === '/understand/' && <UnderstandPage />}
+      {route === '/costs/' && <CostsPage prices={state.status === 'ready' ? state.data.prices : undefined} error={state.status === 'error' ? state.message : undefined} />}
+      <Footer /></div>
+  }
   if (route === '/notes/') {
     return (
       <div className="min-h-screen">
@@ -94,7 +108,7 @@ export default function App() {
     return (
       <div className="loading-page error-page">
         <strong>The price file could not be read.</strong>
-        <span>{state.message}</span>
+        <span>{state.message}</span><a href={window.location.href}>Reload prices</a><a href="/explore/">Browse reviewed models</a>
       </div>
     )
   }
@@ -106,7 +120,8 @@ export default function App() {
     <div className="min-h-screen">
       <a className="skip-link" href="#main">Skip to content</a>
       <Header asOf={data.meta.asOf} route={route} />
-      <SourceWatch provenance={data.provenance} />
+      {route === '/tape/' && (data.provenance?.degradedProviderCount ?? 0) > 0 && <SourceWatch provenance={data.provenance} />}
+      {route === '/ledger/' && <main id="main" className="mx-auto max-w-publication px-4 sm:px-6"><FrontLedger data={data} /></main>}
       {route === '/tape/' && <TapePage prices={data.prices} decisions={data.decisions ?? null} />}
       {route === '/open/' && <OpenPage prices={data.prices} decisions={data.decisions ?? null} />}
       {route === '/spreads/' && <SpreadsPage prices={data.prices} offers={data.offers} />}

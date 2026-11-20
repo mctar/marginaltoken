@@ -103,18 +103,18 @@ class FirstPartyCatalogTests(unittest.TestCase):
         self.assertFalse(by_key["google/gemini-3.6-flash"]["indexEligible"])
         self.assertTrue(by_key["mistralai/mistral-large-4"]["indexEligible"])
         self.assertFalse(by_key["mistralai/mistral-medium-3.5"]["indexEligible"])
-        self.assertEqual(by_key["mistralai/mistral-large-4"]["releaseStage"], "preview")
+        self.assertEqual(by_key["mistralai/mistral-large-4"]["releaseStage"], "stable")
         self.assertTrue(by_key["deepseek/deepseek-v4.1-flash"]["indexEligible"])
         self.assertFalse(by_key["deepseek/deepseek-v4-pro"]["indexEligible"])
         self.assertTrue(by_key["x-ai/grok-4.7"]["indexEligible"])
         self.assertFalse(by_key["x-ai/grok-4.5"]["indexEligible"])
 
-    def test_reviewed_release_status_overrides_slug_heuristic(self) -> None:
+    def test_large_four_ga_applies_to_direct_and_routed_rows(self) -> None:
         broad = normalize_openrouter({"data": [raw_model("mistralai/mistral-large-4", "0.00000068", "0.00000209")]})
-        self.assertEqual(broad[0]["releaseStage"], "preview")
+        self.assertEqual(broad[0]["releaseStage"], "stable")
         merged = merge_models(broad, self.models)
         large = next(model for model in merged if model["key"] == "mistralai/mistral-large-4")
-        self.assertEqual(large["releaseStage"], "preview")
+        self.assertEqual(large["releaseStage"], "stable")
 
     def test_invalid_reviewed_release_status_is_rejected(self) -> None:
         catalog_path = Path(__file__).resolve().parents[1] / "firstparty.json"

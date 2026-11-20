@@ -112,6 +112,17 @@ const editorialShell = (title, description, url) => shell
   .replace('<meta property="og:title" content="The Marginal Token" />', `<meta property="og:title" content="${escapeAttribute(title)}" />`)
   .replace('<meta property="og:url" content="https://marginaltoken.com/" />', `<meta property="og:url" content="${escapeAttribute(url)}" />`)
   .replace('<meta name="twitter:title" content="The Marginal Token" />', `<meta name="twitter:title" content="${escapeAttribute(title)}" />`)
+for (const [route, title, description] of [
+  ['explore', 'Explore models', 'Browse reviewed models by task, access and deployment terms.'],
+  ['understand', 'Understand the model market', 'A reader’s guide to model capabilities, downloadable weights and billing units.'],
+  ['costs', 'Compare costs', 'Work through a document, image or voice example and adjust the quantities.'],
+  ['ledger', 'The market in numbers', 'The Shortlist, frontier basket, output price index and observed quotes.'],
+  ['methodology', 'About and sources', 'How we select models, verify prices and document the cost of inference.'],
+  ['tape', 'The price ledger', 'Search posted model prices and open their source records.'],
+]) {
+  await mkdir(path.join(distDir, route), { recursive: true })
+  await writeFile(path.join(distDir, route, 'index.html'), editorialShell(title + ' — The Marginal Token', description, 'https://marginaltoken.com/' + route + '/'))
+}
 const notesDir = path.join(distDir, 'notes')
 for(const [route,title,description] of [['plan','Plan AI workload costs','Mixed fleets, local usage repricing and measured capability within your budget.'],['watch','Watch AI workload costs','Browser-saved workloads and public feeds for price and lifecycle changes.']]) {
   await writeFile(path.join(distDir,route,'index.html'),editorialShell(`${title} — The Marginal Token`,description,`https://marginaltoken.com/${route}/`))

@@ -1,9 +1,18 @@
+import { useState } from 'react'
+import { profiles, tasks } from '../lib/field-guide'
 import { longDate } from '../lib/format'
 import { marketNotes, marketNotePath, marketNoteCalculatorPath, noteKindLabel } from '../lib/market-notes'
 import { modelPath } from '../lib/models'
 import WeeklyReviewBody from '../components/WeeklyReviewBody'
 
 export default function NotesPage({ pathname }: { pathname: string }) {
+  const [query, setQuery] = useState('')
+  const [topic, setTopic] = useState('')
+  const visibleNotes = marketNotes.filter(note => {
+    const matchesTopic = !topic || (topic === 'weekly' ? note.kind === 'weekly' :
+      profiles.some(profile => profile.note === note.slug && profile.tasks.some(task => task === topic)))
+    return matchesTopic && (note.title + ' ' + note.summary).toLowerCase().includes(query.trim().toLowerCase())
+  })
   const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`
   if (normalized === '/notes/') {
     return (
@@ -12,8 +21,12 @@ export default function NotesPage({ pathname }: { pathname: string }) {
         <h1 className="notes-title">Market notes</h1>
         <p className="notes-intro">Weekly release reviews and short notes on the cost of buying and running AI. Verified changes, practical implications, and the tools to act on them.</p>
         <a className="text-link" href="/feeds/notes.xml">Subscribe via RSS →</a>
+        <div className="reader-controls"><label>Search all notes<input type="search" value={query} onChange={e => setQuery(e.target.value)} /></label>
+          <label>Reading paths<select value={topic} onChange={e => setTopic(e.target.value)}><option value="">All notes</option><option value="weekly">Weekly reviews</option>
+          {tasks.map(t => <option key={t.id} value={t.id}>{t.label} · field guide</option>)}</select></label></div>
+        <p role="status">{visibleNotes.length} matching {visibleNotes.length === 1 ? 'note' : 'notes'}</p>
         <ol className="notes-list">
-          {marketNotes.map((note) => (
+          {visibleNotes.map((note) => (
             <li key={note.slug}>
               <div className="market-note-meta">
                 <span className="section-kicker">{noteKindLabel(note)}</span>
@@ -42,6 +55,7 @@ export default function NotesPage({ pathname }: { pathname: string }) {
     )
   }
 
+  const profile = profiles.find(p => p.note === note.slug)
   return (
     <main id="main" className="notes-page mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
       <article className={`market-note-article${note.kind === 'weekly' ? ' weekly-article' : ''}`}>
@@ -49,7 +63,7 @@ export default function NotesPage({ pathname }: { pathname: string }) {
         <header>
           <p className="section-kicker">{noteKindLabel(note)}</p>
           <h1 className="notes-title">{note.title}</h1>
-          {note.kind === 'weekly' && <p className="notes-intro">{note.summary}</p>}
+          <p className="notes-intro">{note.summary}</p>
           <div className="market-note-byline">
             <span>{note.author}</span>
             <time dateTime={note.date}>{longDate(note.date)}</time>
@@ -66,6 +80,8 @@ export default function NotesPage({ pathname }: { pathname: string }) {
             <a className="text-link" href={modelPath(note.modelKey)}>Model card →</a>
           </div>
         </aside>}</>}
+        <div className="reader-links">{profile && <a href={'/explore/?task='+profile.tasks[0]}>Explore models for this task →</a>}
+          <a href="/understand/#cost">How to read model costs →</a></div>
         <footer className="market-note-sources">
           <p className="section-kicker">Sources · Checked {longDate(note.checked)}</p>
           <ul>{note.sources.map((source) => <li key={source.href}><a href={source.href}>{source.label}</a></li>)}</ul>

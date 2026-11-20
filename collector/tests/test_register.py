@@ -52,8 +52,20 @@ class RegisterTests(unittest.TestCase):
         promoted = apply_register(self.models, self.register, self.now, fallback['selections'])
         self.assertEqual(promoted['basket']['openai'], sol['key'])
         self.assertEqual(promoted['selections']['slot:openai-sol'], sol['key'])
-        self.assertEqual(promoted['selections']['slot:openai-frontier'], 'openai/gpt-6-astra')
+        self.assertEqual(promoted['selections']['slot:openai-frontier'], 'openai/gpt-6.2-astra')
         self.assertEqual(promoted['basket']['anthropic'], 'anthropic/claude-opus-5.5')
+
+    def test_astra_rechecks_on_each_collection_and_promotes_without_predecessor(self):
+        old, new = 'openai/gpt-6-astra', 'openai/gpt-6.2-astra'
+        successor = next(m for m in self.models if m['key'] == new)
+        successor['verificationStatus'] = 'manual'
+        before = apply_register(self.models, self.register, self.now)
+        self.assertEqual(before['selections']['slot:openai-frontier'], old)
+        successor['verificationStatus'] = 'fresh'
+        self.models = [m for m in self.models if m['key'] != old]
+        after = apply_register(self.models, self.register, self.now, before['selections'])
+        self.assertEqual(after['selections']['slot:openai-frontier'], new)
+        self.assertEqual(after['basket']['openai'], 'openai/gpt-6.2-sol')
 
     def test_no_discovery_or_stale_source_changes_policy(self):
         new = "anthropic/future-opus"

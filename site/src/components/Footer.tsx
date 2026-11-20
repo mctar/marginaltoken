@@ -27,10 +27,10 @@ export default function Footer({ generatedAt, modelCount }: FooterProps) {
           </a>
         </p>
         <p className="mt-3">
-          <a className="editorial-link" href="/watch/">Saved watches</a> · <a className="editorial-link" href="/feeds/notes.xml">Market notes RSS</a> · <a className="editorial-link" href="/feeds/prices.xml">Price changes RSS</a>
+          <a className="editorial-link" href="/notes/">Market notes</a> · <a className="editorial-link" href="/ledger/">Shortlist &amp; index</a> · <a className="editorial-link" href="/tape/">Price ledger</a> · <a className="editorial-link" href="/watch/">Saved scenarios</a> · <a className="editorial-link" href="/feeds/notes.xml">Market notes RSS</a> · <a className="editorial-link" href="/feeds/prices.xml">Price changes RSS</a>
         </p>
         <p className="mt-3">
-          A poka-yoke build by{' '}
+          An independent publication from{' '}
           <a className="editorial-link" href="https://gervilabs.com/">
             Gervi Labs
           </a>{', created by Thordur Arnason.'}

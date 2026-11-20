@@ -79,7 +79,8 @@ export default function OpenPage({
     >
       <header className="page-heading">
         <p className="section-kicker">Weights, terms, and routes</p>
-        <h1>The open shelf.</h1>
+        <h1>Open models with hosted prices</h1>
+        <a className="text-link" href="/explore/?q=download">Find downloadable models outside the price ledger →</a>
         <p>
           Find models with verified weight repositories, check their terms, and
           compare the cost of using them. The table starts with stable releases;

@@ -1,3 +1,4 @@
+import { profiles } from '../lib/field-guide'
 import HostingPanel from '../components/HostingPanel'
 import ModelHistory from '../components/ModelHistory'
 import { serviceAccessEvents } from '../lib/register'
@@ -57,6 +58,7 @@ export default function ModelPage({
   changes: ChangesFeed
 }) {
   const [shareStatus, setShareStatus] = useState('')
+  const profile = profiles.find(p => p.ledgerKey === model.key)
   const tags = capabilityTags(model)
   const source = modelSource(model)
   const path = modelPath(model.key)
@@ -111,6 +113,10 @@ export default function ModelPage({
           </div>
         </header>
 
+        <section className="model-intro" aria-label="Model overview">
+          <p>{profile?.summary ?? (model.inputModalities?.length && model.outputModalities?.length ? 'This listing accepts ' + model.inputModalities.join(', ') + ' input and produces ' + model.outputModalities.join(', ') + ' output.' : 'This listing records the posted cost of accessing the model through an API.')}</p>
+          <p>{source.label} · <a href={source.href}>Check the quoted service</a>{profile && <> · <a href={'/explore/#'+profile.id}>Access &amp; deployment</a></>}</p>
+        </section>
         <section className="model-price-grid" aria-label="Standard token prices">
           <div>
             <span>Input</span>
@@ -146,7 +152,7 @@ export default function ModelPage({
               </div>
               <div>
                 <dt>Release stage</dt>
-                <dd>{model.releaseStage ? providerName(model.releaseStage) : 'Stable'}</dd>
+                <dd>{model.releaseStage ? providerName(model.releaseStage) : 'Unspecified'}</dd>
               </div>
               <div>
                 <dt>Input modes</dt>

@@ -37,6 +37,10 @@ export function price(value: number): string {
   })}`
 }
 
+export function billAmount(value: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: value > 0 && value < 0.05 ? 6 : 2 }).format(value)
+}
+
 export function contextSize(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value % 1_000_000 ? 2 : 0)}m`
   if (value >= 1_000) return `${Math.round(value / 1_000)}k`

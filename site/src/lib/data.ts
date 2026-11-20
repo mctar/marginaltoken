@@ -17,21 +17,37 @@ async function fetchOptionalJson<T>(path: string): Promise<T | null> {
   }
 }
 
-export async function loadFeed(includeOffers = false, includeDeployment = false): Promise<FeedData> {
-  const [prices, history, changes, meta, candidateBrief, candidateProvenance, candidateOffers, candidateDeployment, candidateDecisions] = await Promise.all([
+async function readCore() {
+  return Promise.all([
     fetchJson<PricesFeed>('/data/prices.json'),
     fetchJson<HistoryFeed>('/data/history.json'),
     fetchJson<ChangesFeed>('/data/changes.json'),
     fetchJson<MetaFeed>('/data/meta.json'),
+  ])
+}
+
+async function consistentCore() {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const core = await readCore()
+    const [prices, history, changes, meta] = core
+    if (!Array.isArray(prices.models) || !Array.isArray(history.points) ||
+        !Array.isArray(changes.changes) || !Array.isArray(meta.indexHistory) || !prices.generatedAt) {
+      throw new Error('The published feed is incomplete')
+    }
+    if (core.every(feed => feed.generatedAt === prices.generatedAt)) return core
+  }
+  throw new Error('The ledger is refreshing. Reload to read a consistent set of prices.')
+}
+
+export async function loadFeed(includeOffers = false, includeDeployment = false): Promise<FeedData> {
+  const [[prices, history, changes, meta], candidateBrief, candidateProvenance, candidateOffers, candidateDeployment, candidateDecisions] = await Promise.all([
+    consistentCore(),
     fetchOptionalJson<BriefFeed>('/data/brief.json'),
     fetchOptionalJson<ProvenanceFeed>('/data/provenance.json'),
     includeOffers ? fetchOptionalJson<OffersFeed>('/data/offers.json') : Promise.resolve(null),
     includeDeployment ? fetchOptionalJson<DeploymentFeed>('/data/deployment.json') : Promise.resolve(null),
     fetchOptionalJson<DecisionsFeed>('/data/decisions.json'),
   ])
-  if (!Array.isArray(prices.models) || !Array.isArray(meta.indexHistory)) {
-    throw new Error('The published feed is incomplete')
-  }
   const brief = candidateBrief
     && typeof candidateBrief.generatedAt === 'string'
     && typeof candidateBrief.headline === 'string'
@@ -40,6 +56,7 @@ export async function loadFeed(includeOffers = false, includeDeployment = false)
     ? candidateBrief
     : null
   const provenance = candidateProvenance
+    && candidateProvenance.generatedAt === prices.generatedAt
     && ['healthy', 'attention', 'degraded'].includes(candidateProvenance.status)
     && Array.isArray(candidateProvenance.providers)
     && Array.isArray(candidateProvenance.conflicts)

@@ -63,10 +63,9 @@ export default function WatchPage({ data }: { data: FeedData }) {
     >
       <header className="page-heading">
         <p className="section-kicker">Your saved decisions</p>
-        <h1>Keep an eye on the bill.</h1>
+        <h1>Saved scenarios</h1>
         <p>
-          Browser-saved workload baselines, compared with the current price
-          file. No account or background email service is required.
+          Scenarios are saved on this device. When you return, this page compares them with the current price file.
         </p>
       </header>
       <section className="plan-panel">

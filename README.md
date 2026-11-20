@@ -187,7 +187,7 @@ The first OpenRouter appearance of a paid model from a registered provider is wr
 
 ## Updating The Shortlist
 
-`site/src/lib/shortlist.ts` defines 15 permanent editorial slots rather than discovering models from names. When a lab releases a production successor, verify its standard API rate, add its key to the front of the appropriate slot's `candidates` list, and keep the prior key as a fallback. Do not add dated snapshots, image/audio variants, coding-only models, fast modes, or extra provider tiers. Preview models are used only when they are the current enterprise-facing top tier and are labelled in the visualization. A first-party model row remains authoritative; OpenRouter-only entries are visibly marked as routed quotes.
+The register defines the API Shortlist slots and Frontier Basket families. The daily watch evaluates every relevant release against both lists and records the evidence, affected slots and reason to promote, hold or request an editorial decision. Include releases outside the current families when reviewing whether the policy itself needs to change. For a verified same-family successor, add its reviewed identity and a higher order. Each collection re-evaluates available identities; a fresh direct quote can then promote the successor with the prior selection or reviewed predecessor available as fallback. The open-weight shelf separately requires verified downloadable artifacts.
 
 ## Venue offers
 

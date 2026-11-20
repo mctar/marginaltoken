@@ -370,7 +370,8 @@ export default function ComparePage({
     >
       <header className="page-heading compare-heading">
         <p className="section-kicker">Usage, billing, and outcomes</p>
-        <h1>Run the numbers.</h1>
+        <h1>API bill calculator</h1>
+        <a className="text-link" href="/costs/">Start with a worked example →</a>
         <p>
           Compare two to four models using published price plans and your
           workload. Add your measured success rates to see the cost of

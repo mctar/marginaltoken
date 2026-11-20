@@ -51,3 +51,24 @@ test('loads the large offers feed only when a route requests routed-market data'
   assert.ok(modelCard.offers)
   assert.equal(requested.includes('/data/offers.json'), true)
 })
+
+test('retries a mixed core revision once and rejects persistent mismatches', async (context) => {
+  const originalFetch = globalThis.fetch
+  context.after(() => { globalThis.fetch = originalFetch })
+  let reads = 0
+  let recover = true
+  globalThis.fetch = async input => {
+    const path = String(input)
+    const payload = coreFeeds[path]
+    if (!payload) return new Response('', { status: 404 })
+    if (path === '/data/history.json' && (++reads === 1 || !recover)) {
+      return Response.json({ ...payload, generatedAt: 'older' })
+    }
+    return Response.json(payload)
+  }
+  await loadFeed()
+  assert.equal(reads, 2)
+  recover = false
+  await assert.rejects(loadFeed(), /consistent set/)
+  assert.equal(reads, 4)
+})

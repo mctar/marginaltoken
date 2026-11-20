@@ -4,6 +4,7 @@ import {
   comparableOfferCount,
   comparableOfferGroups,
   filterSpreadRows,
+  documentBillRange,
   marketSpreadRows,
   offersForGroup,
   widestOutputSpread,
@@ -183,4 +184,15 @@ test('ranks market rows by the selected input or output gap', () => {
 
   assert.deepEqual(filterSpreadRows(rows, { query: '', confidence: 'all', sort: 'input' }).map((row) => row.model.key), ['lab/model', 'other/model'])
   assert.deepEqual(filterSpreadRows(rows, { query: '', confidence: 'all', sort: 'output' }).map((row) => row.model.key), ['other/model', 'lab/model'])
+})
+
+test('document bill range prices each venue as one offer', () => {
+  const rows = marketSpreadRows([priceModel()], [model({
+    comparisonGroups: [group()],
+    offers: [
+      offer({ venue: 'A', input_mtok: 1, output_mtok: 10 }),
+      offer({ venue: 'B', input_mtok: 2, output_mtok: 2 }),
+    ],
+  })])
+  assert.deepEqual(documentBillRange(rows[0]), { min: 4, max: 4.4 })
 })

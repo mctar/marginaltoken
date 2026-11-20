@@ -96,40 +96,51 @@ def apply_register(models: list[dict[str, Any]], register: dict[str, Any], now: 
             eligible.append(model)
     selections: dict[str, str] = {}
     basket: dict[str, str] = {}
-    def retain_or_promote(selection_id: str, fallback: str, provider: str, family: str, stages: list[str]) -> str:
-        old_key = previous.get(selection_id, fallback)
-        old_record = register["models"].get(old_key, {})
-        baseline_order = register["models"][fallback].get("order", 0)
-        if (old_key not in by_key or old_record.get("provider") != provider or
-            old_record.get("family") != family or old_record.get("order", 0) < baseline_order or
-            (old_key != fallback and not old_record.get("approved")) or
-            (old_record.get("approved") and old_record.get("stage") not in stages) or
-            old_record.get("lifecycle", {}).get("status") in {"deprecated", "retired"}):
-            old_key = fallback
-        old_order = register["models"][old_key].get("order", 0)
-        candidates = [m for m in eligible if m["provider"] == provider and m["family"] == family and
-                      m["releaseStage"] in stages and m["selectionOrder"] > old_order]
-        # Equal ranks never select a different model by name or price.
-        winner = max(candidates, key=lambda m: m["selectionOrder"], default=None)
-        selected = winner["key"] if winner else old_key
-        selections[selection_id] = selected
-        return selected
+
+    def select(selection_id: str, fallbacks: list[str], provider: str, family: str, stages: list[str], *, direct_only: bool = False) -> str | None:
+        def usable(key: str | None) -> bool:
+            if not key or key not in by_key:
+                return False
+            record = register["models"].get(key, {})
+            return (record.get("provider") == provider and record.get("family") == family
+                    and record.get("lifecycle", {}).get("status") not in {"deprecated", "retired"}
+                    and (not record.get("approved") or record.get("stage") in stages)
+                    and (not direct_only or by_key[key].get("source") == "firstparty"))
+
+        baseline = next((key for key in fallbacks if usable(key)), None)
+        incumbent = previous.get(selection_id)
+        if not usable(incumbent):
+            incumbent = baseline
+        elif incumbent not in fallbacks and not register["models"][incumbent].get("approved"):
+            incumbent = baseline
+        if baseline and incumbent and register["models"][baseline]["order"] > register["models"][incumbent]["order"]:
+            incumbent = baseline
+        # Even when a predecessor disappears, evaluate verified successors.
+        minimum = register["models"][incumbent]["order"] if incumbent else -float("inf")
+        candidates = [m for m in eligible if m["provider"] == provider and m["family"] == family
+                      and m["releaseStage"] in stages and m["selectionOrder"] > minimum]
+        if candidates:
+            highest = max(m["selectionOrder"] for m in candidates)
+            leaders = [m["key"] for m in candidates if m["selectionOrder"] == highest]
+            if len(leaders) == 1:
+                incumbent = leaders[0]
+        if incumbent:
+            selections[selection_id] = incumbent
+        return incumbent
+
     for provider, policy in register["basket"].items():
-        selected = retain_or_promote("basket:"+provider, policy["fallback"], provider, policy["family"], policy["allowStages"])
-        if selected not in by_key:
-            raise ValueError(f"Missing basket fallback: {selected}")
+        selected = select("basket:"+provider, [policy["fallback"]], provider, policy["family"], policy["allowStages"], direct_only=True)
+        if not selected:
+            raise ValueError(f"No usable basket member for {provider}; review {policy['family']}")
         basket[provider] = selected
         for model in models:
             if model["provider"] == provider:
                 model["indexEligible"] = model["key"] == selected
     for column in register["apiShortlist"]:
         for slot in column["slots"]:
-            fallback = next((key for key in slot["candidates"] if key in by_key and
-                             register["models"][key].get("lifecycle", {}).get("status") not in {"deprecated", "retired"}), None)
-            if fallback is None:
-                continue
-            selected = retain_or_promote("slot:"+slot["id"], fallback, slot["provider"], slot["family"], ["stable", "preview"])
-            by_key[selected]["selectedSlots"].append(slot["id"])
+            selected = select("slot:"+slot["id"], slot["candidates"], slot["provider"], slot["family"], ["stable", "preview"])
+            if selected:
+                by_key[selected]["selectedSlots"].append(slot["id"])
     return {"version": 1, "reviewedAt": register["reviewedAt"], "policy": register["policy"],
             "basket": basket, "selections": selections, "models": register["models"],
             "apiShortlist": register["apiShortlist"], "openShortlist": register["openShortlist"]}

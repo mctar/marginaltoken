@@ -10,18 +10,24 @@ export default function MethodologyPage({ meta, provenance }: { meta: MetaFeed; 
     <main id="main" className="mx-auto max-w-publication px-4 pt-10 sm:px-6 sm:pt-14">
       <header className="page-heading methodology-heading">
         <p className="section-kicker">Notes on the numbers</p>
-        <h1>Methodology</h1>
+        <h1>About &amp; sources</h1>
         <p>
-          The Marginal Token records posted API prices. The aim is narrow: a consistent public tape for the cost of model input and output.
+          The Marginal Token is Thordur Arnason’s independent exploration of the model market. The field guide covers what models do, how to access them and what it costs to use them. The ledger tracks posted API prices. Market notes document releases, deployment evidence and licensing terms with dated sources.
         </p>
       </header>
 
       <article className="methodology-grid">
         <section>
+          <h2>How the Shortlist and Frontier Basket evolve</h2>
+          <p>We review new releases against both lists. Each collection checks whether a reviewed successor in the same family has an eligible release stage and a fresh direct rate. A temporary verification failure can retain the last selected model. A new family, provider or serving policy gets an editorial review. The open-weight selection also checks downloadable files.</p>
+          <a className="text-link" href="/ledger/">See the current selections →</a>
+        </section>
+
+        <section>
           <span className="method-number">Decision tools</span>
           <h2>Open weights and workload economics</h2>
           <p>The open shelf verifies that the exact linked Hugging Face repository lists model weight files. License IDs distinguish permissive, custom, and unknown terms; gated access is disclosed. Training data and code are not assessed. A missing repository does not classify a model as proprietary.</p>
-          <p>The decision feed checks public sources daily. Failed checks retain dated last-good records; the frontend excludes verification older than seven days. Detailed billing plans cover Anthropic, OpenAI, and conservatively parsed Google text-token rows. Routed quotes preserve reported cache rates. Unknown rates required by a workload prevent a complete estimate. Visitors select the applicable context tier. Cache storage is a monthly token-hour quantity.</p>
+          <p>The decision feed checks public sources daily. Failed checks retain dated last-good records; the frontend excludes verification older than seven days. Detailed billing plans are shown where we can verify the provider’s meters and terms. Each supported plan carries its own source. Worked examples for images and voice use the dated tariff linked alongside the result. Routed quotes preserve reported cache rates. Unknown rates required by a workload prevent a complete estimate. Visitors select the applicable context tier. Cache storage is a monthly token-hour quantity.</p>
           <p>Presets are illustrative; success rates, token multipliers, and rate overrides are visitor supplied. For independent success probability p and at most n attempts, acceptance is 1 − (1 − p)ⁿ and expected attempts are acceptance / p (n when p is zero). API and review costs apply to every attempt. Review does not change the entered success probability. Total modeled spend is divided by expected accepted tasks; zero acceptance has no finite cost per successful task. Scenario files are processed in the browser, and shared URLs include aggregate assumptions.</p>
         </section>
 

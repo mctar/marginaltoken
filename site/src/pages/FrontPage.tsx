@@ -1,62 +1,130 @@
-import FrontLedger from '../components/FrontLedger'
 import { frontPageStories, marketNotes, marketNotePath, noteKindLabel } from '../lib/market-notes'
+import { tasks } from '../lib/field-guide'
+import { examples, meteredTotal } from '../lib/worked-examples'
 import { longDate } from '../lib/format'
 import type { FeedData } from '../lib/types'
 
-const tools = [
-  { number: '01', title: 'Compare API costs', text: 'Price your workload, including caching, retries and human review.', href: '/compare/', action: 'Open the calculator' },
-  { number: '02', title: 'Find an open model', text: 'Check downloadable weights, license terms and hosted alternatives.', href: '/open/', action: 'Explore open models' },
-  { number: '03', title: 'Price self-hosting', text: 'Put hardware, capacity and utilization beside the API bill.', href: '/infrastructure/', action: 'Compare rent vs run' },
-]
+const dollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
 export default function FrontPage({ data, feedError }: { data?: FeedData; feedError?: string }) {
   const { lead, recent } = frontPageStories(marketNotes)
+  const weekly = marketNotes.find(
+    (n) => n.kind === 'weekly' && n.date <= new Date().toISOString().slice(0, 10),
+  )
+  const sample = examples.voice
+  const total = meteredTotal(
+    sample.meters,
+    sample.meters.map((m) => String(m.quantity)),
+  )!
   return (
-    <main id="main" className="front-page mx-auto max-w-publication px-4 sm:px-6">
-      <div className="front-purpose">
-        <p>Understand what AI costs.<br className="sm:hidden" /> Decide what to run.</p>
-        <a href="#decision-tools">Find a tool <span aria-hidden="true">↓</span></a>
+    <main id="main" className="reader-page front-reader">
+      <div className="reader-purpose">
+        <p>A field guide to AI models, how to access them and what they cost to use.</p>
+        <a href="/understand/">Start here →</a>
       </div>
-      {lead ? <section className="front-editorial" aria-labelledby="front-title">
-        <article className="front-cover-story">
-          <div className="front-story-meta">
-            <span className="section-kicker">{noteKindLabel(lead)}</span>
-            {lead.kind === 'weekly' && lead.editionStatus === 'week-so-far' && <span className="edition-badge">Week so far</span>}
-          </div>
-          <h1 id="front-title"><a href={marketNotePath(lead)}>{lead.title}</a></h1>
-          <p className="front-deck">{lead.summary}</p>
-          <div className="front-story-footer">
-            <a className="editorial-read-link" href={marketNotePath(lead)}>{lead.kind === 'weekly' ? 'Read the weekly review' : 'Read the market note'} <span aria-hidden="true">→</span></a>
-            <time dateTime={lead.date}>{longDate(lead.date)}</time>
-          </div>
-          {lead.kind === 'weekly' && <ul className="front-story-topics" aria-label="In this edition">
-            <li>New APIs</li><li>Open weights</li><li>What to test next</li>
-          </ul>}
-        </article>
-        <aside className="front-recent" aria-labelledby="recent-notes-title">
-          <div className="front-recent-heading"><h2 id="recent-notes-title">Market notes</h2><a href="/notes/">All notes →</a></div>
-          {recent.map((note) => <article key={note.slug}>
-            <time dateTime={note.date}>{longDate(note.date)}</time>
-            <h3><a href={marketNotePath(note)}>{note.title}</a></h3>
-            <p>{note.summary}</p>
-          </article>)}
-          <a className="front-rss" href="/feeds/notes.xml">Follow the editorial via RSS ↗</a>
+      <div className="cover-grid">
+        {lead && (
+          <article className="reader-lead">
+            <p className="reader-meta">
+              {noteKindLabel(lead)} · <time dateTime={lead.date}>{longDate(lead.date)}</time>
+            </p>
+            <h1>
+              <a href={marketNotePath(lead)}>{lead.frontHeadline ?? lead.title}</a>
+            </h1>
+            <p className="reader-deck">{lead.frontSummary ?? lead.summary}</p>
+            <a className="reader-action" href={marketNotePath(lead)}>
+              Read the {lead.kind === 'weekly' ? 'weekly review' : 'note'} →
+            </a>
+            {lead.kind !== 'weekly' && weekly && (
+              <a className="weekly-front-link" href={marketNotePath(weekly)}>
+                Latest weekly review →
+              </a>
+            )}
+          </article>
+        )}
+        <aside className="front-example">
+          <p className="reader-meta">Worked example</p>
+          <h2>What does a voice session cost?</h2>
+          <p>GPT-Live 1.1 charges different rates for talking and standby.</p>
+          <dl>
+            {sample.meters.map((m) => (
+              <div key={m.label}>
+                <dt>
+                  {m.quantity / 60} {m.label.toLowerCase().replace('seconds', 'minutes')}
+                </dt>
+                <dd>{dollars.format((m.quantity * m.usd) / m.per)}</dd>
+              </div>
+            ))}
+            <div className="total">
+              <dt>Session charge</dt>
+              <dd>{dollars.format(total)}</dd>
+            </div>
+          </dl>
+          <small>Backend models and tools are additional.</small>
+          <a href="/costs/?example=voice">Calculate a voice session →</a>
         </aside>
-      </section> : <h1 id="front-title" className="section-title">The price of buying and running AI</h1>}
-      <section id="decision-tools" className="front-tools" aria-labelledby="tools-title">
-        <div className="front-section-heading"><div><p className="section-kicker">From reading to a decision</p><h2 id="tools-title" className="section-title">Put the numbers to work</h2></div></div>
-        <div className="front-tools-grid">{tools.map((tool) => <a key={tool.href} className="front-tool" href={tool.href}>
-          <span className="front-tool-number">{tool.number}</span><h3>{tool.title}</h3><p>{tool.text}</p><span className="front-tool-action">{tool.action} →</span>
-        </a>)}</div>
-        <nav className="front-more-tools" aria-label="More decision tools">
-          <span>Go further</span><a href="/plan/">Plan a mixed fleet →</a><a href="/spreads/">Compare serving venues →</a><a href="/watch/">Saved workloads &amp; alerts →</a>
-        </nav>
+      </div>
+      <section className="reader-section">
+        <div className="reader-rule">
+          <h2>Explore by task</h2>
+          <a href="/explore/">All examples →</a>
+        </div>
+        <div className="task-map">
+          {tasks.map((t) => (
+            <a key={t.id} href={'/explore/?task=' + t.id}>
+              <h3>
+                {t.label} <span aria-hidden="true">↗</span>
+              </h3>
+              <p>{t.detail}</p>
+            </a>
+          ))}
+        </div>
       </section>
-      {data ? <FrontLedger data={data} /> : <section className="front-ledger front-feed-status" aria-labelledby="ledger-title" aria-live="polite">
-        <h2 id="ledger-title" className="section-title">The price ledger</h2>
-        <p>{feedError ? 'The price feed is temporarily unavailable. The editorial archive is still available.' : 'Loading the latest price file…'}</p>
-        {feedError && <a className="text-link" href="/">Retry the price feed →</a>}
-      </section>}
+      <section className="reader-section">
+        <div className="reader-rule">
+          <h2>From the editorial desk</h2>
+          <a href="/notes/">Search all notes →</a>
+        </div>
+        <div className="story-grid">
+          {recent.map((note) => (
+            <article key={note.slug}>
+              <time className="reader-meta" dateTime={note.date}>
+                {longDate(note.date)}
+              </time>
+              <h3>
+                <a href={marketNotePath(note)}>{note.title}</a>
+              </h3>
+              <p>{note.summary}</p>
+            </article>
+          ))}
+          <article>
+            <span className="reader-meta">Reader’s guide</span>
+            <h3>
+              <a href="/understand/#access">What do you get when you download the weights?</a>
+            </h3>
+            <p>
+              Check the files, the license and the hardware before comparing self-hosting with an
+              API.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section id="price-ledger" className="reader-section">
+        <div className="reader-rule">
+          <h2>The price ledger</h2>
+          <a href="/ledger/">Shortlist &amp; market index →</a>
+        </div>
+        <p>
+          {data
+            ? data.meta.modelCount + ' priced listings · ' + longDate(data.meta.asOf)
+            : feedError
+              ? 'The current ledger is temporarily unavailable.'
+              : 'Loading the price ledger…'}{' '}
+          <a className="text-link" href="/tape/">
+            Browse prices →
+          </a>
+        </p>
+      </section>
     </main>
   )
 }

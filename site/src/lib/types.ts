@@ -61,6 +61,9 @@ export type HistoryFeed = {
 }
 
 export type PriceChange = {
+  quoteSourceBefore?: string | null
+  quoteSourceAfter?: string | null
+  sourceUrl?: string | null
   type: 'price'
   date: string
   key: string

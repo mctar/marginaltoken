@@ -124,6 +124,33 @@
       "deploymentSource": "https://huggingface.co/nvidia/Kimi-K3.1-Pro-NVFP4/blob/3af0462972c9cc07e5ba6e0867b44f961ce95e9b/README.md#usage",
       "nvfp4Repository": "nvidia/Kimi-K3.1-Pro-NVFP4",
       "caveat": "Budget GPU memory for the runtime and KV cache as well as the weights. Measure throughput at the context length and concurrency you need. Moonshot’s hosted prices cover a separate API offer."
+    },
+    "tencent/Hy4": {
+      "reviewedAt": "2026-11-20",
+      "title": "Hy4 full weights and deployment",
+      "licenseId": "other",
+      "licenseName": "Tencent Hy License, Version 1.0",
+      "licenseFile": "LICENSE",
+      "licenseSha256": "52755a6786f2f4b83b48cd7246aa9e34f7aac98563e4e60808ab02390799fdbd",
+      "revision": "c10c0de5b6f850703fb0a90e65d1c32b558b9167",
+      "licenseSource": "https://huggingface.co/tencent/Hy4/blob/c10c0de5b6f850703fb0a90e65d1c32b558b9167/LICENSE",
+      "licenseSummary": "Tencent Hy License 1.0 requires a separate written license for MaaS businesses whose aggregate worldwide gross revenue exceeds US$50 million in any consecutive 12 months, or before use in a product or service with more than 100 million monthly active users. MaaS means remote general-purpose inference or fine-tuning; feature-specific end-user products and request relays are excluded. Section 10.3 exempts solely internal use when the weights, derivatives and their outputs are unavailable to third parties.",
+      "availability": "Full Hy4 instruct and FP8 weights were publicly downloadable when checked on 20 November 2026. The safetensors files total 1,548,929,907,774 bytes for BF16 instruct (about 1.55 TB) and 786,309,705,006 bytes for FP8 (about 786 GB). These are weight-file sizes in decimal units, excluding runtime and KV-cache memory. The separate base checkpoint is intended for further training.",
+      "totalParametersBillion": 770,
+      "activeParametersBillion": 49,
+      "configurations": [
+        {
+          "precision": "FP8",
+          "hardware": "Tencent’s vLLM and SGLang examples both use eight-way tensor parallelism with the Hy4-FP8 checkpoint and DFly speculative decoding."
+        }
+      ],
+      "deploymentSource": "https://huggingface.co/tencent/Hy4/blob/c10c0de5b6f850703fb0a90e65d1c32b558b9167/README.md#deployment",
+      "bf16Repository": "tencent/Hy4",
+      "additionalTerms": {
+        "label": "FP8 weights",
+        "href": "https://huggingface.co/tencent/Hy4-FP8"
+      },
+      "caveat": "Full Hy4 is a different checkpoint from Hy4 flash and Hy4 preview. The eight-way serving examples do not establish a GPU model or universal memory minimum. Measure runtime memory, context, concurrency and throughput, and include idle capacity and operations in cost comparisons. Hosted API offers are separately priced."
     }
   },
   "modelMappings": {

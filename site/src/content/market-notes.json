@@ -1,6 +1,115 @@
 [
   {
     "kind": "standalone",
+    "slug": "gpt-live-11-active-standby-backend-costs",
+    "title": "GPT-Live 1.1 bills active time, standby and backend work separately",
+    "summary": "The Live API charges by session duration. Paused WebRTC inference qualifies for standby pricing; delegated models and tools add separate costs.",
+    "paragraphs": [
+      "OpenAI released GPT-Live 1.1 on 19 November. Active voice sessions cost $0.05 per minute; standby costs $0.02 per minute. Billing is per second. The lower standby rate applies to WebRTC sessions while inference is paused. Configure standby rather than assuming silence automatically qualifies.",
+      "Ten active minutes and five standby minutes cost $0.60 before backend work. Models and tools used for delegated reasoning are billed separately. Measure duration, backend usage, retries and task completion when comparing cost per completed conversation.",
+      "The model uses the Live API at v1/live/sessions. It does not use Realtime’s token tariff or the Responses endpoint. OpenAI claims better multilingual transcription and accent consistency; those claims do not establish an independent quality or cost-per-task result."
+    ],
+    "sources": [
+      {
+        "label": "OpenAI release notes · 19 November",
+        "href": "https://developers.openai.com/api/docs/changelog#nov-19"
+      },
+      {
+        "label": "GPT-Live 1.1 rates and supported endpoint",
+        "href": "https://developers.openai.com/api/docs/models/gpt-live-1.1"
+      },
+      {
+        "label": "Live session duration pricing",
+        "href": "https://developers.openai.com/api/docs/pricing#live-session-duration"
+      },
+      {
+        "label": "Configure standby for WebRTC sessions",
+        "href": "https://developers.openai.com/api/docs/guides/live-conversations#configure-standby"
+      },
+      {
+        "label": "Estimate separately billed backend token work",
+        "href": "/compare/"
+      }
+    ],
+    "date": "2026-11-20",
+    "checked": "2026-11-20",
+    "author": "Thordur Arnason"
+  },
+  {
+    "kind": "model",
+    "slug": "hy4-full-weights-license-deployment",
+    "modelKey": "tencent/hy4",
+    "calculatorKind": "infrastructure",
+    "calculatorQuote": "tape",
+    "title": "Hy4’s full weights require a separate deployment and license check",
+    "summary": "Tencent’s full Hy4 weights are public. The FP8 package is about 786 GB before runtime memory, and its custom license includes conditions for large MaaS businesses.",
+    "paragraphs": [
+      "Tencent’s full Hy4 instruct and FP8 weights were publicly downloadable when checked on 20 November. This is a separate checkpoint from Hy4 flash. The safetensors files total about 1.55 TB for BF16 instruct and 786 GB for FP8, in decimal units, before runtime and KV-cache memory.",
+      "Tencent’s vLLM and SGLang examples use the FP8 checkpoint with eight-way tensor parallelism and speculative decoding. They do not establish a GPU model or universal memory minimum. Measure memory and throughput at your required context and concurrency, then include idle capacity and operating costs.",
+      "Tencent Hy License 1.0 requires separate written permission for qualifying MaaS businesses above $50 million worldwide gross revenue over any consecutive twelve months, or before use in a product or service above 100 million monthly active users. Its MaaS definition excludes feature-specific end-user products and request relays. Section 10.3 exempts solely internal use when weights, derivatives and outputs are unavailable to third parties."
+    ],
+    "calculatorTitle": "Compare a measured Hy4 deployment with the hosted route",
+    "calculatorGuidance": "Rent vs Run opens full Hy4’s current routed quote in custom deployment mode. Enter your tested hardware, memory, throughput and utilization. An eight-way example is a configuration to investigate, not a capacity guarantee.",
+    "sources": [
+      {
+        "label": "Full Hy4 weights and deployment examples",
+        "href": "https://huggingface.co/tencent/Hy4/blob/c10c0de5b6f850703fb0a90e65d1c32b558b9167/README.md"
+      },
+      {
+        "label": "Reviewed Tencent Hy License 1.0",
+        "href": "https://huggingface.co/tencent/Hy4/blob/c10c0de5b6f850703fb0a90e65d1c32b558b9167/LICENSE"
+      },
+      {
+        "label": "Exact FP8 instruct checkpoint",
+        "href": "https://huggingface.co/tencent/Hy4-FP8"
+      },
+      {
+        "label": "Separate Hy4 flash checkpoint",
+        "href": "https://huggingface.co/tencent/Hy4-flash"
+      }
+    ],
+    "date": "2026-11-20",
+    "checked": "2026-11-20",
+    "author": "Thordur Arnason"
+  },
+  {
+    "kind": "standalone",
+    "slug": "aion-instruct-edge-access-local-fallback-costs",
+    "title": "Aion Instruct separates local weights from Edge API access",
+    "summary": "MIT-licensed weights and a WebGPU package are public. Edge’s Prompt API is an origin trial, while Decisions remains a developer preview.",
+    "paragraphs": [
+      "Microsoft announced Aion Instruct’s general availability in Edge on 19 November. Edge downloads its built-in model on demand on eligible devices. The Prompt API origin trial lets registered sites test live deployment; the experimental Decisions API remains a Canary and Dev preview. Those APIs have different access scopes.",
+      "The exact publisher repositories provide the 2.3B model under MIT terms and a separate INT4 ONNX WebGPU package. Microsoft lists that package at about 1.3 GB; it is not a complete memory budget. Its default 4,096-token prompt-plus-output allocation can be raised to the 32,768-token context, with a larger KV cache.",
+      "Local inference shifts cost to device resources, integration and support. Check how many users can run the model, measure accepted results, and budget a hosted fallback for unsupported devices or harder tasks. Keep the planned Windows OS model rollout separate from what is usable in Edge and downloadable today."
+    ],
+    "sources": [
+      {
+        "label": "Microsoft Edge release · 19 November",
+        "href": "https://blogs.windows.com/msedgedev/2026/11/19/hybrid-intelligence-on-the-web-introducing-aion-instruct-and-prompt-api-in-microsoft-edge/"
+      },
+      {
+        "label": "Exact Aion Instruct weights and Windows rollout scope",
+        "href": "https://huggingface.co/microsoft/Aion-1.0-Instruct-2.3B"
+      },
+      {
+        "label": "MIT license",
+        "href": "https://huggingface.co/microsoft/Aion-1.0-Instruct-2.3B/blob/main/LICENSE"
+      },
+      {
+        "label": "Separate ONNX WebGPU package and memory settings",
+        "href": "https://huggingface.co/microsoft/Aion-1.0-Instruct-2.3B-ONNX-WebGPU"
+      },
+      {
+        "label": "Model your local deployment costs",
+        "href": "/infrastructure/"
+      }
+    ],
+    "date": "2026-11-20",
+    "checked": "2026-11-20",
+    "author": "Thordur Arnason"
+  },
+  {
+    "kind": "standalone",
     "slug": "gpt-62-sol-astra-api-pricing-ultrafast",
     "date": "2026-11-18",
     "checked": "2026-11-18",

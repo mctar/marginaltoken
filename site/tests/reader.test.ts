@@ -14,6 +14,13 @@ test('each reader task leads to a sourced model even without hosted price data',
         p.note,
       )
   }
+  for (const [label, id, example] of [
+    ['Coding', 'coding', 'flint'],
+    ['Agentic automation', 'agentic-automation', 'deepseek-v41-flash'],
+  ]) {
+    assert.ok(findProfiles(id, '').some((p) => p.id === example && p.note))
+    assert.ok(findProfiles('', label).some((p) => p.id === example))
+  }
   assert.equal(findProfiles('diarization', 'gated')[0]?.id, 'community-1')
   assert.equal(findProfiles('speech', 'not-a-model').length, 0)
 })

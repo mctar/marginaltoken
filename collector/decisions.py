@@ -16,14 +16,14 @@ try:
     from collector.collect import atomic_write_json, atomic_write_text
     from collector.official import (
         PROVIDER_PUBLIC_URLS, PROVIDER_URLS, QWEN_PRICING_URL, _money_values, fetch_source,
-        google_markdown_modes, openai_price_rows, openai_rate, qwen_max_singapore,
+        google_markdown_modes, openai_price_rows, openai_rate, qwen_max_region,
         qwen_standard_rates, qwen_table_rows, qwen_usd, visible_text,
     )
 except ModuleNotFoundError:
     from collect import atomic_write_json, atomic_write_text
     from official import (
         PROVIDER_PUBLIC_URLS, PROVIDER_URLS, QWEN_PRICING_URL, _money_values, fetch_source,
-        google_markdown_modes, openai_price_rows, openai_rate, qwen_max_singapore,
+        google_markdown_modes, openai_price_rows, openai_rate, qwen_max_region,
         qwen_standard_rates, qwen_table_rows, qwen_usd, visible_text,
     )
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,7 +46,7 @@ META_EMBER_KEY = 'meta/muse-ember'
 MISTRAL_BILLING_SCHEMA = 1
 MISTRAL_BILLING_URL = 'https://docs.mistral.ai/inference/pricing'
 QWEN4_MAX = 'qwen/qwen4-max'
-QWEN_BILLING_SCHEMA = 1
+QWEN_BILLING_SCHEMA = 2
 MOONSHOT_BILLING_SCHEMA = 1
 MOONSHOT_BILLING_URL = 'https://platform.kimi.ai/docs/pricing/chat'
 WEIGHTS_REVIEWS = json.loads((ROOT/'collector/weights-reviewed.json').read_text())['repositories']
@@ -335,11 +335,13 @@ def muse_ember_plans(source):
     ]
 
 
-def qwen4_max_plan(source):
-    section = qwen_max_singapore(source)
-    inp, output = qwen_standard_rates(section, 'qwen4-max')
+def qwen4_max_plan(source, region):
+    virginia = region == 'Virginia'
+    section = qwen_max_region(source, 'United States (Virginia)' if virginia else 'Singapore')
+    inp, output = qwen_standard_rates(section, 'qwen4-max', 'Virginia' if virginia else 'International')
+    cache_suffix = re.escape(' (Virginia)' if virginia else '')
     tables = re.findall(
-        r'<strong\b[^>]*>qwen4-max — Cache (?:price|unit prices) \(per million tokens\)</strong>\s*</p>\s*(<table\b[^>]*>.*?</table>)',
+        rf'<strong\b[^>]*>qwen4-max — Cache (?:price|unit prices) \(per million tokens\){cache_suffix}</strong>\s*</p>\s*(<table\b[^>]*>.*?</table>)',
         section, re.I | re.S,
     )
     columns = (
@@ -351,15 +353,17 @@ def qwen4_max_plan(source):
     rows = qwen_table_rows(tables[0]) if len(tables) == 1 else []
     headers = next((fields for fields in columns if rows and set(rows[0]) == fields.keys()), None)
     if headers is None or len(rows) != 2 or len(rows[0]) != 3 or len(rows[1]) != 3:
-        raise ValueError('Missing or ambiguous Qwen4-Max Singapore cache tariff')
+        raise ValueError(f'Missing or ambiguous Qwen4-Max {region} cache tariff')
     rates = {headers[header]: qwen_usd(value, header) for header, value in zip(*rows)}
     return {
-        'id': 'standard', 'label': 'Direct Standard (Singapore)',
+        'id': 'standard-virginia' if virginia else 'standard', 'label': f'Direct Standard ({region})',
         'input_mtok': inp, 'output_mtok': output,
         **rates,
-        'contextWindowTokens': 1000000, 'maximumOutputTokens': 262144,
-        'notes': ('Alibaba Cloud Model Studio, International deployment in Singapore. Output includes thinking. '
-                  'Non-thinking responses are limited to 131,072 output tokens. Cache reads apply to both '
+        'contextWindowTokens': 1000000,
+        **({} if virginia else {'maximumOutputTokens': 262144}),
+        'notes': (('Virginia deployment. ' if virginia else
+                   'International deployment in Singapore. Non-thinking responses are limited to 131,072 output tokens. ')
+                  + 'Output includes thinking. Cache reads apply to both '
                   'implicit and explicit hits. Write rates apply to explicit caching for the selected lifetime.'),
     }
 
@@ -463,7 +467,7 @@ def parse_billing(provider, source, models):
             result['mistralai/mistral-large-4'] = [mistral_large4_plan(source)]
     elif provider == 'qwen':
         if any(m['key'] == QWEN4_MAX for m in models):
-            result[QWEN4_MAX] = [qwen4_max_plan(source)]
+            result[QWEN4_MAX] = [qwen4_max_plan(source, region) for region in ('Singapore', 'Virginia')]
     elif provider == 'particle-ai':
         if any(m['key'] == 'particle-ai/particle-1' for m in models):
             result['particle-ai/particle-1'] = particle_plans(source)

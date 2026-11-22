@@ -1,7 +1,7 @@
 import hashlib
 import unittest
 from unittest.mock import patch
-from collector.decisions import weights_record, parse_billing, license_file
+from collector.decisions import weights_record, parse_billing, license_file, qwen4_max_plan
 
 class DecisionsTests(unittest.TestCase):
     def test_muse_ember_exact_direct_context_tiers(self):
@@ -290,7 +290,7 @@ class DecisionsTests(unittest.TestCase):
         model = 'qwen4-max'
         key = 'qwen/'+model
         self.assertEqual(parse_qwen(source, [{'model':model}], datetime.now(timezone.utc)), {model:(1.5,4.5)})
-        plan = parse_billing('qwen', source, [{'key':key}])[key][0]
+        plan = qwen4_max_plan(source, 'Singapore')
         self.assertEqual((plan['input_mtok'],plan['output_mtok'],plan['cached_input_mtok'],
                           plan['cache_write_mtok'],plan['cacheWriteHour_mtok']), (1.5,4.5,.075,1.875,3))
         with self.assertRaises(OfficialSourceError):

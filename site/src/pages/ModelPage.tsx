@@ -8,7 +8,7 @@ import OfferPanel from '../components/OfferPanel'
 import ShareImageButton from '../components/ShareImageButton'
 import { cheaperMatches } from '../lib/alternatives'
 import { comparisonPath, modelComparisonPath } from '../lib/compare'
-import { weightsLabel } from '../lib/decisions'
+import { currentVerification, weightsLabel } from '../lib/decisions'
 import { contextSize, longDate, price, providerName } from '../lib/format'
 import { capabilityTags, modalityList, modelPath } from '../lib/models'
 import { createModelShareImage } from '../lib/share-image'
@@ -64,6 +64,8 @@ export default function ModelPage({
   const path = modelPath(model.key)
   const alternatives = cheaperMatches(model, models)
   const accessEvents = serviceAccessEvents(model.key)
+  const regionalBilling = model.key === 'qwen/qwen4-max' && decision?.billing && currentVerification(decision.billing)
+    ? decision.billing : undefined
 
   const shareLink = async () => {
     const url = `${window.location.origin}${path}`
@@ -134,6 +136,25 @@ export default function ModelPage({
             <small>input tokens</small>
           </div>
         </section>
+
+        {regionalBilling && <section className="plan-panel" aria-label="Regional direct pricing">
+          <h2>Regional direct pricing</h2>
+          <p>USD per million tokens. Output includes reasoning tokens.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead><tr>
+                {['Direct plan', 'Input', 'Output', 'Cache read', '5-minute write', '1-hour write'].map(label =>
+                  <th className="p-2" scope="col" key={label}>{label}</th>)}
+              </tr></thead>
+              <tbody>{regionalBilling.plans.map(plan => <tr key={plan.id}>
+                <th className="p-2" scope="row">{plan.label}</th>
+                {[plan.input_mtok, plan.output_mtok, plan.cached_input_mtok, plan.cache_write_mtok, plan.cacheWriteHour_mtok].map((rate, i) =>
+                  <td className="p-2" key={i}>{rate === undefined ? 'Unlisted' : price(rate)}</td>)}
+              </tr>)}</tbody>
+            </table>
+          </div>
+          <p><a href={regionalBilling.sourceUrl}>Alibaba Cloud pricing</a> · {regionalBilling.status === 'last_good' ? 'Last successful check' : 'Verified'} {longDate(regionalBilling.verifiedAt.slice(0, 10))}</p>
+        </section>}
 
         {accessEvents.length > 0 && <section className="plan-panel" aria-label="First-party service access">
           <h2>First-party service access</h2>

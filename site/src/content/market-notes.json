@@ -1,5 +1,78 @@
 [
   {
+    "kind": "model",
+    "date": "2026-11-22",
+    "checked": "2026-11-22",
+    "author": "Thordur Arnason",
+    "calculatorQuote": "tape",
+    "slug": "minimax-m31-flash-route-retention",
+    "modelKey": "minimax/minimax-m3.1-flash",
+    "title": "Two MiniMax M3.1 Flash routes charge the same price with different retention terms",
+    "summary": "Wafer and StreamLake quoted the same token prices on 22 November. Only Wafer’s endpoint appeared on OpenRouter’s zero data retention list.",
+    "paragraphs": [
+      "On 22 November, Wafer’s NVFP4 endpoint and StreamLake’s FP8 endpoint each quoted $0.135 per million input tokens and $0.54 per million output tokens for MiniMax M3.1 Flash. The same workload would produce the same token bill on either route.",
+      "OpenRouter removed 125 endpoints from its zero data retention list, including some as a precaution. When we checked its revised list, it included the Wafer endpoint and omitted the StreamLake endpoint. Eligibility applies to the specific endpoint and can change.",
+      "If your contract requires zero data retention, choose “ZDR only” in OpenRouter’s data policy settings and check the eligible endpoints before comparing prices. Allowing safety retention expands where OpenRouter can send a request."
+    ],
+    "calculatorTitle": "Estimate the MiniMax token bill",
+    "calculatorGuidance": "Use the price card to compare current provider offers. Check the endpoint’s retention eligibility separately before choosing a route.",
+    "sources": [
+      {
+        "label": "OpenRouter’s incident update, 22 November",
+        "href": "https://openrouter.ai/blog/announcements/data-processing-incidents-on-inference-providers/"
+      },
+      {
+        "label": "MiniMax M3.1 Flash endpoint prices",
+        "href": "https://openrouter.ai/api/v1/models/minimax/minimax-m3.1-flash/endpoints"
+      },
+      {
+        "label": "Current zero data retention endpoints",
+        "href": "https://openrouter.ai/api/v1/endpoints/zdr"
+      },
+      {
+        "label": "OpenRouter data policy settings",
+        "href": "https://openrouter.ai/docs/guides/features/zdr"
+      },
+      {
+        "label": "Compare provider offers",
+        "href": "/spreads/"
+      }
+    ]
+  },
+  {
+    "kind": "model",
+    "date": "2026-11-22",
+    "checked": "2026-11-22",
+    "author": "Thordur Arnason",
+    "calculatorQuote": "tape",
+    "slug": "inkling-2-mini-local-memory-hosted-price",
+    "modelKey": "thinkingmachines/inkling-2-mini",
+    "calculatorKind": "infrastructure",
+    "title": "Inkling 2 Mini runs on a laptop. What does the hosted route cost?",
+    "summary": "Thinking Machines demonstrated offline coding on a 48 GB MacBook Pro. A hosted workload with one million input tokens and 100,000 output tokens costs about 11 cents at the observed OpenRouter price.",
+    "paragraphs": [
+      "Thinking Machines released Inkling 2 Mini on 20 November. It accepts images and text, has downloadable Apache 2.0 weights, and is available through Tinker. The publisher estimates a memory footprint of about 20 GB. Its offline coding demo used an M5 Pro MacBook Pro with 48 GB of unified memory.",
+      "On 22 November, OpenRouter quoted $0.075 per million input tokens and $0.30 per million output tokens. At those rates, one million input tokens and 100,000 output tokens cost $0.105. This is a routed price. Tinker bills under its own terms.",
+      "For a local trial, give the laptop a job you actually run, such as fixing a failing test or reading a screenshot. Measure peak memory, elapsed time and how often the result is usable. Those figures let you compare a machine you already own with the cost of sending the same work to a hosted endpoint."
+    ],
+    "calculatorTitle": "Compare Inkling 2 Mini on your hardware with the hosted route",
+    "calculatorGuidance": "Enter the hardware cost and throughput you measured. Adjust utilization to reflect how often you expect to use the machine.",
+    "sources": [
+      {
+        "label": "Thinking Machines release and offline laptop demo",
+        "href": "https://thinkingmachines.ai/news/inkling-2-mini/"
+      },
+      {
+        "label": "Published weights and Apache 2.0 license",
+        "href": "https://huggingface.co/thinkingmachines/Inkling-2-Mini"
+      },
+      {
+        "label": "OpenRouter’s Inkling 2 Mini price",
+        "href": "https://openrouter.ai/thinkingmachines/inkling-2-mini"
+      }
+    ]
+  },
+  {
     "kind": "standalone",
     "slug": "gpt-live-11-active-standby-backend-costs",
     "title": "GPT-Live 1.1 bills active time, standby and backend work separately",

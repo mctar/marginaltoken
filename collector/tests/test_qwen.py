@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timezone
 
-from collector.decisions import parse_billing
+from collector.decisions import parse_billing, qwen4_max_plan
 from collector.official import OfficialSourceError, parse_qwen
 from collector.register import apply_register, firstparty_catalog, read_register
 
@@ -34,7 +34,7 @@ class QwenTests(unittest.TestCase):
     def test_singapore_price_and_named_cache_rates(self):
         row = {"model": "qwen4-max"}
         self.assertEqual(parse_qwen(SOURCE, [row], NOW), {"qwen4-max": (1.5, 4.5)})
-        plan = parse_billing("qwen", SOURCE, [MODEL])[MODEL["key"]][0]
+        plan = qwen4_max_plan(SOURCE, "Singapore")
         self.assertEqual((plan["input_mtok"], plan["output_mtok"]), (1.5, 4.5))
         self.assertEqual(
             (plan["cached_input_mtok"], plan["cache_write_mtok"], plan["cacheWriteHour_mtok"]),
@@ -54,6 +54,23 @@ class QwenTests(unittest.TestCase):
         self.assertEqual(parse_qwen(changed_cache, [{"model": "qwen4-max"}], NOW), {"qwen4-max": (1.5, 4.5)})
         with self.assertRaises(ValueError):
             parse_billing("qwen", changed_cache, [MODEL])
+
+    def test_virginia_uses_regional_token_and_cache_rows(self):
+        section = SOURCE.split('<h4 id="singapore-h4">Singapore</h4>')[1].split('<h4>China')[0]
+        tokens, cache = section.split('<p><strong>', 1)
+        global_row = ('<tr><td>qwen4-max</td><td>Global</td><td>Non-thinking and thinking modes</td>'
+                      '<td>0&lt;Token≤1M</td><td>$1.413</td><td>$4.24</td></tr>')
+        tokens = tokens.replace('International', 'Virginia').replace('</table>', global_row + '</table>')
+        global_cache = cache.replace('tokens)</strong>', 'tokens) (Global)</strong>').replace('$0.075', '$0.071')
+        virginia_cache = cache.replace('tokens)</strong>', 'tokens) (Virginia)</strong>')
+        source = SOURCE + '<h4>United States (Virginia)</h4>' + tokens + '<p><strong>' + global_cache + '<p><strong>' + virginia_cache
+        singapore, virginia = parse_billing("qwen", source, [MODEL])[MODEL["key"]]
+        self.assertEqual((singapore["id"], virginia["id"]), ("standard", "standard-virginia"))
+        fields = ("input_mtok", "output_mtok", "cache_write_mtok", "cacheWriteHour_mtok", "cached_input_mtok")
+        self.assertEqual([virginia[k] for k in fields], [1.5, 4.5, 1.875, 3, .075])
+        for broken in (source.replace('>Virginia<', '>Global<'), source.replace(' (Virginia)</strong>', ' (Global)</strong>')):
+            with self.assertRaises((OfficialSourceError, ValueError)):
+                parse_billing("qwen", broken, [MODEL])
 
     def test_promotes_verified_production_and_keeps_0902_fallback(self):
         register = read_register()

@@ -583,7 +583,7 @@ def parse_xai(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[st
     return result
 
 
-def qwen_max_singapore(source: str) -> str:
+def qwen_max_region(source: str, region: str) -> str:
     headings = list(re.finditer(r"<h([34])\b[^>]*>(.*?)</h\1>", source, re.I | re.S))
     family = None
     sections = []
@@ -591,11 +591,11 @@ def qwen_max_singapore(source: str) -> str:
         name = visible_text(heading[2])
         if heading[1] == "3":
             family = name
-        elif family in {"Qwen-Max", "Qwen Max"} and name == "Singapore":
+        elif family in {"Qwen-Max", "Qwen Max"} and name == region:
             end = headings[index + 1].start() if index + 1 < len(headings) else len(source)
             sections.append(source[heading.end():end])
     if len(sections) != 1:
-        raise OfficialSourceError("Qwen Max Singapore price section missing or ambiguous")
+        raise OfficialSourceError(f"Qwen Max {region} price section missing or ambiguous")
     return sections[0]
 
 
@@ -609,11 +609,11 @@ def qwen_table_rows(source: str) -> list[list[str]]:
 def qwen_usd(cell: str, label: str) -> float:
     amount = re.fullmatch(r"\$\s*([0-9]+(?:\.[0-9]+)?)", cell)
     if amount is None:
-        raise OfficialSourceError(f"Ambiguous Qwen Singapore rate: {label}")
+        raise OfficialSourceError(f"Ambiguous Qwen rate: {label}")
     return price(amount[1], label)
 
 
-def qwen_standard_rates(section: str, model: str) -> tuple[float, float]:
+def qwen_standard_rates(section: str, model: str, scope: str = "International") -> tuple[float, float]:
     headers = (
         ["Model ID", "Deployment scope", "Mode", "Input tokens per request",
          "Input price (per 1 million tokens)", "Output price (per 1 million tokens) | Chain of thought + answer"],
@@ -625,18 +625,18 @@ def qwen_standard_rates(section: str, model: str) -> tuple[float, float]:
         table_rows = qwen_table_rows(table)
         if table_rows and table_rows[0][:6] in headers:
             matches.extend(cells for cells in table_rows[1:]
-                           if cells and cells[0].split(" | ", 1)[0] == model)
+                           if len(cells) >= 2 and cells[0].split(" | ", 1)[0] == model and cells[1] == scope)
     if len(matches) != 1 or len(matches[0]) < 6 or [cell.casefold() for cell in matches[0][1:4]] != [
-        "international", "non-thinking and thinking modes", "0<token≤1m",
+        scope.casefold(), "non-thinking and thinking modes", "0<token≤1m",
     ]:
-        raise OfficialSourceError(f"Missing or ambiguous Qwen Singapore price row: {model}")
+        raise OfficialSourceError(f"Missing or ambiguous Qwen {scope} price row: {model}")
     return (qwen_usd(matches[0][4], f"{model} input"),
             qwen_usd(matches[0][5], f"{model} output"))
 
 
 def parse_qwen(source: str, rows: list[dict[str, Any]], now: datetime) -> dict[str, tuple[float, float]]:
     del now
-    section = qwen_max_singapore(source)
+    section = qwen_max_region(source, "Singapore")
     return {str(row["model"]): qwen_standard_rates(section, str(row["model"])) for row in rows}
 
 

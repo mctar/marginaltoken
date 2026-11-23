@@ -13,6 +13,10 @@ export default function WeeklyReviewBody({ note }: { note: WeeklyReview }) {
   return <>
     <p className="weekly-cutoff"><strong>{note.editionStatus === 'week-so-far' ? 'Week so far' : 'Completed week'}</strong> · Checked through {cutoff}.</p>
     <div className="market-note-body">{note.paragraphs.map((p) => <p key={p}>{p}</p>)}</div>
+    {note.chart && <figure>
+      <img src={note.chart.src} alt={note.chart.alt} width={820} height={280} className="h-auto max-w-full" />
+      <figcaption><EditorialLinks links={note.chart.links} /></figcaption>
+    </figure>}
     <section className="weekly-section" aria-labelledby="weekly-releases">
       <h2 id="weekly-releases">Available this week</h2>
       <div className="weekly-table-wrap" role="region" aria-label="Model release register" tabIndex={0}>

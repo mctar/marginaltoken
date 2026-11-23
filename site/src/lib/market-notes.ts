@@ -43,6 +43,7 @@ export type WeeklyEntry = {
 
 export type WeeklyReview = NoteBase & {
   kind: 'weekly'
+  chart?: { src: string; alt: string; links: EditorialLink[] }
   periodStart: string
   periodEnd: string
   cutoff: string

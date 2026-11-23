@@ -1,5 +1,196 @@
 [
   {
+    "kind": "weekly",
+    "slug": "ai-model-releases-2026-11-16",
+    "title": "AI model releases, 16–22 November 2026",
+    "date": "2026-11-23",
+    "checked": "2026-11-23",
+    "author": "Thordur Arnason",
+    "periodStart": "2026-11-16",
+    "periodEnd": "2026-11-22",
+    "editionStatus": "complete",
+    "cutoff": "2026-11-23T07:31:06.141Z",
+    "summary": "Gemini 4 Carbon’s scheduled increase doubles a long-prompt coding bill. This week also brought metered Qwen4-Max access, GPT-6.2 Sol and Astra, new image and speech options, and downloadable weights.",
+    "paragraphs": [
+      "A team sending 100,000 long coding requests a month to Gemini 4 Carbon would pay $27,600 at today’s rates and $55,200 at the rates scheduled for 1 December. That assumes 128,000 uncached input tokens and 2,000 output tokens per call on Google’s direct Standard plan. The input rate rises from $2 to $4 per million tokens and output from $10 to $20. Both bills are estimates for identical traffic. A team renewing a budget this week can put its own prompt lengths and cache usage into the calculation."
+    ],
+    "chart": {
+      "src": "/charts/carbon-monthly-bill-2026-11-23.svg",
+      "alt": "Monthly Gemini 4 Carbon coding bill for 100,000 requests. $27,600 at November rates and $55,200 at the standard rates scheduled for 1 December.",
+      "links": [
+        {
+          "label": "Google pricing",
+          "href": "https://aistudio.google.com/docs/pricing#gemini-4-carbon"
+        },
+        {
+          "label": "Workload calculator",
+          "href": "https://marginaltoken.com/compare/?model=google%2Fgemini-4-carbon&calls=100000&input=128000&output=2000&reasoning=0&cache_read=0&cache_write=0&review_hourly=0&assumptions=%7B%22google%2Fgemini-4-carbon%22%3A%7B%22quote%22%3A%22lab%3Astandard%22%2C%22inputRate%22%3A%224%22%2C%22outputRate%22%3A%2220%22%2C%22cachedInputRate%22%3A%22%22%2C%22cacheWriteRate%22%3A%22%22%2C%22cacheStorageRate%22%3A%22%22%2C%22reasoningRate%22%3A%2220%22%2C%22tokenMultiplier%22%3A%221%22%2C%22outputMultiplier%22%3A%221%22%2C%22reasoningTokens%22%3A%22%22%2C%22cacheDuration%22%3A%225m%22%2C%22storageMillionTokenHours%22%3A%220%22%2C%22rateMultiplier%22%3A%221%22%2C%22successPct%22%3A%22%22%2C%22maxAttempts%22%3A%221%22%2C%22reviewPct%22%3A%220%22%2C%22reviewMinutes%22%3A%220%22%2C%22extraPerAttempt%22%3A%220%22%7D%7D"
+        }
+      ]
+    },
+    "modelKeys": [
+      "qwen/qwen4-max",
+      "openai/gpt-6.2-sol",
+      "openai/gpt-6.2-astra",
+      "google/gemini-4-neon",
+      "google/gemini-4-carbon",
+      "thinkingmachines/inkling-2-mini",
+      "minimax/minimax-m3.1-flash"
+    ],
+    "releases": [
+      {
+        "date": "2026-11-16",
+        "name": "Qwen4-Max",
+        "access": "Metered API in Singapore",
+        "terms": "$1.50 input and $4.50 output.",
+        "implication": "The production model took the Qwen Shortlist slot, with Qwen3.8 Max (0902) as fallback.",
+        "links": [
+          {
+            "label": "Model card",
+            "href": "https://marginaltoken.com/model/qwen/qwen4-max/"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-17",
+        "name": "GPT-6.2 Sol and Astra",
+        "access": "OpenAI API",
+        "terms": "Standard short-context rates are $2 / $10 for Sol and $8 / $40 for Astra.",
+        "implication": "The 18 November update moved Sol 6.2 into its Shortlist slot and the Frontier Basket.",
+        "links": [
+          {
+            "label": "Pricing note",
+            "href": "https://marginaltoken.com/notes/gpt-62-sol-astra-api-pricing-ultrafast/"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-17",
+        "name": "MAI Image 2.7 and Flash",
+        "access": "Foundry public preview",
+        "terms": "Microsoft estimates $35 per 1,000 images for 2.7 and $10 for Flash.",
+        "implication": "The preview expanded access to 2.7 and introduced Flash as the lower-cost option.",
+        "links": [
+          {
+            "label": "Microsoft release",
+            "href": "https://microsoft.ai/news/introducing-mai-image-2-7/"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-18",
+        "name": "Gemini 4 Neon",
+        "access": "Google paid API",
+        "terms": "$3 input and $15 output.",
+        "implication": "Synchronous requests have a 65,536-token output cap.",
+        "links": [
+          {
+            "label": "Google pricing",
+            "href": "https://aistudio.google.com/docs/pricing#gemini-4-neon"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-18",
+        "name": "Rumble-2-Flash",
+        "access": "Downloadable weights",
+        "terms": "Apache 2.0.",
+        "implication": "The checkpoint lets teams transcribe recorded speech on their own hardware.",
+        "links": [
+          {
+            "label": "Rumble weights",
+            "href": "https://huggingface.co/Reson8/Rumble-2-Flash"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-19",
+        "name": "GPT-Live 1.1",
+        "access": "Realtime API",
+        "terms": "$0.05 per active minute and $0.02 per eligible standby minute.",
+        "implication": "Budget separately for backend models and tools.",
+        "links": [
+          {
+            "label": "Live billing",
+            "href": "https://marginaltoken.com/notes/gpt-live-11-active-standby-backend-costs/"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-20",
+        "name": "Inkling 2 Mini",
+        "access": "Tinker and downloadable weights",
+        "terms": "Apache 2.0. The 22 November OpenRouter quote was $0.075 / $0.30.",
+        "implication": "Compare the routed price with running the same workload locally.",
+        "links": [
+          {
+            "label": "Inkling deployment",
+            "href": "https://marginaltoken.com/notes/inkling-2-mini-local-memory-hosted-price/"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-20",
+        "name": "bison-1 and groundhog-1",
+        "access": "Baseten API",
+        "terms": "Ten million input tokens cost $1.00 on bison or $0.35 on groundhog.",
+        "implication": "Both return structured decisions over text and images.",
+        "links": [
+          {
+            "label": "Baseten release",
+            "href": "https://www.baseten.co/blog/meet-bison-1-and-groundhog-1/"
+          }
+        ]
+      }
+    ],
+    "takeaways": [
+      {
+        "title": "Count accepted results",
+        "text": "On 23 November we ran the same 12 synthetic invoices on one NVIDIA GB10. Qwen3.5 4B matched the required fields on 10 invoices in 14 attempts. The 9B model matched all 12 in 13 attempts. At an assumed $1 per active compute hour, 4B cost less per accepted invoice. Adding 15 seconds of review per submitted invoice at $30/hour reversed the ordering to about 15 cents for 4B and 13 cents for 9B. Review time was modeled.",
+        "links": [
+          {
+            "label": "Successful-task calculator",
+            "href": "https://marginaltoken.com/compare/?outcomes=1"
+          }
+        ]
+      },
+      {
+        "title": "Check the endpoint before choosing the price",
+        "text": "On 22 November two MiniMax M3.1 Flash endpoints quoted identical rates. Only Wafer’s endpoint appeared on OpenRouter’s zero data retention list. Qwen4-Max also gained a Virginia deployment at Singapore’s token rates, giving buyers a regional choice at the same price.",
+        "links": [
+          {
+            "label": "MiniMax routing note",
+            "href": "https://marginaltoken.com/notes/minimax-m31-flash-route-retention/"
+          },
+          {
+            "label": "Qwen regional rates",
+            "href": "https://marginaltoken.com/model/qwen/qwen4-max/"
+          }
+        ]
+      }
+    ],
+    "updates": [],
+    "watching": [
+      {
+        "title": "Smaller open-weight Qwen4 models",
+        "text": "Alibaba promised smaller open-weight Qwen4 models. We verified the Max API and found no public checkpoint for those promised models by the cutoff.",
+        "links": [
+          {
+            "label": "Alibaba announcement",
+            "href": "https://www.alibabacloud.com/en/press-room/alibaba-unveils-qwen4-max?_p_lc=1"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "label": "Google pricing",
+        "href": "https://aistudio.google.com/docs/pricing#gemini-4-carbon"
+      }
+    ],
+    "coverage": "Verification covered 218 of 220 selected sources. An IBM Granite blog index and a Tencent documentation page were unavailable."
+  },
+  {
     "kind": "model",
     "date": "2026-11-22",
     "checked": "2026-11-22",

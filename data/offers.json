@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T10:01:36Z",
+  "generatedAt": "2026-11-24T11:02:35Z",
   "asOf": "2026-11-24",
   "source": "multi-source",
   "sources": [
@@ -8,7 +8,7 @@
       "label": "OpenRouter endpoints",
       "sourceUrl": "https://openrouter.ai/api/v1/models",
       "modelCount": 339,
-      "offerCount": 1287
+      "offerCount": 1285
     },
     {
       "key": "together-catalog",
@@ -33,7 +33,7 @@
   ],
   "targetModelCount": 339,
   "modelCount": 339,
-  "offerCount": 1300,
+  "offerCount": 1298,
   "venueCount": 83,
   "comparableModelCount": 151,
   "comparableGroupCount": 231,
@@ -8206,8 +8206,8 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.171,
-            "max": 0.171,
+            "min": 0.0999,
+            "max": 0.0999,
             "spreadPct": 0.0
           },
           "output_mtok": {
@@ -8229,13 +8229,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 1.32,
-            "max": 1.32,
+            "min": 0.66,
+            "max": 0.66,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 3.96,
-            "max": 3.96,
+            "min": 1.98,
+            "max": 1.98,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 393216
@@ -8427,6 +8427,40 @@
       ],
       "offers": [
         {
+          "venue": "Relace",
+          "tag": "relace/fp4",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-pro-20260813/endpoints",
+          "input_mtok": 0.0999,
+          "output_mtok": 5.0,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.0999,
+          "quantization": "fp4",
+          "maxOutputTokens": 393216,
+          "configurationKey": "cfg-9807ca848440ed4c"
+        },
+        {
           "venue": "Wafer",
           "tag": "wafer/us",
           "source": "openrouter-endpoints",
@@ -8465,40 +8499,6 @@
           "configurationKey": "cfg-ea8afe4cefc4b0c0"
         },
         {
-          "venue": "Relace",
-          "tag": "relace/fp4",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-pro-20260813/endpoints",
-          "input_mtok": 0.171,
-          "output_mtok": 5.0,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "stop",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.17,
-          "quantization": "fp4",
-          "maxOutputTokens": 393216,
-          "configurationKey": "cfg-9807ca848440ed4c"
-        },
-        {
           "venue": "Wafer",
           "tag": "wafer/mxfp4",
           "source": "openrouter-endpoints",
@@ -8535,6 +8535,38 @@
           "quantization": "mxfp4",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-ea8afe4cefc4b0c0"
+        },
+        {
+          "venue": "DeepSeek",
+          "tag": "deepseek",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-pro-20260813/endpoints",
+          "input_mtok": 0.66,
+          "output_mtok": 1.98,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.022,
+          "quantization": "unknown",
+          "maxOutputTokens": 393216,
+          "configurationKey": "cfg-ac300a0511ddd831"
         },
         {
           "venue": "StreamLake",
@@ -8868,38 +8900,6 @@
           "quantization": "fp4",
           "maxOutputTokens": 262144,
           "configurationKey": "cfg-efcfd0e97209d060"
-        },
-        {
-          "venue": "DeepSeek",
-          "tag": "deepseek",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-pro-20260813/endpoints",
-          "input_mtok": 1.32,
-          "output_mtok": 3.96,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "stop",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.044,
-          "quantization": "unknown",
-          "maxOutputTokens": 393216,
-          "configurationKey": "cfg-ac300a0511ddd831"
         },
         {
           "venue": "DigitalOcean",
@@ -11078,13 +11078,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.15,
-            "max": 0.15,
+            "min": 0.075,
+            "max": 0.075,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.6,
-            "max": 0.6,
+            "min": 0.3,
+            "max": 0.3,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 131072
@@ -11627,6 +11627,43 @@
           "configurationKey": "cfg-91ac84584937d55b"
         },
         {
+          "venue": "Pareto Inference",
+          "tag": "pareto-inference/fp8",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-20261017/endpoints",
+          "input_mtok": 0.075,
+          "output_mtok": 0.3,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "parallel_tool_calls",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.0015,
+          "quantization": "fp8",
+          "maxOutputTokens": 131072,
+          "configurationKey": "cfg-83204d19a8bd88f6"
+        },
+        {
           "venue": "DeepInfra",
           "tag": "deepinfra/fp8/flex",
           "source": "openrouter-endpoints",
@@ -12052,6 +12089,38 @@
           "configurationKey": "cfg-4c994e3a4be84919"
         },
         {
+          "venue": "DeepSeek",
+          "tag": "deepseek",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-20261017/endpoints",
+          "input_mtok": 0.15,
+          "output_mtok": 0.6,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logprobs",
+            "max_tokens",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "response_format",
+            "stop",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.003,
+          "quantization": "unknown",
+          "maxOutputTokens": 393216,
+          "configurationKey": "cfg-c737c20d13daa8e6"
+        },
+        {
           "venue": "Fireworks",
           "tag": "fireworks/spot",
           "source": "openrouter-endpoints",
@@ -12086,43 +12155,6 @@
           "quantization": "unknown",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-91ac84584937d55b"
-        },
-        {
-          "venue": "Pareto Inference",
-          "tag": "pareto-inference/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-20261017/endpoints",
-          "input_mtok": 0.15,
-          "output_mtok": 0.6,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "parallel_tool_calls",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.003,
-          "quantization": "fp8",
-          "maxOutputTokens": 131072,
-          "configurationKey": "cfg-83204d19a8bd88f6"
         },
         {
           "venue": "SiliconFlow",
@@ -12658,38 +12690,6 @@
           "quantization": "fp8",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-6995ca32775645b0"
-        },
-        {
-          "venue": "DeepSeek",
-          "tag": "deepseek",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-20261017/endpoints",
-          "input_mtok": 0.3,
-          "output_mtok": 1.2,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logprobs",
-            "max_tokens",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "stop",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.006,
-          "quantization": "unknown",
-          "maxOutputTokens": 393216,
-          "configurationKey": "cfg-c737c20d13daa8e6"
         },
         {
           "venue": "Fireworks",
@@ -18519,14 +18519,14 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.045,
+            "min": 0.05,
             "max": 0.2,
-            "spreadPct": 344.44
+            "spreadPct": 300.0
           },
           "output_mtok": {
-            "min": 0.163,
+            "min": 0.18,
             "max": 0.72,
-            "spreadPct": 341.72
+            "spreadPct": 300.0
           },
           "maxOutputTokens": 32768
         }
@@ -18537,8 +18537,8 @@
           "tag": "primeintellect/flex",
           "source": "openrouter-endpoints",
           "sourceUrl": "https://openrouter.ai/api/v1/models/google/gemma-4-26b-a4b-it-20260403/endpoints",
-          "input_mtok": 0.045,
-          "output_mtok": 0.163,
+          "input_mtok": 0.05,
+          "output_mtok": 0.18,
           "context": 262144,
           "supportedParameters": [
             "include_reasoning",
@@ -18560,7 +18560,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.023,
+          "cached_input_mtok": 0.025,
           "quantization": "bf16",
           "maxOutputTokens": 32768,
           "configurationKey": "cfg-eeebf30e700fd72a"
@@ -24118,32 +24118,9 @@
           "sourceUrl": "https://docs.together.ai/docs/serverless/models.md"
         }
       ],
-      "configurationCount": 7,
+      "configurationCount": 6,
       "comparableGroupCount": 4,
       "comparisonGroups": [
-        {
-          "key": "cfg-006dc9222a237343",
-          "confidence": "declared",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
-          "quantization": "fp8",
-          "context": 1000000,
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "input_mtok": {
-            "min": 0.135,
-            "max": 0.135,
-            "spreadPct": 0.0
-          },
-          "output_mtok": {
-            "min": 0.54,
-            "max": 0.54,
-            "spreadPct": 0.0
-          },
-          "maxOutputTokens": 512000
-        },
         {
           "key": "cfg-0b126586ae356483",
           "confidence": "declared",
@@ -24319,34 +24296,6 @@
           "quantization": "fp4",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-dbe26b58ca5600e8"
-        },
-        {
-          "venue": "StreamLake",
-          "tag": "streamlake/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/minimax/minimax-m3.1-flash-20261019/endpoints",
-          "input_mtok": 0.135,
-          "output_mtok": 0.54,
-          "context": 1000000,
-          "supportedParameters": [
-            "include_reasoning",
-            "max_tokens",
-            "reasoning",
-            "reasoning_effort",
-            "response_format",
-            "stop",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0135,
-          "quantization": "fp8",
-          "maxOutputTokens": 512000,
-          "configurationKey": "cfg-006dc9222a237343"
         },
         {
           "venue": "Wafer",
@@ -28925,7 +28874,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.214,
+          "cached_input_mtok": 0.224,
           "quantization": "fp4",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-35314448eac2e5b7"
@@ -28961,7 +28910,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.214,
+          "cached_input_mtok": 0.224,
           "quantization": "fp4",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-35314448eac2e5b7"
@@ -40592,13 +40541,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.337,
-            "max": 0.337,
+            "min": 0.35,
+            "max": 0.35,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.722,
-            "max": 0.722,
+            "min": 0.75,
+            "max": 0.75,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 65536
@@ -41418,43 +41367,6 @@
           "configurationKey": "cfg-4d450b71b67d16d6"
         },
         {
-          "venue": "PrimeIntellect",
-          "tag": "primeintellect/fp4",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/openai/gpt-oss-120b/endpoints",
-          "input_mtok": 0.337,
-          "output_mtok": 0.722,
-          "context": 131072,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_a",
-            "top_k",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.303,
-          "quantization": "fp4",
-          "maxOutputTokens": 65536,
-          "configurationKey": "cfg-ad9276d27fa71e5a"
-        },
-        {
           "venue": "Cerebras",
           "tag": "cerebras/fp16",
           "source": "openrouter-endpoints",
@@ -41488,6 +41400,43 @@
           "quantization": "fp16",
           "maxOutputTokens": 40960,
           "configurationKey": "cfg-5b632beeb31f81f6"
+        },
+        {
+          "venue": "PrimeIntellect",
+          "tag": "primeintellect/fp4",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/openai/gpt-oss-120b/endpoints",
+          "input_mtok": 0.35,
+          "output_mtok": 0.75,
+          "context": 131072,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_a",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.315,
+          "quantization": "fp4",
+          "maxOutputTokens": 65536,
+          "configurationKey": "cfg-ad9276d27fa71e5a"
         }
       ]
     },
@@ -41632,13 +41581,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.193,
-            "max": 0.193,
+            "min": 0.2,
+            "max": 0.2,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.29,
-            "max": 0.29,
+            "min": 0.3,
+            "max": 0.3,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 32768
@@ -41978,8 +41927,8 @@
           "tag": "primeintellect/fp4",
           "source": "openrouter-endpoints",
           "sourceUrl": "https://openrouter.ai/api/v1/models/openai/gpt-oss-20b/endpoints",
-          "input_mtok": 0.193,
-          "output_mtok": 0.29,
+          "input_mtok": 0.2,
+          "output_mtok": 0.3,
           "context": 131072,
           "supportedParameters": [
             "frequency_penalty",
@@ -42004,7 +41953,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.174,
+          "cached_input_mtok": 0.18,
           "quantization": "fp4",
           "maxOutputTokens": 32768,
           "configurationKey": "cfg-c3bf10abf5ab9b7f"
@@ -46793,13 +46742,13 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "input_mtok": {
-            "min": 0.12,
-            "max": 0.12,
+            "min": 0.17,
+            "max": 0.17,
             "spreadPct": 0.0
           },
           "output_mtok": {
-            "min": 0.177,
-            "max": 0.177,
+            "min": 0.25,
+            "max": 0.25,
             "spreadPct": 0.0
           },
           "maxOutputTokens": 40960
@@ -46996,39 +46945,6 @@
           "configurationKey": "cfg-6d64939fde820caf"
         },
         {
-          "venue": "PrimeIntellect",
-          "tag": "primeintellect/bf16",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.5-9b-20260310/endpoints",
-          "input_mtok": 0.12,
-          "output_mtok": 0.177,
-          "context": 262144,
-          "supportedParameters": [
-            "include_reasoning",
-            "max_completion_tokens",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "repetition_penalty",
-            "response_format",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.108,
-          "quantization": "bf16",
-          "maxOutputTokens": 40960,
-          "configurationKey": "cfg-de527d4848d7a3d9"
-        },
-        {
           "venue": "DeepInfra",
           "tag": "deepinfra/bf16/priority",
           "source": "openrouter-endpoints",
@@ -47061,6 +46977,39 @@
           "quantization": "bf16",
           "maxOutputTokens": 81920,
           "configurationKey": "cfg-154c4a8761e598fa"
+        },
+        {
+          "venue": "PrimeIntellect",
+          "tag": "primeintellect/bf16",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.5-9b-20260310/endpoints",
+          "input_mtok": 0.17,
+          "output_mtok": 0.25,
+          "context": 262144,
+          "supportedParameters": [
+            "include_reasoning",
+            "max_completion_tokens",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "repetition_penalty",
+            "response_format",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.153,
+          "quantization": "bf16",
+          "maxOutputTokens": 40960,
+          "configurationKey": "cfg-de527d4848d7a3d9"
         },
         {
           "venue": "Together AI",
@@ -49124,13 +49073,13 @@
           "supportsStructuredOutput": true,
           "input_mtok": {
             "min": 0.039,
-            "max": 0.439,
-            "spreadPct": 1025.64
+            "max": 0.45,
+            "spreadPct": 1053.85
           },
           "output_mtok": {
             "min": 1.25,
-            "max": 3.12,
-            "spreadPct": 149.6
+            "max": 3.2,
+            "spreadPct": 156.0
           },
           "maxOutputTokens": 65536
         },
@@ -49932,43 +49881,6 @@
           "configurationKey": "cfg-888ada4315644e35"
         },
         {
-          "venue": "PrimeIntellect",
-          "tag": "primeintellect/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-27b-20260814/endpoints",
-          "input_mtok": 0.439,
-          "output_mtok": 3.12,
-          "context": 262144,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_a",
-            "top_k",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.049,
-          "quantization": "fp8",
-          "maxOutputTokens": 65536,
-          "configurationKey": "cfg-054273a0e92c6e6a"
-        },
-        {
           "venue": "Nebius",
           "tag": "nebius/fp4",
           "source": "openrouter-endpoints",
@@ -50041,6 +49953,43 @@
           "quantization": "unknown",
           "maxOutputTokens": 235929,
           "configurationKey": "cfg-9181002218b285b6"
+        },
+        {
+          "venue": "PrimeIntellect",
+          "tag": "primeintellect/fp8",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-27b-20260814/endpoints",
+          "input_mtok": 0.45,
+          "output_mtok": 3.2,
+          "context": 262144,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_a",
+            "top_k",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.05,
+          "quantization": "fp8",
+          "maxOutputTokens": 65536,
+          "configurationKey": "cfg-054273a0e92c6e6a"
         },
         {
           "venue": "Reka",
@@ -56238,7 +56187,7 @@
           "sourceUrl": "https://openrouter.ai/api/v1/models/xiaomi/mimo-v2.6-pro-20260921/endpoints"
         }
       ],
-      "configurationCount": 3,
+      "configurationCount": 2,
       "comparableGroupCount": 1,
       "comparisonGroups": [
         {
@@ -56263,29 +56212,6 @@
             "spreadPct": 574.33
           },
           "maxOutputTokens": 943718
-        },
-        {
-          "key": "cfg-54683e5ef4237027",
-          "confidence": "nominal",
-          "comparable": false,
-          "offerCount": 1,
-          "venueCount": 1,
-          "quantization": "undisclosed",
-          "context": 1000000,
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "input_mtok": {
-            "min": 0.435,
-            "max": 0.435,
-            "spreadPct": 0.0
-          },
-          "output_mtok": {
-            "min": 0.87,
-            "max": 0.87,
-            "spreadPct": 0.0
-          },
-          "maxOutputTokens": 128000
         },
         {
           "key": "cfg-91e062ab29193df1",
@@ -56346,33 +56272,6 @@
           "quantization": "fp8",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-463ead73122ba1af"
-        },
-        {
-          "venue": "StreamLake",
-          "tag": "streamlake",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/xiaomi/mimo-v2.6-pro-20260921/endpoints",
-          "input_mtok": 0.435,
-          "output_mtok": 0.87,
-          "context": 1000000,
-          "supportedParameters": [
-            "include_reasoning",
-            "max_tokens",
-            "reasoning",
-            "response_format",
-            "stop",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.0036,
-          "quantization": "unknown",
-          "maxOutputTokens": 128000,
-          "configurationKey": "cfg-54683e5ef4237027"
         },
         {
           "venue": "Xiaomi",
@@ -60061,13 +59960,13 @@
           "supportsStructuredOutput": true,
           "input_mtok": {
             "min": 0.75,
-            "max": 1.05,
-            "spreadPct": 40.0
+            "max": 1.106,
+            "spreadPct": 47.47
           },
           "output_mtok": {
             "min": 3.0,
-            "max": 4.771,
-            "spreadPct": 59.03
+            "max": 5.162,
+            "spreadPct": 72.07
           },
           "maxOutputTokens": 943718
         },
@@ -61070,44 +60969,6 @@
           "configurationKey": "cfg-541d8e965ea20a60"
         },
         {
-          "venue": "Morph",
-          "tag": "morph/fp8",
-          "source": "openrouter-endpoints",
-          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-20260816/endpoints",
-          "input_mtok": 1.022,
-          "output_mtok": 4.771,
-          "context": 1048576,
-          "supportedParameters": [
-            "frequency_penalty",
-            "include_reasoning",
-            "logit_bias",
-            "logprobs",
-            "max_tokens",
-            "min_p",
-            "presence_penalty",
-            "reasoning",
-            "reasoning_effort",
-            "repetition_penalty",
-            "response_format",
-            "seed",
-            "stop",
-            "structured_outputs",
-            "temperature",
-            "tool_choice",
-            "tools",
-            "top_k",
-            "top_logprobs",
-            "top_p"
-          ],
-          "supportsReasoning": true,
-          "supportsTools": true,
-          "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.207,
-          "quantization": "fp8",
-          "maxOutputTokens": 943718,
-          "configurationKey": "cfg-1b4b5c9058d3ad6f"
-        },
-        {
           "venue": "Inceptron",
           "tag": "inceptron/fp4",
           "source": "openrouter-endpoints",
@@ -61171,6 +61032,44 @@
           "supportsTools": true,
           "supportsStructuredOutput": true,
           "cached_input_mtok": 0.168,
+          "quantization": "fp8",
+          "maxOutputTokens": 943718,
+          "configurationKey": "cfg-1b4b5c9058d3ad6f"
+        },
+        {
+          "venue": "Morph",
+          "tag": "morph/fp8",
+          "source": "openrouter-endpoints",
+          "sourceUrl": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-20260816/endpoints",
+          "input_mtok": 1.106,
+          "output_mtok": 5.162,
+          "context": 1048576,
+          "supportedParameters": [
+            "frequency_penalty",
+            "include_reasoning",
+            "logit_bias",
+            "logprobs",
+            "max_tokens",
+            "min_p",
+            "presence_penalty",
+            "reasoning",
+            "reasoning_effort",
+            "repetition_penalty",
+            "response_format",
+            "seed",
+            "stop",
+            "structured_outputs",
+            "temperature",
+            "tool_choice",
+            "tools",
+            "top_k",
+            "top_logprobs",
+            "top_p"
+          ],
+          "supportsReasoning": true,
+          "supportsTools": true,
+          "supportsStructuredOutput": true,
+          "cached_input_mtok": 0.224,
           "quantization": "fp8",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-1b4b5c9058d3ad6f"
@@ -63755,7 +63654,7 @@
           "supportsReasoning": true,
           "supportsTools": true,
           "supportsStructuredOutput": true,
-          "cached_input_mtok": 0.06,
+          "cached_input_mtok": 0.07,
           "quantization": "fp8",
           "maxOutputTokens": 943718,
           "configurationKey": "cfg-6c0b25ba68800847"

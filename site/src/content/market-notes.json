@@ -1,6 +1,65 @@
 [
   {
     "kind": "standalone",
+    "slug": "qwen-audio-31-live-session-billing",
+    "title": "Qwen Audio 3.1 Live charges for silence during connected calls",
+    "date": "2026-11-24",
+    "checked": "2026-11-24",
+    "author": "Thordur Arnason",
+    "summary": "Ten connected minutes cost about 43 US cents in Singapore or 28 cents in Beijing. A backend model can add a separate charge.",
+    "paragraphs": [
+      "When a caller asks where an order is, Qwen Audio 3.1 Live can keep the conversation going while the application looks up the parcel. The clock also runs if both sides stay silent. QwenCloud introduced the voice model on 23 November and bills each session from connection, with a three-second minimum.",
+      "QwenCloud lists US$0.000710 per second in Singapore and US$0.000471 in Beijing. At those rates, a ten-minute connection costs $0.426 in Singapore or $0.2826 in Beijing before any free allowance. If QwenCloud invokes a backend model during the call, its tokens are billed separately.",
+      "To estimate the cost of resolving a support request, count every connected second across the calls it took, including time spent waiting for lookups. Add the backend charges before dividing by the number of requests resolved."
+    ],
+    "sources": [
+      {
+        "label": "QwenCloud release log, 23 November",
+        "href": "https://docs.qwencloud.com/changelog/models"
+      },
+      {
+        "label": "Qwen Audio 3.1 Live model documentation",
+        "href": "https://docs.qwencloud.com/models/qwen-audio-3-1-live"
+      },
+      {
+        "label": "QwenCloud regional pricing and session billing rules",
+        "href": "https://docs.qwencloud.com/developer-guides/getting-started/model-prices"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
+    "slug": "tencent-wemm-ecom-retail-vision-weights",
+    "title": "Tencent releases WeMM-Ecom vision models for retail images and video",
+    "date": "2026-11-24",
+    "checked": "2026-11-24",
+    "author": "Thordur Arnason",
+    "summary": "The family ranges from 0.8B to 35B parameters. Tencent offers its largest model in several formats for teams testing it on their own product catalog.",
+    "paragraphs": [
+      "Tencent uploaded the BF16 weights for WeMM-Ecom-35B-A3B on 23 November, followed the same day by a quantized GGUF version. The model accepts images, groups of images and video. Its card lists an Apache 2.0 license. The model has 35 billion parameters and activates roughly 3 billion per token. A deployment still needs room for the full set of weights in the chosen format.",
+      "A retailer extracting pack sizes from product photos can try the 2B and 35B models on the same labeled images. Include multipacks and small print, then count how many listings each model gets right without a human correction. Divide the cost of running each test by that count. Track review time separately to see whether a larger model saves enough manual work to justify its hardware cost."
+    ],
+    "sources": [
+      {
+        "label": "Tencent model card and links to all five sizes",
+        "href": "https://huggingface.co/tencent/WeMM-Ecom-35B-A3B"
+      },
+      {
+        "label": "BF16 release history",
+        "href": "https://huggingface.co/tencent/WeMM-Ecom-35B-A3B/commits/main"
+      },
+      {
+        "label": "Quantized GGUF release history",
+        "href": "https://huggingface.co/tencent/WeMM-Ecom-35B-A3B-GGUF/commits/main"
+      },
+      {
+        "label": "Compare deployment costs with Rent vs Run",
+        "href": "/infrastructure/"
+      }
+    ]
+  },
+  {
+    "kind": "standalone",
     "slug": "glm-5-4-coding-plan-access",
     "title": "GLM-5.4 brings coding and vision to Z.ai’s Coding Plan ahead of API pricing",
     "summary": "Z.ai lists three ways to try GLM-5.4. Teams can measure time and plan usage per accepted fix while they wait for metered API rates and downloadable weights.",

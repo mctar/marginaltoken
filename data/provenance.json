@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-24T16:03:29Z",
+  "generatedAt": "2026-11-24T17:01:29Z",
   "asOf": "2026-11-24",
-  "status": "attention",
-  "degradedProviderCount": 0,
+  "status": "degraded",
+  "degradedProviderCount": 1,
   "conflictCount": 12,
   "reviewCandidateCount": 8,
   "providers": [
@@ -149,26 +149,29 @@
     },
     {
       "provider": "mistralai",
-      "status": "fresh",
+      "status": "last_good",
       "sourceUrl": "https://docs.mistral.ai/inference/pricing",
       "lastVerified": "2026-11-24",
       "modelCount": 2,
       "reviewCandidateCount": 1,
-      "freshModelCount": 2,
+      "freshModelCount": 0,
       "models": [
         {
           "key": "mistralai/mistral-large-4",
           "display": "Mistral Large 4",
-          "status": "fresh",
-          "lastVerified": "2026-11-24"
+          "status": "last_good",
+          "lastVerified": "2026-11-24",
+          "detail": "Mistral input price ambiguous: mistral-large-4"
         },
         {
           "key": "mistralai/mistral-small-4",
           "display": "Mistral Small 4",
-          "status": "fresh",
-          "lastVerified": "2026-11-24"
+          "status": "last_good",
+          "lastVerified": "2026-11-24",
+          "detail": "Mistral input price ambiguous: mistral-small-4"
         }
-      ]
+      ],
+      "detail": "Mistral input price ambiguous: mistral-large-4; Mistral input price ambiguous: mistral-small-4"
     },
     {
       "provider": "moonshotai",
